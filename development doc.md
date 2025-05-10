@@ -292,112 +292,125 @@
   - **审计日志查询：** 管理员可查询关键操作日志，追踪系统变更。
   - **系统配置：** 管理员可配置部分系统参数，如默认每页显示数量、敏感词过滤等 (需要额外设计配置表)。
 
-**5. API 端点建议 (概念性)**
+**5. API 端点列表**
 
-本节提供了潜在 RESTful API 端点的高级概述。
+本节提供了所有RESTful API端点的列表，并标注当前实现状态。
 
-- **5.1 认证 (Authentication)**
+### Admin - Dashboard
 
-  - `POST /api/v1/auth/register/User` - 用户注册
-  - `POST /api/v1/auth/login` - 用户登录 (所有角色)
-  - `POST /api/v1/auth/logout` - 用户登出
-  - `GET /api/v1/auth/me` - 获取当前用户信息
-  - `POST /api/v1/auth/verify-email` - 验证邮箱令牌
-  - `POST /api/v1/auth/forgot-password` - 请求密码重置
-  - `POST /api/v1/auth/reset-password` - 使用令牌重置密码
+- `GET /api/admin/dashboard/stats` - 获取管理员仪表盘统计数据 ✅ Implemented
 
-- **5.2 用户 (Users - 管理员权限)**
+### Admin - AuditLogs
 
-  - `POST /api/admin/users/staff` - 创建工作人员/管理员用户
-  - `GET /api/admin/users` - 列出所有用户 (可按角色等筛选)
-  - `GET /api/admin/users/{userId}` - 获取特定用户详情
-  - `PUT /api/admin/users/{userId}` - 更新用户详情/角色/状态
-  - `DELETE /api/admin/users/{userId}` - 删除/停用用户
+- `GET /api/admin/audit-logs` - 获取系统审计日志 (分页) ✅ Implemented
 
-- **5.3 用户个人资料 (Profile - 用户自助服务)**
+### Admin - UserManagement
 
-  - `PUT /api/v1/profile` - 更新本人资料 (密码、邮箱、头像)
-  - `DELETE /api/v1/profile` - 删除本人用户账户
-  - `PUT /api/v1/profile/notification-preferences` - 更新通知偏好
+- `GET /api/admin/users` - 获取用户列表 (包括普通用户和工作人员, 分页) ✅ Implemented
+- `PUT /api/admin/users/{userType}/{userId}/status` - 更新用户或工作人员的账户状态 (激活/禁用) ✅ Implemented
 
-- **5.4 医疗分类 (Medical Categories - 管理员权限)**
+### Admin - StaffManagement
 
-  - `POST /api/v1/categories`
-  - `GET /api/v1/categories`
-  - `GET /api/v1/categories/{categoryId}`
-  - `PUT /api/v1/categories/{categoryId}`
-  - `DELETE /api/v1/categories/{categoryId}`
+- `POST /api/admin/staff` - 管理员创建新的工作人员账户 ✅ Implemented
+- `GET /api/admin/staff/{staffId}` - 获取特定工作人员的详细信息 (管理员权限) ✅ Implemented
+- `PUT /api/admin/staff/{staffId}` - 更新特定工作人员的信息 (管理员权限) ✅ Implemented
+- `DELETE /api/admin/staff/{staffId}` - 删除特定工作人员的账户 (软删除，管理员权限) ✅ Implemented
+- `PUT /api/admin/staff/{staffId}/reset-password` - 重置特定工作人员的密码 (管理员权限) ✅ Implemented
 
-- **5.5 标签 (Tags - 管理员/工作人员管理, 所有角色读取)**
+### Admin - TagManagement
 
-  - `GET /api/v1/tags` - 获取所有标签
-  - `GET /api/v1/tags/{tagId}` - 获取特定标签详情
-  - `POST /api/v1/tags` - 创建新标签 (工作人员/管理员)
-  - `PUT /api/v1/tags/{tagId}` - 更新标签 (工作人员/管理员)
-  - `DELETE /api/v1/tags/{tagId}` - 删除标签 (仅管理员)
-  - `GET /api/v1/tags/stats/usage` - 获取标签使用统计 (工作人员/管理员)
-  - `POST /api/v1/tags/merge` - 合并标签 (仅管理员)
+- `DELETE /api/admin/tags/{tagId}` - 删除标签 (需要管理员权限) ✅ Implemented
+- `POST /api/admin/tags/merge` - 合并两个标签 (需要管理员权限) ✅ Implemented
 
-- **5.6 知识文章 (Knowledge Articles)**
+### Admin - SystemConfig
 
-  - `POST /api/v1/articles` (工作人员/管理员) - 创建文章
-  - `GET /api/v1/articles` (所有角色) - 列出文章 (含筛选、分页)
-  - `GET /api/v1/articles/{articleId}` (所有角色) - 获取特定文章
-  - `PUT /api/v1/articles/{articleId}` (工作人员/管理员) - 更新文章
-  - `DELETE /api/v1/articles/{articleId}` (工作人员/管理员) - 删除文章
-  - `PUT /api/v1/articles/{articleId}/status` (工作人员/管理员) - 更新文章状态 (例如：发布)
-  - `POST /api/v1/articles/{articleId}/tags` (工作人员/管理员) - 为文章添加标签
-  - `DELETE /api/v1/articles/{articleId}/tags/{tagId}` (工作人员/管理员) - 从文章移除标签
-  - `GET /api/v1/articles/{articleId}/versions` - 获取文章历史版本
-  - `POST /api/v1/articles/{articleId}/versions` - 创建新版本 (基于当前内容)
-  - `GET /api/v1/articles/{articleId}/versions/{versionId}` - 获取文章特定版本详情 (工作人员)
-  - `POST /api/v1/articles/{articleId}/feedback` - 提交文章反馈 (评分/评论)
-  - `GET /api/v1/articles/{articleId}/feedback` - 获取文章的反馈列表
-  - `POST /api/v1/articles/{articleId}/bookmark` - 收藏文章
-  - `DELETE /api/v1/articles/{articleId}/bookmark` - 取消收藏文章
+- `GET /api/admin/system-config` - 获取系统配置信息 ✅ Implemented
+- `PUT /api/admin/system-config` - 更新系统配置信息 ✅ Implemented
 
-- **5.7 学习心得 (Learning Experiences)**
+### Client - Auth
 
-  - `POST /api/v1/experiences` (用户) - 创建心得
-  - `GET /api/v1/experiences` (所有角色, 对非所有者/非工作人员默认筛选已批准的) - 列出心得
-  - `GET /api/v1/experiences/my` (用户) - 列出本人的心得
-  - `GET /api/v1/experiences/{experienceId}` (所有角色, 带权限检查) - 获取特定心得
-  - `PUT /api/v1/experiences/{experienceId}` (用户 - 仅限本人) - 更新本人的心得
-  - `DELETE /api/v1/experiences/{experienceId}` (用户 - 本人, 或工作人员/管理员) - 删除心得
-  - `POST /api/v1/experiences/{experienceId}/comments` - 发表心得评论
-  - `GET /api/v1/experiences/{experienceId}/comments` - 获取心得评论列表
-  - `PUT /api/v1/experiences/comments/{commentId}` - 修改自己的评论 (如果允许)
-  - `DELETE /api/v1/experiences/comments/{commentId}` - 删除自己的评论或由管理员删除
-  - `POST /api/v1/experiences/{experienceId}/upvote` - 点赞心得
-  - `POST /api/v1/experiences/{experienceId}/report` - 举报心得
-  - `POST /api/v1/experiences/comments/{commentId}/report` - 举报评论
-  - `POST /api/v1/experiences/{experienceId}/bookmark` - 收藏心得
-  - `DELETE /api/v1/experiences/{experienceId}/bookmark` - 取消收藏心得
+- `POST /api/v1/auth/register/user` - 注册新用户账户 ✅ Implemented
+- `POST /api/v1/auth/login` - 用户或工作人员登录 ✅ Implemented
+- `GET /api/v1/auth/me` - 获取当前登录的用户或工作人员的详细信息 ✅ Implemented
+- `POST /api/v1/auth/logout` - 用户或工作人员退出登录 ✅ Implemented
+- `POST /api/v1/auth/forgot-password` - 请求发送重置密码邮件 ✅ Implemented
+- `POST /api/v1/auth/reset-password` - 使用令牌重置密码 ✅ Implemented
+- `POST /api/v1/auth/verify-email` - 使用令牌验证用户邮箱地址 ✅ Implemented
 
-- **5.8 心得审核 (Experience Reviews - 工作人员/管理员权限)**
+### Client - KnowledgeArticles
 
-  - `GET /api/v1/reviews/experiences/pending` - 列出待审核的心得
-  - `POST /api/v1/reviews/experiences/{experienceId}` - 提交审核结果 (批准, 拒绝, 需要修改，附带评论)
-  - `GET /api/v1/experiences/{experienceId}/reviews` - 获取某心得的审核历史
+- `GET /api/v1/articles/` - 获取知识文章列表 (公开，默认获取已发布的) ✅ Implemented
+- `POST /api/v1/articles/` - 创建新的知识文章 (工作人员) ✅ Implemented
+- `GET /api/v1/articles/{articleId}` - 获取特定知识文章的详情 ✅ Implemented
+- `PUT /api/v1/articles/{articleId}` - 更新知识文章 (工作人员) ✅ Implemented
+- `DELETE /api/v1/articles/{articleId}` - 删除知识文章 (工作人员) ✅ Implemented
+- `POST /api/v1/articles/{articleId}/bookmark` - 收藏/取消收藏知识文章 ✅ Implemented
+- `POST /api/v1/articles/{articleId}/feedback` - 提交对知识文章的反馈 (评分/评论) ✅ Implemented
+- `GET /api/v1/articles/{articleId}/feedback` - 获取指定知识文章的反馈列表 (分页) ✅ Implemented
+- `GET /api/v1/articles/{articleId}/versions` - 获取知识文章的版本历史 (工作人员) ✅ Implemented
+- `GET /api/v1/articles/{articleId}/versions/{versionId}` - 获取知识文章的特定版本详情 (工作人员) ✅ Implemented
+- `PUT /api/v1/articles/{articleId}/status` - 更新文章状态 (工作人员) ✅ Implemented
+- `POST /api/v1/articles/{articleId}/tags` - 为文章添加标签 (工作人员) ✅ Implemented
+- `DELETE /api/v1/articles/{articleId}/tags/{tagId}` - 从文章移除标签 (工作人员) ✅ Implemented
+- `POST /api/v1/articles/{articleId}/create-version` - 创建新的文章版本 (工作人员) ✅ Implemented
 
-- **5.9 通知 (Notifications)**
+### Client - LearningExperiences
 
-  - `GET /api/v1/notifications` - 获取当前用户的通知列表 (支持分页、未读优先)
-  - `PUT /api/v1/notifications/{notificationId}/read` - 标记通知为已读
-  - `PUT /api/v1/notifications/read-all` - 标记所有通知为已读
-  - `DELETE /api/v1/notifications/{notificationId}` - 删除特定通知
-  - `GET /api/v1/notifications/{notificationId}` - 获取通知详情 (并标记为已读)
-  - `GET /api/v1/notifications/summary` - 获取通知汇总信息 (未读数量, 最新未读通知)
+- `GET /api/v1/experiences/` - 获取学习心得列表 (公开，默认获取已批准的) ✅ Implemented
+- `POST /api/v1/experiences/` - 用户创建新的学习心得 ✅ Implemented
+- `GET /api/v1/experiences/{experienceId}` - 获取特定学习心得的详情 ✅ Implemented
+- `PUT /api/v1/experiences/{experienceId}` - 更新学习心得 (作者更新内容，工作人员可更新状态) ✅ Implemented
+- `DELETE /api/v1/experiences/{experienceId}` - 删除学习心得 (作者或工作人员) ✅ Implemented
+- `GET /api/v1/experiences/{experienceId}/comments` - 获取指定学习心得的评论列表 (分页) ✅ Implemented
+- `POST /api/v1/experiences/{experienceId}/comments` - 发表对学习心得的评论 ✅ Implemented
+- `DELETE /api/v1/experiences/comments/{commentId}` - 删除心得评论 (评论作者或工作人员) ✅ Implemented
+- `POST /api/v1/experiences/{experienceId}/upvote` - 点赞/取消点赞学习心得 ✅ Implemented
+- `POST /api/v1/experiences/{experienceId}/bookmark` - 收藏/取消收藏学习心得 ✅ Implemented
+- `GET /api/v1/experiences/staff/pending` - 获取待审核的学习心得列表 (工作人员) ✅ Implemented
+- `POST /api/v1/experiences/{experienceId}/submit` - 用户提交心得进行审核 ✅ Implemented
+- `POST /api/v1/experiences/staff/{experienceId}/review` - 工作人员审核心得 (通过/拒绝) ✅ Implemented
+- `GET /api/v1/experiences/{experienceId}/reviews` - 获取心得的审核历史记录 ✅ Implemented
 
-- **5.10 管理后台 (Admin Panel)**
+### Client - MedicalCategories
 
-  - `GET /api/admin/dashboard/stats` - 获取仪表盘统计数据
-  - `GET /api/admin/audit-logs` - 查询审计日志
-  - `GET /api/admin/users` - 获取用户列表
-  - `POST /api/admin/staff` - 创建工作人员账户
-  - `PUT /api/admin/users/{userType}/{userId}/status` - 更新用户状态
-  - `GET /api/admin/system-config` - 获取系统配置
-  - `PUT /api/admin/system-config` - 更新系统配置
+- `GET /api/v1/categories/` - 获取医疗知识类别列表 ✅ Implemented
+- `POST /api/v1/categories/` - 创建新的医疗知识类别 (工作人员) ✅ Implemented
+- `GET /api/v1/categories/{categoryId}` - 获取特定医疗类别的详情 (包含子类别) ✅ Implemented
+- `PUT /api/v1/categories/{categoryId}` - 更新医疗知识类别 (工作人员) ✅ Implemented
+- `DELETE /api/v1/categories/{categoryId}` - 删除医疗知识类别 (工作人员) ✅ Implemented
+- `GET /api/v1/categories/{categoryId}/articles` - 获取特定医疗类别下的知识文章列表 (分页) ✅ Implemented
+
+### Client - Notifications
+
+- `GET /api/v1/notifications/` - 获取当前用户的通知列表 (分页) ✅ Implemented
+- `GET /api/v1/notifications/summary` - 获取当前用户的通知汇总信息 (未读数量和最新几条) ✅ Implemented
+- `PUT /api/v1/notifications/read-all` - 标记当前用户的所有未读通知为已读 ✅ Implemented
+- `GET /api/v1/notifications/{notificationId}` - 获取指定通知的详情，并自动标记为已读 ✅ Implemented
+- `DELETE /api/v1/notifications/{notificationId}` - 删除指定通知 ✅ Implemented
+- `PUT /api/v1/notifications/{notificationId}/read` - 标记指定通知为已读 ✅ Implemented
+
+### Client - Staff Profile
+
+- `GET /api/v1/staff/profile` - 获取当前登录工作人员的个人资料 ✅ Implemented
+- `PUT /api/v1/staff/profile` - 更新当前登录工作人员的个人资料 ✅ Implemented
+- `PUT /api/v1/staff/password` - 更新当前登录工作人员的密码 ✅ Implemented
+
+### Client - Tags
+
+- `GET /api/v1/tags/` - 获取所有标签列表 ✅ Implemented
+- `POST /api/v1/tags/` - 创建新标签 (需要工作人员权限) ✅ Implemented
+- `GET /api/v1/tags/{tagId}` - 获取特定标签的详情及其关联的文章 ✅ Implemented
+- `PUT /api/v1/tags/{tagId}` - 更新标签名称 (需要工作人员权限) ✅ Implemented
+- `GET /api/v1/tags/stats/usage` - 获取标签使用统计 (需要工作人员权限) ✅ Implemented
+
+### Client - Users
+
+- `GET /api/v1/users/profile` - 获取当前登录用户的个人资料 ✅ Implemented
+- `PUT /api/v1/users/profile` - 更新当前登录用户的个人资料 ✅ Implemented
+- `PUT /api/v1/users/password` - 更新当前登录用户的密码 ✅ Implemented
+- `PUT /api/v1/users/notification-preferences` - 更新当前登录用户的通知设置 ✅ Implemented
+- `DELETE /api/v1/users` - 注销当前登录用户的账户 (软删除) ✅ Implemented
+- `GET /api/v1/users/experiences` - 获取当前登录用户的所有学习心得列表 ✅ Implemented
 
 **6. 非功能性需求**
 

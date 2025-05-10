@@ -711,3 +711,323 @@ exports.getPendingExperiences = async (req, res) => {
     res.status(500).json({ message: "获取待审核心得列表时发生错误!", error: error.message });
   }
 }; 
+
+/**
+ * 修改自己的心得评论
+ * PUT /api/v1/experiences/comments/:commentId
+ */
+exports.updateExperienceComment = async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const { commentText } = req.body;
+    const userId = req.userId;
+    const userType = req.userRole === 'staff' ? 'Staff' : 'User';
+
+    if (!commentText || commentText.trim() === '') {
+      return res.status(400).json({ message: "评论内容不能为空!" });
+    }
+
+    const comment = await db.experienceComments.findByPk(commentId);
+
+    if (!comment) {
+      return res.status(404).json({ message: "评论不存在!" });
+    }
+
+    // 检查用户是否有权修改此评论 (必须是评论的作者)
+    if (comment.userID !== userId || comment.userType !== userType) {
+      return res.status(403).json({ message: "您没有权限修改此评论!" });
+    }
+    
+    // 检查评论状态，例如是否允许修改非草稿状态的评论
+    // if (comment.status !== 'Visible') { // 或者根据您的业务逻辑调整
+    //   return res.status(400).json({ message: "此状态的评论不能修改!" });
+    // }
+
+    comment.commentText = commentText;
+    // 如果您的 ExperienceComment 模型有 updatedAt 字段且 timestamps: true (或者您手动管理它)
+    // comment.updatedAt = new Date(); 
+    await comment.save();
+
+    // 查询更新后的评论，可能需要包含用户信息等
+    const updatedComment = await db.experienceComments.findByPk(commentId, {
+      include: [
+        {
+          model: userType === 'User' ? db.users : db.staff,
+          as: userType.toLowerCase(), // 'user' or 'staff' based on userType
+          attributes: [userType === 'User' ? 'userID' : 'staffID', 'username', 'avatarURL']
+        }
+      ]
+    });
+
+    res.status(200).json({ message: "评论修改成功!", comment: updatedComment });
+
+  } catch (error) {
+    res.status(500).json({ message: "修改心得评论时发生错误!", error: error.message });
+  }
+};
+
+/**
+ * 举报学习心得
+ * POST /api/v1/experiences/:experienceId/report
+ */
+exports.reportExperience = async (req, res) => {
+  try {
+    const { experienceId } = req.params;
+    const { reason, details } = req.body; // 举报原因和详细说明
+    const reporterUserId = req.userId;
+    const reporterUserType = req.userRole === 'staff' ? 'Staff' : 'User';
+
+    if (!reason) {
+      return res.status(400).json({ message: "举报原因不能为空!" });
+    }
+
+    const experience = await db.learningExperiences.findByPk(experienceId);
+    if (!experience) {
+      return res.status(404).json({ message: "要举报的心得不存在!" });
+    }
+
+    // TODO: 实现举报存储逻辑，例如存到新的 Report表 或通过通知系统通知管理员
+    // 例如，创建一个通知给所有管理员
+    const admins = await db.staff.findAll({ where: { isAdmin: true, isActive: true } });
+    const notificationPromises = admins.map(admin => {
+      return db.notifications.create({
+        recipientUserID: admin.staffID,
+        recipientUserType: 'Staff',
+        type: 'EXPERIENCE_REPORTED',
+        content: `学习心得 (ID: ${experienceId}, 标题: "${experience.title}") 被用户 (ID: ${reporterUserId}, 类型: ${reporterUserType}) 举报。原因: ${reason}. 详情: ${details || '无'}`,
+        relatedEntityType: 'LearningExperience',
+        relatedEntityID: experienceId
+      });
+    });
+    await Promise.all(notificationPromises);
+
+    res.status(200).json({ message: "举报已提交,感谢您的反馈!" });
+
+  } catch (error) {
+    res.status(500).json({ message: "举报学习心得时发生错误!", error: error.message });
+  }
+};
+
+/**
+ * 举报心得评论
+ * POST /api/v1/experiences/comments/:commentId/report
+ */
+exports.reportExperienceComment = async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const { reason, details } = req.body;
+    const reporterUserId = req.userId;
+    const reporterUserType = req.userRole === 'staff' ? 'Staff' : 'User';
+
+    if (!reason) {
+      return res.status(400).json({ message: "举报原因不能为空!" });
+    }
+
+    const comment = await db.experienceComments.findByPk(commentId, {
+      include: [{ model: db.learningExperiences, as: 'experience' }] // 获取关联的心得信息
+    });
+    if (!comment) {
+      return res.status(404).json({ message: "要举报的评论不存在!" });
+    }
+
+    // TODO: 实现举报存储逻辑
+    const admins = await db.staff.findAll({ where: { isAdmin: true, isActive: true } });
+    const notificationPromises = admins.map(admin => {
+      return db.notifications.create({
+        recipientUserID: admin.staffID,
+        recipientUserType: 'Staff',
+        type: 'EXPERIENCE_COMMENT_REPORTED',
+        content: `心得评论 (ID: ${commentId}) 在心得 (ID: ${comment.experienceID}, 标题: "${comment.experience ? comment.experience.title : 'N/A'}") 下被用户 (ID: ${reporterUserId}, 类型: ${reporterUserType}) 举报。原因: ${reason}. 详情: ${details || '无'}`,
+        relatedEntityType: 'ExperienceComment',
+        relatedEntityID: commentId
+      });
+    });
+    await Promise.all(notificationPromises);
+
+    res.status(200).json({ message: "评论举报已提交,感谢您的反馈!" });
+
+  } catch (error) {
+    res.status(500).json({ message: "举报心得评论时发生错误!", error: error.message });
+  }
+};
+
+/**
+ * 用户提交心得进行审核
+ */
+exports.submitForReview = async (req, res) => {
+  try {
+    const { experienceId } = req.params;
+    
+    // 查找心得
+    const experience = await LearningExperience.findByPk(experienceId);
+    
+    if (!experience) {
+      return res.status(404).json({ message: "心得不存在！" });
+    }
+    
+    // 权限检查：只有作者可以提交审核
+    if (req.userId !== experience.userID) {
+      return res.status(403).json({ message: "您没有权限提交此心得审核！" });
+    }
+    
+    // 状态检查：只有草稿状态可以提交审核
+    if (experience.status !== 'Draft') {
+      return res.status(400).json({ 
+        message: `心得当前状态为"${experience.status}"，只有草稿状态的心得可以提交审核！` 
+      });
+    }
+    
+    // 更新状态为待审核
+    await experience.update({ status: 'PendingReview' });
+    
+    // 获取更新后的心得
+    const updatedExperience = await LearningExperience.findByPk(experienceId, {
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['userID', 'username', 'avatarURL']
+        },
+        {
+          model: KnowledgeArticle,
+          as: 'relatedArticle',
+          attributes: ['articleID', 'title'],
+          required: false
+        }
+      ]
+    });
+    
+    res.status(200).json({
+      message: "心得已成功提交审核！",
+      experience: updatedExperience
+    });
+  } catch (error) {
+    res.status(500).json({ message: "提交心得审核时发生错误！", error: error.message });
+  }
+};
+
+/**
+ * 工作人员审核心得
+ */
+exports.reviewExperience = async (req, res) => {
+  try {
+    const { experienceId } = req.params;
+    const { status, reviewComments } = req.body;
+    
+    // 验证请求
+    if (!status || !['Approved', 'Rejected'].includes(status)) {
+      return res.status(400).json({ message: "无效的审核结果！审核结果必须为 'Approved' 或 'Rejected'" });
+    }
+    
+    // 查找心得
+    const experience = await LearningExperience.findByPk(experienceId);
+    
+    if (!experience) {
+      return res.status(404).json({ message: "心得不存在！" });
+    }
+    
+    // 状态检查：只有待审核状态可以被审核
+    if (experience.status !== 'PendingReview') {
+      return res.status(400).json({ 
+        message: `心得当前状态为"${experience.status}"，只有待审核状态的心得可以进行审核！` 
+      });
+    }
+    
+    // 创建审核记录
+    const review = await ExperienceReview.create({
+      experienceID: experienceId,
+      reviewerStaffID: req.userId,
+      reviewResult: status,
+      comments: reviewComments || null
+    });
+    
+    // 更新心得状态
+    await experience.update({ status });
+    
+    // 发送通知给作者
+    await Notification.create({
+      recipientUserID: experience.userID,
+      recipientUserType: 'User',
+      type: `EXPERIENCE_${status.toUpperCase()}`,
+      content: `您的心得"${experience.title}"已${status === 'Approved' ? '通过审核' : '被拒绝'}${reviewComments ? '，审核意见：' + reviewComments : ''}`,
+      relatedEntityType: 'LearningExperience',
+      relatedEntityID: experienceId
+    });
+    
+    // 获取审核记录详情（包括审核人信息）
+    const reviewWithDetails = await ExperienceReview.findByPk(review.reviewID, {
+      include: [
+        {
+          model: Staff,
+          as: 'reviewer',
+          attributes: ['staffID', 'username']
+        }
+      ]
+    });
+    
+    // 获取更新后的心得
+    const updatedExperience = await LearningExperience.findByPk(experienceId, {
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['userID', 'username', 'avatarURL']
+        }
+      ]
+    });
+    
+    res.status(200).json({
+      message: `心得审核${status === 'Approved' ? '通过' : '拒绝'}成功！`,
+      experience: updatedExperience,
+      review: reviewWithDetails
+    });
+  } catch (error) {
+    res.status(500).json({ message: "审核心得时发生错误！", error: error.message });
+  }
+};
+
+/**
+ * 获取心得审核历史
+ */
+exports.getReviewHistory = async (req, res) => {
+  try {
+    const { experienceId } = req.params;
+    
+    // 查找心得
+    const experience = await LearningExperience.findByPk(experienceId);
+    
+    if (!experience) {
+      return res.status(404).json({ message: "心得不存在！" });
+    }
+    
+    // 权限检查：只有作者或工作人员可以查看审核历史
+    const isStaff = req.userRole === 'staff';
+    const isOwner = req.userId === experience.userID;
+    
+    if (!isStaff && !isOwner) {
+      return res.status(403).json({ message: "您没有权限查看此心得的审核历史！" });
+    }
+    
+    // 获取审核历史记录
+    const reviews = await ExperienceReview.findAll({
+      where: { experienceID: experienceId },
+      include: [
+        {
+          model: Staff,
+          as: 'reviewer',
+          attributes: ['staffID', 'username']
+        }
+      ],
+      order: [['reviewTime', 'DESC']]
+    });
+    
+    res.status(200).json({
+      experienceId,
+      title: experience.title,
+      currentStatus: experience.status,
+      reviews
+    });
+  } catch (error) {
+    res.status(500).json({ message: "获取审核历史时发生错误！", error: error.message });
+  }
+}; 

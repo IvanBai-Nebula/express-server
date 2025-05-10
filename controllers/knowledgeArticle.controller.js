@@ -744,4 +744,167 @@ async function handleArticleTags(articleId, tagNames) {
       tagID: tag.tagID
     });
   }
-} 
+}
+
+/**
+ * 更新文章状态
+ */
+exports.updateArticleStatus = async (req, res) => {
+  try {
+    const { articleId } = req.params;
+    const { status } = req.body;
+    
+    const validStatuses = ['Draft', 'PendingReview', 'Published', 'Archived', 'Rejected'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: '无效的文章状态值!' });
+    }
+    
+    const article = await db.knowledgeArticles.findByPk(articleId);
+    if (!article) {
+      return res.status(404).json({ message: '文章不存在!' });
+    }
+    
+    const oldStatus = article.status;
+    article.status = status;
+    if (status === 'Published' && oldStatus !== 'Published') {
+      article.publishedAt = new Date();
+    } else if (status !== 'Published' && oldStatus === 'Published') {
+      // article.publishedAt = null; // 根据需求决定取消发布时是否置空发布时间
+    }
+    
+    const updatedArticle = await article.save();
+    
+    if (req.userRole === 'staff' && req.userId) { 
+      await db.auditLogs.create({
+        adminStaffID: req.userId,
+        actionType: 'UPDATE_ARTICLE_STATUS',
+        targetEntityType: 'KnowledgeArticle',
+        targetEntityID: articleId,
+        oldValue: { status: oldStatus },
+        newValue: { status: updatedArticle.status },
+        ipAddress: req.ip
+      });
+    }
+    
+    res.status(200).json(updatedArticle);
+  } catch (error) {
+    // console.error('更新文章状态出错:', error); // 控制台日志可以保留英文或按需修改
+    res.status(500).json({ message: '更新文章状态时发生错误!', error: error.message });
+  }
+};
+
+/**
+ * 为文章添加标签
+ */
+exports.addTagsToArticle = async (req, res) => {
+  try {
+    const { articleId } = req.params;
+    const { tagIds } = req.body;
+    
+    if (!Array.isArray(tagIds) || tagIds.length === 0) {
+      return res.status(400).json({ message: '标签ID列表不能为空!' });
+    }
+
+    const article = await db.knowledgeArticles.findByPk(articleId);
+    if (!article) {
+      return res.status(404).json({ message: '文章不存在!' });
+    }
+    
+    const existingTags = await db.tags.findAll({ where: { tagID: tagIds } });
+    if (existingTags.length !== tagIds.length) {
+      const foundDbTagIds = existingTags.map(t => t.tagID);
+      const notFoundIds = tagIds.filter(id => !foundDbTagIds.includes(id));
+      return res.status(400).json({ message: `一个或多个提供的标签ID不存在: ${notFoundIds.join(', ')}` });
+    }
+    
+    await article.addTags(existingTags);
+    
+    const updatedArticleWithTags = await db.knowledgeArticles.findByPk(articleId, {
+      include: [{ model: db.tags, as: 'tags', through: { attributes: [] } }]
+    });
+
+    res.status(200).json({ 
+      message: '标签添加成功!',
+      article: updatedArticleWithTags
+    });
+  } catch (error) {
+    // console.error('添加文章标签出错:', error);
+    res.status(500).json({ message: '为文章添加标签时发生错误!', error: error.message });
+  }
+};
+
+/**
+ * 从文章移除标签
+ */
+exports.removeTagFromArticle = async (req, res) => {
+  try {
+    const { articleId, tagId } = req.params;
+    
+    const article = await db.knowledgeArticles.findByPk(articleId);
+    if (!article) {
+      return res.status(404).json({ message: '文章不存在!' });
+    }
+
+    const tag = await db.tags.findByPk(tagId);
+    if (!tag) {
+      return res.status(404).json({ message: '标签不存在!' });
+    }
+    
+    const result = await article.removeTag(tag);
+    
+    if (!result) {
+      return res.status(404).json({ message: '文章与该标签无关联或移除失败!' });
+    }
+    
+    res.status(200).json({ message: '标签移除成功!' });
+  } catch (error) {
+    // console.error('移除文章标签出错:', error);
+    res.status(500).json({ message: '从文章移除标签时发生错误!', error: error.message });
+  }
+};
+
+/**
+ * 创建新的文章版本
+ */
+exports.createNewArticleVersion = async (req, res) => {
+  try {
+    const { articleId } = req.params;
+    const staffId = req.userRole === 'staff' ? req.userId : null;
+
+    const article = await db.knowledgeArticles.findByPk(articleId);
+    if (!article) {
+      return res.status(404).json({ message: '文章不存在!' });
+    }
+
+    if (!staffId) {
+        return res.status(403).json({ message: '仅限工作人员操作!' });
+    }
+    
+    const newVersionNumber = article.version + 1;
+    
+    const newVersion = await db.articleVersions.create({
+      articleID: article.articleID,
+      versionNumber: newVersionNumber,
+      title: article.title,
+      summary: article.summary,
+      richTextContent: article.richTextContent,
+      videoURL: article.videoURL,
+      authorStaffID: staffId,
+    });
+    
+    article.version = newVersionNumber;
+    await article.save();
+    
+    res.status(201).json({
+      message: '新版本创建成功!',
+      version: newVersion
+    });
+  } catch (error) {
+    // console.error('创建文章新版本出错:', error);
+    res.status(500).json({ message: '创建文章新版本时发生错误!', error: error.message });
+  }
+};
+
+/**
+ * 取消收藏文章
+ */

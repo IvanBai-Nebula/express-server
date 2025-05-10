@@ -240,6 +240,26 @@ const swaggerOptions = {
             isBookmarked: { type: 'boolean', description: '当前心得是否已收藏' }
           }
         },
+        ExperienceReviewResponse: {
+          type: 'object',
+          properties: {
+            message: { type: 'string', example: '心得审核通过成功！' },
+            experience: { '$ref': '#/components/schemas/LearningExperienceBrief' },
+            review: { '$ref': '#/components/schemas/ExperienceReviewInfo' }
+          }
+        },
+        ExperienceReviewHistoryResponse: {
+          type: 'object',
+          properties: {
+            experienceId: { type: 'string', format: 'uuid' },
+            title: { type: 'string', example: '我的学习心得' },
+            currentStatus: { type: 'string', enum: ['Draft', 'PendingReview', 'Approved', 'Rejected'] },
+            reviews: {
+              type: 'array',
+              items: { '$ref': '#/components/schemas/ExperienceReviewInfo' }
+            }
+          }
+        },
         // Auth Schemas Start
         UserRegistrationPayload: {
           type: 'object',
@@ -1094,6 +1114,28 @@ const swaggerOptions = {
             targetTag: { '$ref': '#/components/schemas/Tag' } // Or a more detailed tag object if appropriate
           }
         },
+        UpdateExperienceCommentPayload: {
+          type: 'object',
+          required: ['commentText'],
+          properties: {
+            commentText: { type: 'string', description: '新的评论内容', example: '这是更新后的评论。' }
+          }
+        },
+        UpdateExperienceCommentResponse: {
+          type: 'object',
+          properties: {
+            message: { type: 'string', example: '评论修改成功!' },
+            comment: { '$ref': '#/components/schemas/ExperienceComment' }
+          }
+        },
+        ReportPayload: {
+          type: 'object',
+          required: ['reason'],
+          properties: {
+            reason: { type: 'string', description: '举报原因', example: '内容不当' },
+            details: { type: 'string', nullable: true, description: '详细说明 (可选)', example: '评论中包含攻击性言论。' }
+          }
+        },
         // Learning Experience Schemas End
 
         // Knowledge Article Schemas Start
@@ -1269,6 +1311,13 @@ const swaggerOptions = {
             tags: { type: 'array', items: { type: 'string' }, nullable: true, description: '标签名称或ID数组 (会替换现有标签)' },
             status: { type: 'string', enum: ['Draft', 'PendingReview', 'Published', 'Archived', 'Rejected'], nullable: true },
             parentArticleID: { type: 'string', format: 'uuid', nullable: true }
+          }
+        },
+        UnbookmarkArticleResponse: {
+          type: 'object',
+          properties: {
+            message: { type: 'string', example: '取消收藏成功!' },
+            isBookmarked: { type: 'boolean', example: false, description: '当前收藏状态' }
           }
         },
         // Knowledge Article Schemas End

@@ -360,8 +360,123 @@ module.exports = function(app) {
    */
   router.post("/:experienceId/bookmark", controller.toggleBookmark);
   
+  // 用户提交心得审核
+  /**
+   * @swagger
+   * /api/v1/experiences/{experienceId}/submit:
+   *   post:
+   *     summary: 用户提交心得进行审核
+   *     tags: [Client - LearningExperiences]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: experienceId
+   *         required: true
+   *         schema: { type: string, format: uuid }
+   *         description: 心得ID
+   *     responses:
+   *       200:
+   *         description: 心得已成功提交审核
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 message: { type: string }
+   *                 experience: { $ref: '#/components/schemas/LearningExperienceBrief' }
+   *       400:
+   *         description: 请求错误 (如心得状态不是草稿)
+   *       403:
+   *         description: 无权限提交审核 (不是心得作者)
+   *       404:
+   *         description: 心得不存在
+   *       500:
+   *         description: 服务器错误
+   */
+  router.post("/:experienceId/submit", controller.submitForReview);
+  
+  // 获取心得审核历史
+  /**
+   * @swagger
+   * /api/v1/experiences/{experienceId}/reviews:
+   *   get:
+   *     summary: 获取心得的审核历史记录
+   *     tags: [Client - LearningExperiences]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: experienceId
+   *         required: true
+   *         schema: { type: string, format: uuid }
+   *         description: 心得ID
+   *     responses:
+   *       200:
+   *         description: 成功获取审核历史
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ExperienceReviewHistoryResponse'
+   *       403:
+   *         description: 无权限查看 (非心得作者或非工作人员)
+   *       404:
+   *         description: 心得不存在
+   *       500:
+   *         description: 服务器错误
+   */
+  router.get("/:experienceId/reviews", controller.getReviewHistory);
+  
   // 工作人员专用路由
   router.use("/staff", authMiddleware.isStaff);
+  
+  // 工作人员审核心得
+  /**
+   * @swagger
+   * /api/v1/experiences/staff/{experienceId}/review:
+   *   post:
+   *     summary: 工作人员审核心得
+   *     tags: [Client - LearningExperiences]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: experienceId
+   *         required: true
+   *         schema: { type: string, format: uuid }
+   *         description: 心得ID
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [status]
+   *             properties:
+   *               status:
+   *                 type: string
+   *                 enum: [Approved, Rejected]
+   *                 description: 审核结果
+   *               reviewComments:
+   *                 type: string
+   *                 description: 审核意见 (可选)
+   *     responses:
+   *       200:
+   *         description: 审核成功
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ExperienceReviewResponse'
+   *       400:
+   *         description: 请求错误 (如心得状态不是待审核)
+   *       403:
+   *         description: 无权限审核 (非工作人员)
+   *       404:
+   *         description: 心得不存在
+   *       500:
+   *         description: 服务器错误
+   */
+  router.post("/staff/:experienceId/review", controller.reviewExperience);
   
   // 获取待审核的心得列表
   /**
@@ -399,6 +514,220 @@ module.exports = function(app) {
    */
   router.get("/staff/pending", controller.getPendingExperiences);
   
+  // 更新心得评论
+  /**
+   * @swagger
+   * /api/v1/experiences/{experienceId}/comments/{commentId}:
+   *   put:
+   *     summary: 修改学习心得评论
+   *     tags: [Client - LearningExperiences]
+   *     description: 用户修改自己发布的学习心得评论。
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: experienceId
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: 学习心得的ID。
+   *       - in: path
+   *         name: commentId
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: 要修改的评论ID。
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/UpdateExperienceCommentPayload'
+   *     responses:
+   *       200:
+   *         description: 评论修改成功
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/UpdateExperienceCommentResponse'
+   *       400:
+   *         description: 无效的输入或评论不存在
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/GenericErrorMessage'
+   *       401:
+   *         description: 未授权，需要登录
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/GenericErrorMessage'
+   *       403:
+   *         description: 禁止访问 (例如，尝试修改他人评论)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/GenericErrorMessage'
+   *       404:
+   *         description: 心得或评论未找到
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/GenericErrorMessage'
+   *       500:
+   *         description: 服务器内部错误
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/GenericErrorMessage'
+   */
+  router.put(
+    "/:experienceId/comments/:commentId", 
+    authMiddleware.verifyToken,
+    controller.updateExperienceComment
+  );
+
+  // 举报心得
+  /**
+   * @swagger
+   * /api/v1/experiences/{experienceId}/report:
+   *   post:
+   *     summary: 举报学习心得
+   *     tags: [Client - LearningExperiences]
+   *     description: 任何已登录用户可以举报一篇学习心得。
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: experienceId
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: 被举报学习心得的ID。
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/ReportPayload'
+   *     responses:
+   *       200:
+   *         description: 举报已提交
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 message:
+   *                   type: string
+   *                   example: '学习心得举报成功，我们会尽快处理。'
+   *       400:
+   *         description: 无效的输入或举报原因缺失
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/GenericErrorMessage'
+   *       401:
+   *         description: 未授权，需要登录
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/GenericErrorMessage'
+   *       404:
+   *         description: 学习心得未找到
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/GenericErrorMessage'
+   *       500:
+   *         description: 服务器内部错误
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/GenericErrorMessage'
+   */
+  router.post(
+    "/:experienceId/report", 
+    authMiddleware.verifyToken,
+    controller.reportExperience
+  );
+
+  // 举报评论
+  /**
+   * @swagger
+   * /api/v1/experiences/{experienceId}/comments/{commentId}/report:
+   *   post:
+   *     summary: 举报学习心得的评论
+   *     tags: [Client - LearningExperiences]
+   *     description: 任何已登录用户可以举报学习心得下的某条评论。
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: experienceId
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: 学习心得的ID。
+   *       - in: path
+   *         name: commentId
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: 被举报评论的ID。
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/ReportPayload'
+   *     responses:
+   *       200:
+   *         description: 评论举报已提交
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 message:
+   *                   type: string
+   *                   example: '评论举报成功，我们会尽快处理。'
+   *       400:
+   *         description: 无效的输入或举报原因缺失
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/GenericErrorMessage'
+   *       401:
+   *         description: 未授权，需要登录
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/GenericErrorMessage'
+   *       404:
+   *         description: 学习心得或评论未找到
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/GenericErrorMessage'
+   *       500:
+   *         description: 服务器内部错误
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/GenericErrorMessage'
+   */
+  router.post(
+    "/:experienceId/comments/:commentId/report", 
+    authMiddleware.verifyToken,
+    controller.reportExperienceComment
+  );
+
   // 注册路由
   app.use("/api/v1/experiences", router);
 }; 

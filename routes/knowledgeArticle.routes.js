@@ -121,42 +121,8 @@ module.exports = function(app) {
    */
   router.post("/:articleId/bookmark", controller.toggleBookmark);
   
-  // 提交文章反馈
-  /**
-   * @swagger
-   * /api/v1/articles/{articleId}/feedback:
-   *   post:
-   *     summary: 提交对知识文章的反馈 (评分/评论)
-   *     tags: [Client - KnowledgeArticles]
-   *     security:
-   *       - bearerAuth: []
-   *     parameters:
-   *       - in: path
-   *         name: articleId
-   *         required: true
-   *         schema: { type: string, format: uuid }
-   *         description: 文章ID
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema: { $ref: '#/components/schemas/ArticleFeedbackPayload' }
-   *     responses:
-   *       201:
-   *         description: 反馈提交成功
-   *         content:
-   *           application/json:
-   *             schema: { $ref: '#/components/schemas/ArticleFeedback' }
-   *       400:
-   *         description: 请求参数错误 (如评分和评论都为空)
-   *       404:
-   *         description: 文章不存在
-   *       500:
-   *         description: 服务器错误
-   */
-  router.post("/:articleId/feedback", controller.submitFeedback);
   
-  // 获取文章反馈列表
+  // 提交文章反馈
   /**
    * @swagger
    * /api/v1/articles/{articleId}/feedback:
@@ -195,6 +161,53 @@ module.exports = function(app) {
    *         description: 服务器错误
    */
   router.get("/:articleId/feedback", controller.getArticleFeedbacks);
+  
+  /**
+   * @swagger
+   * /api/v1/articles/{articleId}/feedback:
+   *   post:
+   *     summary: 提交对知识文章的反馈 (评分/评论)
+   *     tags: [Client - KnowledgeArticles]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: articleId
+   *         required: true
+   *         schema: { type: string, format: uuid }
+   *         description: 文章ID
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema: { $ref: '#/components/schemas/ArticleFeedbackPayload' }
+   *     responses:
+   *       200:
+   *         description: 反馈已更新
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 message: { type: string }
+   *                 feedback: { $ref: '#/components/schemas/ArticleFeedback' }
+   *       201:
+   *         description: 反馈提交成功
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 message: { type: string }
+   *                 feedback: { $ref: '#/components/schemas/ArticleFeedback' }
+   *       400:
+   *         description: 请求参数错误
+   *       404:
+   *         description: 文章不存在
+   *       500:
+   *         description: 服务器错误
+   */
+  router.post("/:articleId/feedback", controller.submitFeedback);
   
   // 需要工作人员身份的路由
   router.use(authMiddleware.isStaff);
@@ -375,6 +388,167 @@ module.exports = function(app) {
    *         description: 服务器错误
    */
   router.get("/:articleId/versions/:versionId", controller.getArticleVersion);
+  
+  // PUT /api/v1/articles/{articleId}/status - 更新文章状态 (工作人员)
+  /**
+   * @swagger
+   * /api/v1/articles/{articleId}/status:
+   *   put:
+   *     summary: 更新文章状态 (工作人员)
+   *     tags: [Client - KnowledgeArticles]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: articleId
+   *         required: true
+   *         schema: { type: string, format: uuid }
+   *         description: 文章ID
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [status]
+   *             properties:
+   *               status:
+   *                 type: string
+   *                 enum: [Draft, PendingReview, Published, Archived, Rejected]
+   *                 description: 新的文章状态
+   *     responses:
+   *       200:
+   *         description: 文章状态更新成功
+   *         content:
+   *           application/json:
+   *             schema: { $ref: '#/components/schemas/KnowledgeArticle' } 
+   *       400:
+   *         description: 无效的状态值
+   *       403:
+   *         description: 无权限 (非工作人员)
+   *       404:
+   *         description: 文章不存在
+   *       500:
+   *         description: 服务器错误
+   */
+  router.put("/:articleId/status", controller.updateArticleStatus);
+
+  // POST /api/v1/articles/{articleId}/tags - 为文章添加标签 (工作人员)
+  /**
+   * @swagger
+   * /api/v1/articles/{articleId}/tags:
+   *   post:
+   *     summary: 为文章添加标签 (工作人员)
+   *     tags: [Client - KnowledgeArticles]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: articleId
+   *         required: true
+   *         schema: { type: string, format: uuid }
+   *         description: 文章ID
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [tagIds]
+   *             properties:
+   *               tagIds:
+   *                 type: array
+   *                 items:
+   *                   type: string
+   *                   format: uuid
+   *                 description: 标签ID数组
+   *     responses:
+   *       200:
+   *         description: 标签添加成功
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 message: { type: string }
+   *                 article: { $ref: '#/components/schemas/KnowledgeArticleDetailed' } 
+   *       400:
+   *         description: 标签ID列表不能为空或标签不存在
+   *       403:
+   *         description: 无权限 (非工作人员)
+   *       404:
+   *         description: 文章不存在
+   *       500:
+   *         description: 服务器错误
+   */
+  router.post("/:articleId/tags", controller.addTagsToArticle);
+
+  // DELETE /api/v1/articles/{articleId}/tags/{tagId} - 从文章移除标签 (工作人员)
+  /**
+   * @swagger
+   * /api/v1/articles/{articleId}/tags/{tagId}:
+   *   delete:
+   *     summary: 从文章移除标签 (工作人员)
+   *     tags: [Client - KnowledgeArticles]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: articleId
+   *         required: true
+   *         schema: { type: string, format: uuid }
+   *         description: 文章ID
+   *       - in: path
+   *         name: tagId
+   *         required: true
+   *         schema: { type: string, format: uuid }
+   *         description: 标签ID
+   *     responses:
+   *       200:
+   *         description: 标签移除成功
+   *       403:
+   *         description: 无权限 (非工作人员)
+   *       404:
+   *         description: 文章或标签不存在，或文章没有此标签
+   *       500:
+   *         description: 服务器错误
+   */
+  router.delete("/:articleId/tags/:tagId", controller.removeTagFromArticle);
+
+  // POST /api/v1/articles/{articleId}/versions - 创建新的文章版本 (工作人员)
+  /**
+   * @swagger
+   * /api/v1/articles/{articleId}/versions:
+   *   post:
+   *     summary: 创建新的文章版本 (工作人员)
+   *     description: 基于文章当前内容创建一个新的版本记录，并增加主文章的版本号。
+   *     tags: [Client - KnowledgeArticles]
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: articleId
+   *         required: true
+   *         schema: { type: string, format: uuid }
+   *         description: 文章ID
+   *     responses:
+   *       201:
+   *         description: 新版本创建成功
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 message: { type: string }
+   *                 version: { $ref: '#/components/schemas/ArticleVersion' } 
+   *       403:
+   *         description: 无权限 (非工作人员)
+   *       404:
+   *         description: 文章不存在
+   *       500:
+   *         description: 服务器错误
+   */
+  router.post("/:articleId/versions", controller.createNewArticleVersion);
   
   // 注册路由
   app.use("/api/v1/articles", router);
