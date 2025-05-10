@@ -206,7 +206,7 @@ module.exports = function(app) {
    *               $ref: '#/components/schemas/GenericErrorMessage'
    */
   router.get("/stats/usage", controller.getTagStats);
-  
+
   // 注册路由
   app.use("/api/v1/tags", router);
 }; 

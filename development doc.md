@@ -298,13 +298,13 @@
 
 - **5.1 认证 (Authentication)**
 
-  - `POST /api/auth/register/User` - 用户注册
-  - `POST /api/auth/login` - 用户登录 (所有角色)
-  - `POST /api/auth/logout` - 用户登出
-  - `GET /api/auth/me` - 获取当前用户信息
-  - `POST /api/auth/verify-email` - 验证邮箱令牌
-  - `POST /api/auth/forgot-password` - 请求密码重置
-  - `POST /api/auth/reset-password` - 使用令牌重置密码
+  - `POST /api/v1/auth/register/User` - 用户注册
+  - `POST /api/v1/auth/login` - 用户登录 (所有角色)
+  - `POST /api/v1/auth/logout` - 用户登出
+  - `GET /api/v1/auth/me` - 获取当前用户信息
+  - `POST /api/v1/auth/verify-email` - 验证邮箱令牌
+  - `POST /api/v1/auth/forgot-password` - 请求密码重置
+  - `POST /api/v1/auth/reset-password` - 使用令牌重置密码
 
 - **5.2 用户 (Users - 管理员权限)**
 
@@ -316,77 +316,78 @@
 
 - **5.3 用户个人资料 (Profile - 用户自助服务)**
 
-  - `PUT /api/profile` - 更新本人资料 (密码、邮箱、头像)
-  - `DELETE /api/profile` - 删除本人用户账户
-  - `PUT /api/profile/notification-preferences` - 更新通知偏好
+  - `PUT /api/v1/profile` - 更新本人资料 (密码、邮箱、头像)
+  - `DELETE /api/v1/profile` - 删除本人用户账户
+  - `PUT /api/v1/profile/notification-preferences` - 更新通知偏好
 
 - **5.4 医疗分类 (Medical Categories - 管理员权限)**
 
-  - `POST /api/categories`
-  - `GET /api/categories`
-  - `GET /api/categories/{categoryId}`
-  - `PUT /api/categories/{categoryId}`
-  - `DELETE /api/categories/{categoryId}`
+  - `POST /api/v1/categories`
+  - `GET /api/v1/categories`
+  - `GET /api/v1/categories/{categoryId}`
+  - `PUT /api/v1/categories/{categoryId}`
+  - `DELETE /api/v1/categories/{categoryId}`
 
 - **5.5 标签 (Tags - 管理员/工作人员管理, 所有角色读取)**
 
-  - `GET /api/tags` - 获取所有标签
-  - `GET /api/tags/{tagId}` - 获取特定标签详情
-  - `POST /api/tags` - 创建新标签 (工作人员/管理员)
-  - `PUT /api/tags/{tagId}` - 更新标签 (工作人员/管理员)
-  - `DELETE /api/tags/{tagId}` - 删除标签 (仅管理员)
-  - `GET /api/tags/stats/usage` - 获取标签使用统计 (工作人员/管理员)
-  - `POST /api/tags/merge` - 合并标签 (仅管理员)
+  - `GET /api/v1/tags` - 获取所有标签
+  - `GET /api/v1/tags/{tagId}` - 获取特定标签详情
+  - `POST /api/v1/tags` - 创建新标签 (工作人员/管理员)
+  - `PUT /api/v1/tags/{tagId}` - 更新标签 (工作人员/管理员)
+  - `DELETE /api/v1/tags/{tagId}` - 删除标签 (仅管理员)
+  - `GET /api/v1/tags/stats/usage` - 获取标签使用统计 (工作人员/管理员)
+  - `POST /api/v1/tags/merge` - 合并标签 (仅管理员)
 
 - **5.6 知识文章 (Knowledge Articles)**
 
-  - `POST /api/articles` (工作人员/管理员) - 创建文章
-  - `GET /api/articles` (所有角色) - 列出文章 (含筛选、分页)
-  - `GET /api/articles/{articleId}` (所有角色) - 获取特定文章
-  - `PUT /api/articles/{articleId}` (工作人员/管理员) - 更新文章
-  - `DELETE /api/articles/{articleId}` (工作人员/管理员) - 删除文章
-  - `PUT /api/articles/{articleId}/status` (工作人员/管理员) - 更新文章状态 (例如：发布)
-  - `POST /api/articles/{articleId}/tags` (工作人员/管理员) - 为文章添加标签
-  - `DELETE /api/articles/{articleId}/tags/{tagId}` (工作人员/管理员) - 从文章移除标签
-  - `GET /api/articles/{articleId}/versions` - 获取文章历史版本
-  - `POST /api/articles/{articleId}/versions` - 创建新版本 (基于当前内容)
-  - `POST /api/articles/{articleId}/feedback` - 提交文章反馈 (评分/评论)
-  - `GET /api/articles/{articleId}/feedback` - 获取文章的反馈列表
-  - `POST /api/articles/{articleId}/bookmark` - 收藏文章
-  - `DELETE /api/articles/{articleId}/bookmark` - 取消收藏文章
+  - `POST /api/v1/articles` (工作人员/管理员) - 创建文章
+  - `GET /api/v1/articles` (所有角色) - 列出文章 (含筛选、分页)
+  - `GET /api/v1/articles/{articleId}` (所有角色) - 获取特定文章
+  - `PUT /api/v1/articles/{articleId}` (工作人员/管理员) - 更新文章
+  - `DELETE /api/v1/articles/{articleId}` (工作人员/管理员) - 删除文章
+  - `PUT /api/v1/articles/{articleId}/status` (工作人员/管理员) - 更新文章状态 (例如：发布)
+  - `POST /api/v1/articles/{articleId}/tags` (工作人员/管理员) - 为文章添加标签
+  - `DELETE /api/v1/articles/{articleId}/tags/{tagId}` (工作人员/管理员) - 从文章移除标签
+  - `GET /api/v1/articles/{articleId}/versions` - 获取文章历史版本
+  - `POST /api/v1/articles/{articleId}/versions` - 创建新版本 (基于当前内容)
+  - `GET /api/v1/articles/{articleId}/versions/{versionId}` - 获取文章特定版本详情 (工作人员)
+  - `POST /api/v1/articles/{articleId}/feedback` - 提交文章反馈 (评分/评论)
+  - `GET /api/v1/articles/{articleId}/feedback` - 获取文章的反馈列表
+  - `POST /api/v1/articles/{articleId}/bookmark` - 收藏文章
+  - `DELETE /api/v1/articles/{articleId}/bookmark` - 取消收藏文章
 
 - **5.7 学习心得 (Learning Experiences)**
 
-  - `POST /api/experiences` (用户) - 创建心得
-  - `GET /api/experiences` (所有角色, 对非所有者/非工作人员默认筛选已批准的) - 列出心得
-  - `GET /api/experiences/my` (用户) - 列出本人的心得
-  - `GET /api/experiences/{experienceId}` (所有角色, 带权限检查) - 获取特定心得
-  - `PUT /api/experiences/{experienceId}` (用户 - 仅限本人) - 更新本人的心得
-  - `DELETE /api/experiences/{experienceId}` (用户 - 本人, 或工作人员/管理员) - 删除心得
-  - `POST /api/experiences/{experienceId}/comments` - 发表心得评论
-  - `GET /api/experiences/{experienceId}/comments` - 获取心得评论列表
-  - `PUT /api/experiences/comments/{commentId}` - 修改自己的评论 (如果允许)
-  - `DELETE /api/experiences/comments/{commentId}` - 删除自己的评论或由管理员删除
-  - `POST /api/experiences/{experienceId}/upvote` - 点赞心得
-  - `POST /api/experiences/{experienceId}/report` - 举报心得
-  - `POST /api/experiences/comments/{commentId}/report` - 举报评论
-  - `POST /api/experiences/{experienceId}/bookmark` - 收藏心得
-  - `DELETE /api/experiences/{experienceId}/bookmark` - 取消收藏心得
+  - `POST /api/v1/experiences` (用户) - 创建心得
+  - `GET /api/v1/experiences` (所有角色, 对非所有者/非工作人员默认筛选已批准的) - 列出心得
+  - `GET /api/v1/experiences/my` (用户) - 列出本人的心得
+  - `GET /api/v1/experiences/{experienceId}` (所有角色, 带权限检查) - 获取特定心得
+  - `PUT /api/v1/experiences/{experienceId}` (用户 - 仅限本人) - 更新本人的心得
+  - `DELETE /api/v1/experiences/{experienceId}` (用户 - 本人, 或工作人员/管理员) - 删除心得
+  - `POST /api/v1/experiences/{experienceId}/comments` - 发表心得评论
+  - `GET /api/v1/experiences/{experienceId}/comments` - 获取心得评论列表
+  - `PUT /api/v1/experiences/comments/{commentId}` - 修改自己的评论 (如果允许)
+  - `DELETE /api/v1/experiences/comments/{commentId}` - 删除自己的评论或由管理员删除
+  - `POST /api/v1/experiences/{experienceId}/upvote` - 点赞心得
+  - `POST /api/v1/experiences/{experienceId}/report` - 举报心得
+  - `POST /api/v1/experiences/comments/{commentId}/report` - 举报评论
+  - `POST /api/v1/experiences/{experienceId}/bookmark` - 收藏心得
+  - `DELETE /api/v1/experiences/{experienceId}/bookmark` - 取消收藏心得
 
 - **5.8 心得审核 (Experience Reviews - 工作人员/管理员权限)**
 
-  - `GET /api/reviews/experiences/pending` - 列出待审核的心得
-  - `POST /api/reviews/experiences/{experienceId}` - 提交审核结果 (批准, 拒绝, 需要修改，附带评论)
-  - `GET /api/experiences/{experienceId}/reviews` - 获取某心得的审核历史
+  - `GET /api/v1/reviews/experiences/pending` - 列出待审核的心得
+  - `POST /api/v1/reviews/experiences/{experienceId}` - 提交审核结果 (批准, 拒绝, 需要修改，附带评论)
+  - `GET /api/v1/experiences/{experienceId}/reviews` - 获取某心得的审核历史
 
 - **5.9 通知 (Notifications)**
 
-  - `GET /api/notifications` - 获取当前用户的通知列表 (支持分页、未读优先)
-  - `PUT /api/notifications/{notificationId}/read` - 标记通知为已读
-  - `PUT /api/notifications/read-all` - 标记所有通知为已读
-  - `DELETE /api/notifications/{notificationId}` - 删除特定通知
-  - `GET /api/notifications/{notificationId}` - 获取通知详情 (并标记为已读)
-  - `GET /api/notifications/summary` - 获取通知汇总信息 (未读数量, 最新未读通知)
+  - `GET /api/v1/notifications` - 获取当前用户的通知列表 (支持分页、未读优先)
+  - `PUT /api/v1/notifications/{notificationId}/read` - 标记通知为已读
+  - `PUT /api/v1/notifications/read-all` - 标记所有通知为已读
+  - `DELETE /api/v1/notifications/{notificationId}` - 删除特定通知
+  - `GET /api/v1/notifications/{notificationId}` - 获取通知详情 (并标记为已读)
+  - `GET /api/v1/notifications/summary` - 获取通知汇总信息 (未读数量, 最新未读通知)
 
 - **5.10 管理后台 (Admin Panel)**
 

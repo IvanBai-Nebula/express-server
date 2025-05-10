@@ -308,10 +308,10 @@ module.exports = function(app) {
   // 获取文章版本历史
   /**
    * @swagger
-   * /api/articles/{articleId}/versions:
+   * /api/v1/articles/{articleId}/versions:
    *   get:
    *     summary: 获取知识文章的版本历史 (工作人员)
-   *     tags: [KnowledgeArticles, Staff]
+   *     tags: [Client - KnowledgeArticles]
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -344,10 +344,10 @@ module.exports = function(app) {
   // 获取特定版本的文章
   /**
    * @swagger
-   * /api/articles/{articleId}/versions/{versionId}:
+   * /api/v1/articles/{articleId}/versions/{versionId}:
    *   get:
    *     summary: 获取知识文章的特定版本详情 (工作人员)
-   *     tags: [KnowledgeArticles, Staff]
+   *     tags: [Client - KnowledgeArticles]
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -377,5 +377,5 @@ module.exports = function(app) {
   router.get("/:articleId/versions/:versionId", controller.getArticleVersion);
   
   // 注册路由
-  app.use("/api/articles", router);
+  app.use("/api/v1/articles", router);
 }; 
