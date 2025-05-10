@@ -1,7 +1,7 @@
 const controller = require("../controllers/user.controller");
 const authMiddleware = require("../middleware/auth.middleware");
 
-module.exports = function(app) {
+module.exports = function (app) {
   const router = require("express").Router();
 
   // 所有路由都需要验证令牌
@@ -165,10 +165,10 @@ module.exports = function(app) {
    *             description: 用户的通知偏好设置对象。具体结构应与 UserProfile schema 中 notificationPreferences 的定义一致。
    *             example: { "emailEnabled": true, "pushEnabled": false }
    *             # 如果 UserProfile schema 中 notificationPreferences 的 properties 已详细定义，则可直接引用：
-   *             # $ref: '#/components/schemas/UserProfile/properties/notificationPreferences' 
+   *             # $ref: '#/components/schemas/UserProfile/properties/notificationPreferences'
    *             # 或者为此创建一个独立的 schema, 例如 NotificationPreferencesPayload
    *             properties: # 示例，请根据 UserProfile schema 或实际情况调整
-   *                emailEnabled: 
+   *                emailEnabled:
    *                  type: boolean
    *                pushEnabled:
    *                  type: boolean
@@ -184,7 +184,7 @@ module.exports = function(app) {
    *                   type: string
    *                   example: "通知设置已更新!"
    *                 notificationPreferences: # 确保此结构与 UserProfile schema 中定义的一致
-   *                   type: object 
+   *                   type: object
    *                   example: { "emailEnabled": true, "pushEnabled": false }
    *                   # $ref: '#/components/schemas/UserProfile/properties/notificationPreferences' # 或者引用
    *       400:
@@ -260,7 +260,7 @@ module.exports = function(app) {
    *             schema:
    *               type: array
    *               items:
-   *                 $ref: '#/components/schemas/LearningExperience' 
+   *                 $ref: '#/components/schemas/LearningExperience'
    *       401:
    *         description: 未授权
    *       500:
@@ -271,4 +271,4 @@ module.exports = function(app) {
 
   // 注册路由
   app.use("/api/v1/users", router);
-}; 
+};

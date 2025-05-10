@@ -1,7 +1,7 @@
 const controller = require("../controllers/tag.controller");
 const authMiddleware = require("../middleware/auth.middleware");
 
-module.exports = function(app) {
+module.exports = function (app) {
   const router = require("express").Router();
 
   // 公开路由 - 获取标签列表和标签详情
@@ -21,7 +21,7 @@ module.exports = function(app) {
    *         name: sortBy
    *         schema:
    *           type: string
-   *           enum: [name, createdAt, articleCount] 
+   *           enum: [name, createdAt, articleCount]
    *           default: name
    *         description: 排序字段 (name, createdAt, articleCount - articleCount may not be directly sortable by DB without specific query adjustments)
    *       - in: query
@@ -39,7 +39,7 @@ module.exports = function(app) {
    *             schema:
    *               type: array
    *               items:
-   *                 $ref: '#/components/schemas/Tag' 
+   *                 $ref: '#/components/schemas/Tag'
    *       500:
    *         description: 服务器错误
    *         content:
@@ -84,11 +84,11 @@ module.exports = function(app) {
    *               $ref: '#/components/schemas/GenericErrorMessage'
    */
   router.get("/:tagId", controller.getTagById);
-  
+
   // 需要工作人员权限的路由
   router.use(authMiddleware.verifyToken);
   router.use(authMiddleware.isStaff);
-  
+
   // 标签管理
   /**
    * @swagger
@@ -179,7 +179,7 @@ module.exports = function(app) {
    *               $ref: '#/components/schemas/GenericErrorMessage'
    */
   router.put("/:tagId", controller.updateTag);
-  
+
   // 获取标签统计
   /**
    * @swagger
@@ -209,4 +209,4 @@ module.exports = function(app) {
 
   // 注册路由
   app.use("/api/v1/tags", router);
-}; 
+};

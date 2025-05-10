@@ -1,7 +1,7 @@
 const controller = require("../controllers/admin.controller");
 const authMiddleware = require("../middleware/auth.middleware");
 
-module.exports = function(app) {
+module.exports = function (app) {
   const router = require("express").Router();
 
   // 所有管理员路由需要管理员权限
@@ -32,7 +32,7 @@ module.exports = function(app) {
    *               $ref: '#/components/schemas/GenericErrorMessage'
    */
   router.get("/dashboard/stats", controller.getDashboardStats);
-  
+
   // 审计日志
   /**
    * @swagger
@@ -93,7 +93,7 @@ module.exports = function(app) {
    *               $ref: '#/components/schemas/GenericErrorMessage'
    */
   router.get("/audit-logs", controller.getAuditLogs);
-  
+
   // 用户管理
   /**
    * @swagger
@@ -384,7 +384,7 @@ module.exports = function(app) {
    *         content:
    *           application/json:
    *             schema: # Might return the updated user/staff object or a success message
-   *               $ref: '#/components/schemas/GenericSuccessMessage' 
+   *               $ref: '#/components/schemas/GenericSuccessMessage'
    *       400:
    *         description: 请求参数错误 (例如无效的 userType)
    *         content:
@@ -477,7 +477,7 @@ module.exports = function(app) {
    *         description: 服务器错误
    */
   router.post("/tags/merge", controller.mergeTags); // ATTENTION: Ensure controller.mergeTags is available
-  
+
   // 系统配置
   /**
    * @swagger
@@ -541,4 +541,4 @@ module.exports = function(app) {
 
   // 注册路由
   app.use("/api/admin", router);
-}; 
+};

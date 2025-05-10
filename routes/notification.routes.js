@@ -1,12 +1,12 @@
 const controller = require("../controllers/notification.controller");
 const authMiddleware = require("../middleware/auth.middleware");
 
-module.exports = function(app) {
+module.exports = function (app) {
   const router = require("express").Router();
 
   // 所有通知路由需要身份验证
   router.use(authMiddleware.verifyToken);
-  
+
   // 获取当前用户的通知列表
   /**
    * @swagger
@@ -49,7 +49,7 @@ module.exports = function(app) {
    *               $ref: '#/components/schemas/GenericErrorMessage'
    */
   router.get("/", controller.getUserNotifications);
-  
+
   // 获取通知汇总信息
   /**
    * @swagger
@@ -74,7 +74,7 @@ module.exports = function(app) {
    *               $ref: '#/components/schemas/GenericErrorMessage'
    */
   router.get("/summary", controller.getNotificationSummary);
-  
+
   // 标记所有通知为已读
   /**
    * @swagger
@@ -99,7 +99,7 @@ module.exports = function(app) {
    *               $ref: '#/components/schemas/GenericErrorMessage'
    */
   router.put("/read-all", controller.markAllAsRead);
-  
+
   // 获取通知详情并标记为已读
   /**
    * @swagger
@@ -144,7 +144,7 @@ module.exports = function(app) {
    *               $ref: '#/components/schemas/GenericErrorMessage'
    */
   router.get("/:notificationId", controller.getNotificationDetails);
-  
+
   // 标记通知为已读
   /**
    * @swagger
@@ -189,7 +189,7 @@ module.exports = function(app) {
    *               $ref: '#/components/schemas/GenericErrorMessage'
    */
   router.put("/:notificationId/read", controller.markAsRead);
-  
+
   // 删除通知
   /**
    * @swagger
@@ -237,4 +237,4 @@ module.exports = function(app) {
 
   // 注册路由
   app.use("/api/v1/notifications", router);
-}; 
+};

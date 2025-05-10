@@ -1,7 +1,7 @@
 const controller = require("../controllers/knowledgeArticle.controller");
 const authMiddleware = require("../middleware/auth.middleware");
 
-module.exports = function(app) {
+module.exports = function (app) {
   const router = require("express").Router();
 
   // 公开路由 - 获取已发布文章列表
@@ -50,7 +50,7 @@ module.exports = function(app) {
    *         description: 服务器错误
    */
   router.get("/", controller.getAllArticles);
-  
+
   // 验证令牌的路由（可选令牌，用于获取用户的收藏状态等）
   /**
    * @swagger
@@ -79,20 +79,24 @@ module.exports = function(app) {
    *       500:
    *         description: 服务器错误
    */
-  router.get("/:articleId", (req, res, next) => {
-    // 如果没有令牌，继续处理请求，但不设置用户信息
-    const token = req.headers['x-access-token'] || req.headers['authorization']?.split(' ')[1];
-    if (!token) {
-      return next();
-    }
-    
-    // 有令牌，验证令牌
-    authMiddleware.verifyToken(req, res, next);
-  }, controller.getArticleById);
-  
+  router.get(
+    "/:articleId",
+    (req, res, next) => {
+      // 如果没有令牌，继续处理请求，但不设置用户信息
+      const token = req.headers["x-access-token"] || req.headers["authorization"]?.split(" ")[1];
+      if (!token) {
+        return next();
+      }
+
+      // 有令牌，验证令牌
+      authMiddleware.verifyToken(req, res, next);
+    },
+    controller.getArticleById,
+  );
+
   // 需要验证令牌的路由
   router.use(authMiddleware.verifyToken);
-  
+
   // 收藏/取消收藏文章
   /**
    * @swagger
@@ -120,8 +124,7 @@ module.exports = function(app) {
    *         description: 服务器错误
    */
   router.post("/:articleId/bookmark", controller.toggleBookmark);
-  
-  
+
   // 提交文章反馈
   /**
    * @swagger
@@ -161,7 +164,7 @@ module.exports = function(app) {
    *         description: 服务器错误
    */
   router.get("/:articleId/feedback", controller.getArticleFeedbacks);
-  
+
   /**
    * @swagger
    * /api/v1/articles/{articleId}/feedback:
@@ -208,10 +211,10 @@ module.exports = function(app) {
    *         description: 服务器错误
    */
   router.post("/:articleId/feedback", controller.submitFeedback);
-  
+
   // 需要工作人员身份的路由
   router.use(authMiddleware.isStaff);
-  
+
   // 创建文章
   /**
    * @swagger
@@ -246,7 +249,7 @@ module.exports = function(app) {
    *         description: 服务器错误
    */
   router.post("/", controller.createArticle);
-  
+
   // 更新文章
   /**
    * @swagger
@@ -287,7 +290,7 @@ module.exports = function(app) {
    *         description: 服务器错误
    */
   router.put("/:articleId", controller.updateArticle);
-  
+
   // 删除文章
   /**
    * @swagger
@@ -317,7 +320,7 @@ module.exports = function(app) {
    *         description: 服务器错误
    */
   router.delete("/:articleId", controller.deleteArticle);
-  
+
   // 获取文章版本历史
   /**
    * @swagger
@@ -353,7 +356,7 @@ module.exports = function(app) {
    *         description: 服务器错误
    */
   router.get("/:articleId/versions", controller.getArticleVersions);
-  
+
   // 获取特定版本的文章
   /**
    * @swagger
@@ -388,7 +391,7 @@ module.exports = function(app) {
    *         description: 服务器错误
    */
   router.get("/:articleId/versions/:versionId", controller.getArticleVersion);
-  
+
   // PUT /api/v1/articles/{articleId}/status - 更新文章状态 (工作人员)
   /**
    * @swagger
@@ -421,7 +424,7 @@ module.exports = function(app) {
    *         description: 文章状态更新成功
    *         content:
    *           application/json:
-   *             schema: { $ref: '#/components/schemas/KnowledgeArticle' } 
+   *             schema: { $ref: '#/components/schemas/KnowledgeArticle' }
    *       400:
    *         description: 无效的状态值
    *       403:
@@ -471,7 +474,7 @@ module.exports = function(app) {
    *               type: object
    *               properties:
    *                 message: { type: string }
-   *                 article: { $ref: '#/components/schemas/KnowledgeArticleDetailed' } 
+   *                 article: { $ref: '#/components/schemas/KnowledgeArticleDetailed' }
    *       400:
    *         description: 标签ID列表不能为空或标签不存在
    *       403:
@@ -540,7 +543,7 @@ module.exports = function(app) {
    *               type: object
    *               properties:
    *                 message: { type: string }
-   *                 version: { $ref: '#/components/schemas/ArticleVersion' } 
+   *                 version: { $ref: '#/components/schemas/ArticleVersion' }
    *       403:
    *         description: 无权限 (非工作人员)
    *       404:
@@ -549,7 +552,7 @@ module.exports = function(app) {
    *         description: 服务器错误
    */
   router.post("/:articleId/versions", controller.createNewArticleVersion);
-  
+
   // 注册路由
   app.use("/api/v1/articles", router);
-}; 
+};

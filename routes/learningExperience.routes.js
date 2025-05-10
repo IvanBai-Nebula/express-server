@@ -1,7 +1,7 @@
 const controller = require("../controllers/learningExperience.controller");
 const authMiddleware = require("../middleware/auth.middleware");
 
-module.exports = function(app) {
+module.exports = function (app) {
   const router = require("express").Router();
 
   // 公开路由 - 获取已批准的心得列表
@@ -22,8 +22,8 @@ module.exports = function(app) {
    *         description: 每页数量
    *       - in: query
    *         name: status
-   *         schema: { type: string, enum: [Approved, PendingReview, Draft, Rejected], default: Approved }
-   *         description: 按状态筛选 (仅工作人员可查看非Approved状态的心得，除非是用户查看自己的)
+   *         schema: { type: string, enum: [Approved, PendingReview, Draft, Rejected, Published], default: Approved }
+   *         description: 按状态筛选 (仅工作人员可查看非Approved或非Published状态的心得，除非是用户查看自己的)
    *       - in: query
    *         name: userId
    *         schema: { type: string, format: uuid }
@@ -51,7 +51,7 @@ module.exports = function(app) {
    *         description: 服务器错误
    */
   router.get("/", controller.getAllExperiences);
-  
+
   // 获取特定心得详情 (可选验证)
   /**
    * @swagger
@@ -65,7 +65,7 @@ module.exports = function(app) {
    *         required: true
    *         schema: { type: string, format: uuid }
    *         description: 心得ID
-   *     security: 
+   *     security:
    *       - bearerAuth: [] # Optional: for isBookmarked status
    *     responses:
    *       200:
@@ -81,17 +81,21 @@ module.exports = function(app) {
    *       500:
    *         description: 服务器错误
    */
-  router.get("/:experienceId", (req, res, next) => {
-    // 如果没有令牌，继续处理请求，但不设置用户信息
-    const token = req.headers['x-access-token'] || req.headers['authorization']?.split(' ')[1];
-    if (!token) {
-      return next();
-    }
-    
-    // 有令牌，验证令牌
-    authMiddleware.verifyToken(req, res, next);
-  }, controller.getExperienceById);
-  
+  router.get(
+    "/:experienceId",
+    (req, res, next) => {
+      // 如果没有令牌，继续处理请求，但不设置用户信息
+      const token = req.headers["x-access-token"] || req.headers["authorization"]?.split(" ")[1];
+      if (!token) {
+        return next();
+      }
+
+      // 有令牌，验证令牌
+      authMiddleware.verifyToken(req, res, next);
+    },
+    controller.getExperienceById,
+  );
+
   // 获取心得评论列表
   /**
    * @swagger
@@ -124,10 +128,10 @@ module.exports = function(app) {
    *         description: 服务器错误
    */
   router.get("/:experienceId/comments", controller.getComments);
-  
+
   // 需要验证令牌的路由
   router.use(authMiddleware.verifyToken);
-  
+
   // 创建心得
   /**
    * @swagger
@@ -161,7 +165,7 @@ module.exports = function(app) {
    *         description: 服务器错误
    */
   router.post("/", controller.createExperience);
-  
+
   // 更新心得 (仅作者或工作人员)
   /**
    * @swagger
@@ -203,7 +207,7 @@ module.exports = function(app) {
    *         description: 服务器错误
    */
   router.put("/:experienceId", controller.updateExperience);
-  
+
   // 删除心得 (仅作者或工作人员)
   /**
    * @swagger
@@ -233,7 +237,7 @@ module.exports = function(app) {
    *         description: 服务器错误
    */
   router.delete("/:experienceId", controller.deleteExperience);
-  
+
   // 心得互动
   /**
    * @swagger
@@ -359,7 +363,7 @@ module.exports = function(app) {
    *         description: 服务器错误
    */
   router.post("/:experienceId/bookmark", controller.toggleBookmark);
-  
+
   // 用户提交心得审核
   /**
    * @swagger
@@ -395,7 +399,7 @@ module.exports = function(app) {
    *         description: 服务器错误
    */
   router.post("/:experienceId/submit", controller.submitForReview);
-  
+
   // 获取心得审核历史
   /**
    * @swagger
@@ -426,10 +430,10 @@ module.exports = function(app) {
    *         description: 服务器错误
    */
   router.get("/:experienceId/reviews", controller.getReviewHistory);
-  
+
   // 工作人员专用路由
   router.use("/staff", authMiddleware.isStaff);
-  
+
   // 工作人员审核心得
   /**
    * @swagger
@@ -455,7 +459,7 @@ module.exports = function(app) {
    *             properties:
    *               status:
    *                 type: string
-   *                 enum: [Approved, Rejected]
+   *                 enum: [Approved, Rejected, Published]
    *                 description: 审核结果
    *               reviewComments:
    *                 type: string
@@ -477,7 +481,7 @@ module.exports = function(app) {
    *         description: 服务器错误
    */
   router.post("/staff/:experienceId/review", controller.reviewExperience);
-  
+
   // 获取待审核的心得列表
   /**
    * @swagger
@@ -513,7 +517,7 @@ module.exports = function(app) {
    *         description: 服务器错误
    */
   router.get("/staff/pending", controller.getPendingExperiences);
-  
+
   // 更新心得评论
   /**
    * @swagger
@@ -584,9 +588,9 @@ module.exports = function(app) {
    *               $ref: '#/components/schemas/GenericErrorMessage'
    */
   router.put(
-    "/:experienceId/comments/:commentId", 
+    "/:experienceId/comments/:commentId",
     authMiddleware.verifyToken,
-    controller.updateExperienceComment
+    controller.updateExperienceComment,
   );
 
   // 举报心得
@@ -649,11 +653,7 @@ module.exports = function(app) {
    *             schema:
    *               $ref: '#/components/schemas/GenericErrorMessage'
    */
-  router.post(
-    "/:experienceId/report", 
-    authMiddleware.verifyToken,
-    controller.reportExperience
-  );
+  router.post("/:experienceId/report", authMiddleware.verifyToken, controller.reportExperience);
 
   // 举报评论
   /**
@@ -723,11 +723,11 @@ module.exports = function(app) {
    *               $ref: '#/components/schemas/GenericErrorMessage'
    */
   router.post(
-    "/:experienceId/comments/:commentId/report", 
+    "/:experienceId/comments/:commentId/report",
     authMiddleware.verifyToken,
-    controller.reportExperienceComment
+    controller.reportExperienceComment,
   );
 
   // 注册路由
   app.use("/api/v1/experiences", router);
-}; 
+};

@@ -1,7 +1,7 @@
 const controller = require("../controllers/staff.controller");
 const authMiddleware = require("../middleware/auth.middleware");
 
-module.exports = function(app) {
+module.exports = function (app) {
   const router = require("express").Router();
 
   // 所有路由都需要验证令牌
@@ -133,4 +133,4 @@ module.exports = function(app) {
 
   // 注册路由
   app.use("/api/v1/staff", router);
-}; 
+};

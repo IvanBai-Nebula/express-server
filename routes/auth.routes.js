@@ -1,7 +1,7 @@
 const controller = require("../controllers/auth.controller");
 const authMiddleware = require("../middleware/auth.middleware");
 
-module.exports = function(app) {
+module.exports = function (app) {
   const router = require("express").Router();
 
   /**
@@ -108,7 +108,7 @@ module.exports = function(app) {
    *             schema:
    *               oneOf: # 根据登录的角色，返回 UserProfile 或 StaffProfile
    *                 - $ref: '#/components/schemas/UserProfile'
-   *                 - $ref: '#/components/schemas/StaffProfile' 
+   *                 - $ref: '#/components/schemas/StaffProfile'
    *       401:
    *         description: 未授权 (令牌无效或过期)
    *         content:
@@ -133,36 +133,69 @@ module.exports = function(app) {
 
   /**
    * @swagger
+   * /api/v1/auth/refresh-token:
+   *   post:
+   *     summary: 刷新访问令牌
+   *     tags: [Client - Auth]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [refreshToken]
+   *             properties:
+   *               refreshToken:
+   *                 type: string
+   *                 description: 刷新令牌
+   *     responses:
+   *       200:
+   *         description: 成功刷新令牌
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 accessToken:
+   *                   type: string
+   *                   description: 新的访问令牌
+   *                 refreshToken:
+   *                   type: string
+   *                   description: 新的刷新令牌（可能与旧的相同）
+   *       400:
+   *         description: 请求无效（未提供刷新令牌）
+   *       401:
+   *         description: 刷新令牌无效或已过期
+   *       500:
+   *         description: 服务器内部错误
+   */
+  // 刷新访问令牌
+  router.post("/refresh-token", authMiddleware.verifyRefreshToken, controller.refreshToken);
+
+  /**
+   * @swagger
    * /api/v1/auth/logout:
    *   post:
    *     summary: 用户或工作人员退出登录
    *     tags: [Client - Auth]
    *     security:
-   *       - bearerAuth: [] # 通常退出登录也需要知道是哪个用户在操作，或者至少验证令牌有效性
+   *       - bearerAuth: []
    *     responses:
    *       200:
    *         description: 成功退出登录
    *         content:
    *           application/json:
    *             schema:
-   *               $ref: '#/components/schemas/GenericSuccessMessage' # 使用通用成功消息
+   *               $ref: '#/components/schemas/GenericSuccessMessage'
    *               example:
    *                 message: "已成功退出登录!"
    *       401:
-   *         description: 未授权 (如果退出需要有效令牌)
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/GenericErrorMessage'
+   *         description: 未授权 (令牌无效)
    *       500:
    *         description: 服务器内部错误
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/GenericErrorMessage'
    */
   // 退出登录
-  router.post("/logout", controller.logout);
+  router.post("/logout", authMiddleware.verifyToken, controller.logout);
 
   /**
    * @swagger
@@ -196,7 +229,7 @@ module.exports = function(app) {
    *         content:
    *           application/json:
    *             schema:
-   *               $ref: '#/components/schemas/GenericErrorMessage' 
+   *               $ref: '#/components/schemas/GenericErrorMessage'
    *               # 注意：为了防止邮箱枚举攻击，即使邮箱不存在，某些实现也会返回200 OK。
    *               # 如果是这种情况，则不应有404响应。请根据您的控制器逻辑调整。
    *       500:
@@ -285,4 +318,4 @@ module.exports = function(app) {
 
   // 注册路由
   app.use("/api/v1/auth", router);
-}; 
+};

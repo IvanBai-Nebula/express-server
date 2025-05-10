@@ -1,7 +1,7 @@
 const controller = require("../controllers/medicalCategory.controller");
 const authMiddleware = require("../middleware/auth.middleware");
 
-module.exports = function(app) {
+module.exports = function (app) {
   const router = require("express").Router();
 
   // 公开路由 - 任何人都可以查看类别
@@ -202,4 +202,4 @@ module.exports = function(app) {
 
   // 注册路由
   app.use("/api/v1/categories", router);
-}; 
+};
