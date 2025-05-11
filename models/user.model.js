@@ -74,7 +74,31 @@ module.exports = (sequelize, Sequelize) => {
       tableName: "Users", // 明确指定表名
       timestamps: true, // Sequelize 会自动管理 createdAt 和 updatedAt 字段
       comment: "用户表",
-    },
+      indexes: [
+        {
+          name: "idx_user_username",
+          fields: ["username"],
+          unique: true,
+        },
+        {
+          name: "idx_user_email",
+          fields: ["email"],
+          unique: true,
+        },
+        {
+          name: "idx_user_is_active",
+          fields: ["isActive"],
+        },
+        {
+          name: "idx_user_email_verified",
+          fields: ["emailVerified"],
+        },
+        {
+          name: "idx_user_last_login",
+          fields: ["lastLoginAt"],
+        },
+      ],
+    }
   );
 
   return User;

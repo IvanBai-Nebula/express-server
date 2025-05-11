@@ -1,0 +1,20 @@
+{
+  "ignore": [
+    "*.json",
+    "logs/*",
+    "public/*",
+    "node_modules/*",
+    ".git",
+    "swagger.json"
+  ],
+  "watch": [
+    "controllers/",
+    "models/",
+    "routes/",
+    "middlewares/",
+    "utils/",
+    "server.dev.js",
+    "config/"
+  ],
+  "ext": "js"
+}

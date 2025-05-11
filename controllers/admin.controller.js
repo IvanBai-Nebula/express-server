@@ -21,7 +21,9 @@ exports.getDashboardStats = async (req, res) => {
 
     // 2. 获取内容统计
     const articleCount = await KnowledgeArticle.count();
-    const publishedArticleCount = await KnowledgeArticle.count({ where: { status: "Published" } });
+    const publishedArticleCount = await KnowledgeArticle.count({
+      where: { status: "Published" },
+    });
 
     const experienceCount = await LearningExperience.count();
     const approvedExperienceCount = await LearningExperience.count({
@@ -37,7 +39,11 @@ exports.getDashboardStats = async (req, res) => {
 
     // 4. 获取近期增长趋势
     const today = new Date();
-    const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+    const lastMonth = new Date(
+      today.getFullYear(),
+      today.getMonth() - 1,
+      today.getDate()
+    );
 
     const newUsers = await User.count({
       where: {
@@ -68,7 +74,13 @@ exports.getDashboardStats = async (req, res) => {
       where: { status: "Published" },
       order: [["viewCount", "DESC"]],
       limit: 5,
-      attributes: ["articleID", "title", "viewCount", "averageRating", "createdAt"],
+      attributes: [
+        "articleID",
+        "title",
+        "viewCount",
+        "averageRating",
+        "createdAt",
+      ],
     });
 
     const topExperiences = await LearningExperience.findAll({
@@ -111,7 +123,9 @@ exports.getDashboardStats = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: "获取仪表盘统计数据时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "获取仪表盘统计数据时发生错误!", error: error.message });
   }
 };
 
@@ -120,7 +134,14 @@ exports.getDashboardStats = async (req, res) => {
  */
 exports.getAuditLogs = async (req, res) => {
   try {
-    const { page = 1, limit = 20, actionType, adminId, fromDate, toDate } = req.query;
+    const {
+      page = 1,
+      limit = 20,
+      actionType,
+      adminId,
+      fromDate,
+      toDate,
+    } = req.query;
 
     const offset = (page - 1) * limit;
     const whereClause = {};
@@ -167,7 +188,9 @@ exports.getAuditLogs = async (req, res) => {
       logs: rows,
     });
   } catch (error) {
-    res.status(500).json({ message: "获取审计日志时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "获取审计日志时发生错误!", error: error.message });
   }
 };
 
@@ -215,60 +238,82 @@ exports.getAllUsers = async (req, res) => {
 
     // 根据类型查询用户
     if (type === "all" || type === "user") {
-      const userResult = await User.findAndCountAll({
-        where: userWhereClause,
-        limit: type === "all" ? Math.floor(parseInt(limit) / 2) : parseInt(limit),
-        offset: parseInt(offset),
-        order: [["createdAt", "DESC"]],
-        attributes: { exclude: ["passwordHash"] },
-      });
+      try {
+        const userResult = await User.findAndCountAll({
+          where: userWhereClause,
+          limit:
+            type === "all" ? Math.floor(parseInt(limit) / 2) : parseInt(limit),
+          offset: parseInt(offset),
+          order: [["createdAt", "DESC"]],
+          attributes: { exclude: ["passwordHash"] },
+        });
 
-      totalCount += type === "all" ? userResult.count : 0;
-      users = users.concat(
-        userResult.rows.map((user) => ({
-          ...user.toJSON(),
-          userType: "User",
-        })),
-      );
+        totalCount += type === "all" ? userResult.count : 0;
+        users = users.concat(
+          userResult.rows.map((user) => ({
+            ...user.toJSON(),
+            userType: "User",
+          }))
+        );
 
-      if (type !== "all") {
-        totalCount = userResult.count;
+        if (type !== "all") {
+          totalCount = userResult.count;
+        }
+      } catch (error) {
+        console.error("获取用户列表时出错:", error);
+        // 出错但继续处理，可能只是User表有问题
       }
     }
 
     if (type === "all" || type === "staff") {
-      const staffResult = await Staff.findAndCountAll({
-        where: staffWhereClause,
-        limit: type === "all" ? Math.ceil(parseInt(limit) / 2) : parseInt(limit),
-        offset: parseInt(offset),
-        order: [["createdAt", "DESC"]],
-        attributes: { exclude: ["passwordHash"] },
-      });
+      try {
+        const staffResult = await Staff.findAndCountAll({
+          where: staffWhereClause,
+          limit:
+            type === "all" ? Math.ceil(parseInt(limit) / 2) : parseInt(limit),
+          offset: parseInt(offset),
+          order: [["createdAt", "DESC"]],
+          attributes: { exclude: ["passwordHash"] },
+        });
 
-      totalCount += type === "all" ? staffResult.count : 0;
-      users = users.concat(
-        staffResult.rows.map((staff) => ({
-          ...staff.toJSON(),
-          userType: "Staff",
-        })),
-      );
+        totalCount += type === "all" ? staffResult.count : 0;
+        users = users.concat(
+          staffResult.rows.map((staff) => ({
+            ...staff.toJSON(),
+            userType: "Staff",
+          }))
+        );
 
-      if (type !== "all") {
-        totalCount = staffResult.count;
+        if (type !== "all") {
+          totalCount = staffResult.count;
+        }
+      } catch (error) {
+        console.error("获取工作人员列表时出错:", error);
+        // 出错但继续处理，可能只是Staff表有问题
       }
     }
 
-    // 排序
+    // 处理排序
     users.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    // 如果是分页且是第一页，并且需要的数量超过了已有的数量，则再次请求数据填充
+    if (users.length < parseInt(limit) && parseInt(page) === 1) {
+      // 已经在上面的代码中尽可能获取数据
+    }
 
     res.status(200).json({
       totalItems: totalCount,
-      totalPages: Math.ceil(totalCount / limit),
+      totalPages: Math.ceil(totalCount / parseInt(limit)),
       currentPage: parseInt(page),
       users,
     });
   } catch (error) {
-    res.status(500).json({ message: "获取用户列表时发生错误!", error: error.message });
+    console.error("管理员获取用户列表时发生错误:", error);
+    res.status(500).json({
+      message: "获取用户列表时发生错误!",
+      error: error.message,
+      stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+    });
   }
 };
 
@@ -285,47 +330,77 @@ exports.updateUserStatus = async (req, res) => {
     }
 
     let user;
+    let idField;
 
-    if (userType === "User") {
-      user = await User.findByPk(userId);
-    } else if (userType === "Staff") {
-      user = await Staff.findByPk(userId);
+    try {
+      if (userType.toLowerCase() === "user") {
+        user = await User.findByPk(userId);
+        idField = "userID";
+      } else if (userType.toLowerCase() === "staff") {
+        user = await Staff.findByPk(userId);
+        idField = "staffID";
 
-      // 检查是否是管理员，防止停用管理员账户
-      if (user && user.isAdmin && !isActive) {
-        return res.status(403).json({ message: "无法停用管理员账户!" });
+        // 检查是否是管理员，防止停用管理员账户
+        if (user && user.isAdmin && !isActive) {
+          return res.status(403).json({ message: "无法停用管理员账户!" });
+        }
+      } else {
+        return res.status(400).json({ message: "无效的用户类型!" });
       }
-    } else {
-      return res.status(400).json({ message: "无效的用户类型!" });
-    }
 
-    if (!user) {
-      return res.status(404).json({ message: "用户不存在!" });
-    }
+      if (!user) {
+        return res.status(404).json({ message: "用户不存在!" });
+      }
 
-    await user.update({ isActive });
+      // 保存原始状态用于审计
+      const oldValue = { isActive: user.isActive };
 
-    // 记录审计日志
-    await AuditLog.create({
-      adminStaffID: req.userId,
-      actionType: isActive ? "ACTIVATE_USER" : "DEACTIVATE_USER",
-      targetEntityType: userType,
-      targetEntityID: userId,
-      oldValue: JSON.stringify({ isActive: !isActive }),
-      newValue: JSON.stringify({ isActive }),
-      ipAddress: req.ip,
-    });
+      // 更新状态
+      await user.update({ isActive });
 
-    res.status(200).json({
-      message: `用户已${isActive ? "激活" : "停用"}!`,
-      user: {
-        id: user.id || user.userID || user.staffID,
+      // 记录审计日志
+      try {
+        await db.auditLogs.create({
+          logID: db.sequelize.fn("UUID"), // 使用内置的UUID函数
+          actionType: isActive ? "ACTIVATE_USER" : "DEACTIVATE_USER",
+          targetEntityType: userType.toLowerCase(),
+          targetEntityID: userId,
+          oldValue: JSON.stringify(oldValue),
+          newValue: JSON.stringify({ isActive }),
+          timestamp: new Date(),
+          ipAddress: req.ip,
+          adminStaffID: req.userId,
+        });
+      } catch (auditError) {
+        console.error("记录审计日志失败:", auditError);
+        // 即使审计失败，仍然继续执行，不影响用户结果
+      }
+
+      res.status(200).json({
+        message: `用户状态已更新为 ${isActive ? "激活" : "停用"}!`,
         userType,
+        userId,
         isActive,
-      },
-    });
+      });
+    } catch (dbError) {
+      // 处理特定的数据库错误
+      if (
+        dbError.name === "SequelizeDatabaseError" &&
+        dbError.original &&
+        dbError.original.code === "ER_NO_SUCH_TABLE"
+      ) {
+        return res.status(503).json({
+          message: "数据库维护中，请稍后再试",
+          error: "临时数据库错误",
+        });
+      }
+      throw dbError; // 重新抛出错误，让外层catch处理
+    }
   } catch (error) {
-    res.status(500).json({ message: "更新用户状态时发生错误!", error: error.message });
+    console.error("更新用户状态时发生错误:", error);
+    res
+      .status(500)
+      .json({ message: "更新用户状态时发生错误!", error: error.message });
   }
 };
 
@@ -385,7 +460,9 @@ exports.createStaffAccount = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: "创建工作人员账户时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "创建工作人员账户时发生错误!", error: error.message });
   }
 };
 
@@ -406,7 +483,9 @@ exports.getStaffById = async (req, res) => {
 
     res.status(200).json(staff);
   } catch (error) {
-    res.status(500).json({ message: "获取工作人员详情时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "获取工作人员详情时发生错误!", error: error.message });
   }
 };
 
@@ -424,7 +503,13 @@ exports.updateStaff = async (req, res) => {
     }
 
     // 可更新的字段
-    const updatableFields = ["username", "email", "avatarURL", "isAdmin", "isActive"];
+    const updatableFields = [
+      "username",
+      "email",
+      "avatarURL",
+      "isAdmin",
+      "isActive",
+    ];
 
     const updates = {};
 
@@ -482,7 +567,9 @@ exports.updateStaff = async (req, res) => {
       staff: updatedStaff,
     });
   } catch (error) {
-    res.status(500).json({ message: "更新工作人员信息时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "更新工作人员信息时发生错误!", error: error.message });
   }
 };
 
@@ -522,7 +609,9 @@ exports.resetStaffPassword = async (req, res) => {
 
     res.status(200).json({ message: "工作人员密码已重置!" });
   } catch (error) {
-    res.status(500).json({ message: "重置工作人员密码时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "重置工作人员密码时发生错误!", error: error.message });
   }
 };
 
@@ -543,7 +632,9 @@ exports.deleteStaff = async (req, res) => {
     // This check might need adjustment based on how admin identity (req.userId) relates to staff records
     if (staff.staffID === req.userId && staff.isAdmin) {
       // Example check
-      return res.status(400).json({ message: "管理员无法删除自己的账户通过此接口!" });
+      return res
+        .status(400)
+        .json({ message: "管理员无法删除自己的账户通过此接口!" });
     }
 
     // 软删除，将账户标记为非活跃
@@ -565,7 +656,9 @@ exports.deleteStaff = async (req, res) => {
 
     res.status(200).json({ message: "工作人员账户已删除!" });
   } catch (error) {
-    res.status(500).json({ message: "删除工作人员时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "删除工作人员时发生错误!", error: error.message });
   }
 };
 
@@ -594,7 +687,9 @@ exports.getSystemConfig = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: "获取系统配置时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "获取系统配置时发生错误!", error: error.message });
   }
 };
 
@@ -621,7 +716,9 @@ exports.updateSystemConfig = async (req, res) => {
       config: { general, users, content },
     });
   } catch (error) {
-    res.status(500).json({ message: "更新系统配置时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "更新系统配置时发生错误!", error: error.message });
   }
 };
 
@@ -669,7 +766,9 @@ exports.deleteTag = async (req, res) => {
     res.status(200).json({ message: "标签已成功删除!" });
   } catch (error) {
     console.error("Error deleting tag:", error);
-    res.status(500).json({ message: "删除标签时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "删除标签时发生错误!", error: error.message });
   }
 };
 
@@ -730,7 +829,7 @@ exports.mergeTags = async (req, res) => {
               articleID: articleTag.articleID,
               tagID: targetTagId,
             },
-            { transaction: t },
+            { transaction: t }
           );
           migratedCount++;
         }
@@ -755,8 +854,14 @@ exports.mergeTags = async (req, res) => {
         actionType: "MERGE_TAGS",
         targetEntityType: "Tag",
         targetEntityID: targetTagId, // Target tag is the one that remains
-        oldValue: JSON.stringify({ sourceTagId, sourceTagData: oldSourceTagValue }),
-        newValue: JSON.stringify({ targetTagId, migratedAssociations: migratedCount }),
+        oldValue: JSON.stringify({
+          sourceTagId,
+          sourceTagData: oldSourceTagValue,
+        }),
+        newValue: JSON.stringify({
+          targetTagId,
+          migratedAssociations: migratedCount,
+        }),
         ipAddress: req.ip,
       });
 
@@ -771,6 +876,8 @@ exports.mergeTags = async (req, res) => {
     }
   } catch (error) {
     console.error("Error merging tags:", error);
-    res.status(500).json({ message: "合并标签时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "合并标签时发生错误!", error: error.message });
   }
 };

@@ -1,5 +1,6 @@
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
+const fs = require("fs"); // 引入 Node.js 文件系统模块
 
 // Swagger definition
 const swaggerOptions = {
@@ -104,13 +105,27 @@ const swaggerOptions = {
           // Base schema from previous work, ensure it matches model closely
           type: "object",
           properties: {
-            experienceID: { type: "string", format: "uuid", description: "心得编号" },
-            userID: { type: "string", format: "uuid", description: "用户编号 (作者)" },
+            experienceID: {
+              type: "string",
+              format: "uuid",
+              description: "心得编号",
+            },
+            userID: {
+              type: "string",
+              format: "uuid",
+              description: "用户编号 (作者)",
+            },
             title: { type: "string", description: "标题" },
             richTextContent: { type: "string", description: "富文本内容" },
             status: {
               type: "string",
-              enum: ["Draft", "PendingReview", "Approved", "Rejected", "Published"],
+              enum: [
+                "Draft",
+                "PendingReview",
+                "Approved",
+                "Rejected",
+                "Published",
+              ],
               description: "状态",
             },
             allowComments: { type: "boolean", description: "是否允许评论" },
@@ -121,8 +136,16 @@ const swaggerOptions = {
               nullable: true,
               description: "关联的文章ID",
             },
-            createdAt: { type: "string", format: "date-time", description: "创建时间" },
-            updatedAt: { type: "string", format: "date-time", description: "更新时间" },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              description: "创建时间",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+              description: "更新时间",
+            },
           },
         },
         AuthorInfo: {
@@ -149,7 +172,10 @@ const swaggerOptions = {
           type: "object",
           properties: {
             user: { $ref: "#/components/schemas/AuthorInfo" },
-            relatedArticle: { $ref: "#/components/schemas/RelatedArticleInfo", nullable: true },
+            relatedArticle: {
+              $ref: "#/components/schemas/RelatedArticleInfo",
+              nullable: true,
+            },
             // commentCount could be added here if the list endpoint provides it
           },
         },
@@ -159,7 +185,10 @@ const swaggerOptions = {
             reviewID: { type: "string", format: "uuid" },
             reviewerStaffID: { type: "string", format: "uuid" },
             reviewTimestamp: { type: "string", format: "date-time" },
-            statusGiven: { type: "string", enum: ["Approved", "Rejected", "Published"] },
+            statusGiven: {
+              type: "string",
+              enum: ["Approved", "Rejected", "Published"],
+            },
             comments: { type: "string", nullable: true },
             reviewer: {
               type: "object",
@@ -176,7 +205,10 @@ const swaggerOptions = {
           type: "object",
           properties: {
             commentCount: { type: "integer", description: "评论数量" },
-            isBookmarked: { type: "boolean", description: "当前用户是否已收藏" },
+            isBookmarked: {
+              type: "boolean",
+              description: "当前用户是否已收藏",
+            },
             reviews: {
               type: "array",
               items: { $ref: "#/components/schemas/ExperienceReviewInfo" },
@@ -201,11 +233,22 @@ const swaggerOptions = {
           type: "object",
           properties: {
             commentID: { type: "string", format: "uuid" },
-            experienceID: { type: "string", format: "uuid", description: "所属心得ID" },
-            userID: { type: "string", format: "uuid", description: "评论用户ID" },
+            experienceID: {
+              type: "string",
+              format: "uuid",
+              description: "所属心得ID",
+            },
+            userID: {
+              type: "string",
+              format: "uuid",
+              description: "评论用户ID",
+            },
             userType: { type: "string", enum: ["User", "Staff"] },
             commentText: { type: "string" },
-            status: { type: "string", enum: ["Visible", "HiddenByModerator", "DeletedByUser"] },
+            status: {
+              type: "string",
+              enum: ["Visible", "HiddenByModerator", "DeletedByUser"],
+            },
             createdAt: { type: "string", format: "date-time" },
             user: { $ref: "#/components/schemas/AuthorInfo" }, // Added from controller include
             parentCommentID: {
@@ -234,7 +277,10 @@ const swaggerOptions = {
           required: ["title", "richTextContent"],
           properties: {
             title: { type: "string", example: "我的学习心得标题" },
-            richTextContent: { type: "string", example: "<p>这是我的心得内容...</p>" },
+            richTextContent: {
+              type: "string",
+              example: "<p>这是我的心得内容...</p>",
+            },
             allowComments: { type: "boolean", default: true },
             relatedArticleID: {
               type: "string",
@@ -249,12 +295,26 @@ const swaggerOptions = {
           // For user updating their own, or staff updating status
           type: "object",
           properties: {
-            title: { type: "string", nullable: true, example: "更新后的心得标题" },
-            richTextContent: { type: "string", nullable: true, example: "<p>更新后的内容...</p>" },
+            title: {
+              type: "string",
+              nullable: true,
+              example: "更新后的心得标题",
+            },
+            richTextContent: {
+              type: "string",
+              nullable: true,
+              example: "<p>更新后的内容...</p>",
+            },
             allowComments: { type: "boolean", nullable: true },
             status: {
               type: "string",
-              enum: ["Draft", "PendingReview", "Approved", "Rejected", "Published"],
+              enum: [
+                "Draft",
+                "PendingReview",
+                "Approved",
+                "Rejected",
+                "Published",
+              ],
               nullable: true,
               description: "更新状态 (用户可提交审核, 工作人员可改任意状态)",
             },
@@ -278,14 +338,19 @@ const swaggerOptions = {
           type: "object",
           properties: {
             message: { type: "string", example: "操作成功" },
-            isBookmarked: { type: "boolean", description: "当前心得是否已收藏" },
+            isBookmarked: {
+              type: "boolean",
+              description: "当前心得是否已收藏",
+            },
           },
         },
         ExperienceReviewResponse: {
           type: "object",
           properties: {
             message: { type: "string", example: "心得审核通过成功！" },
-            experience: { $ref: "#/components/schemas/LearningExperienceBrief" },
+            experience: {
+              $ref: "#/components/schemas/LearningExperienceBrief",
+            },
             review: { $ref: "#/components/schemas/ExperienceReviewInfo" },
           },
         },
@@ -296,7 +361,13 @@ const swaggerOptions = {
             title: { type: "string", example: "我的学习心得" },
             currentStatus: {
               type: "string",
-              enum: ["Draft", "PendingReview", "Approved", "Rejected", "Published"],
+              enum: [
+                "Draft",
+                "PendingReview",
+                "Approved",
+                "Rejected",
+                "Published",
+              ],
             },
             reviews: {
               type: "array",
@@ -754,7 +825,8 @@ const swaggerOptions = {
             email: {
               type: "string",
               format: "email",
-              description: "新的邮箱地址 (如果提供，必须唯一，且会导致 emailVerified 置为 false)",
+              description:
+                "新的邮箱地址 (如果提供，必须唯一，且会导致 emailVerified 置为 false)",
             },
             avatarURL: {
               type: "string",
@@ -869,7 +941,11 @@ const swaggerOptions = {
         AuditLogAdmin: {
           type: "object",
           properties: {
-            staffID: { type: "string", format: "uuid", description: "管理员ID" },
+            staffID: {
+              type: "string",
+              format: "uuid",
+              description: "管理员ID",
+            },
             username: { type: "string", description: "管理员用户名" },
           },
         },
@@ -878,7 +954,11 @@ const swaggerOptions = {
           type: "object",
           properties: {
             logID: { type: "string", format: "uuid", description: "日志ID" },
-            actionType: { type: "string", description: "操作类型", example: "UPDATE_USER_STATUS" },
+            actionType: {
+              type: "string",
+              description: "操作类型",
+              example: "UPDATE_USER_STATUS",
+            },
             targetEntityType: {
               type: "string",
               nullable: true,
@@ -903,8 +983,17 @@ const swaggerOptions = {
               description: "操作后数据 (JSON)",
               example: { status: "inactive" },
             },
-            timestamp: { type: "string", format: "date-time", description: "操作时间" },
-            ipAddress: { type: "string", format: "ip", nullable: true, description: "操作者IP" },
+            timestamp: {
+              type: "string",
+              format: "date-time",
+              description: "操作时间",
+            },
+            ipAddress: {
+              type: "string",
+              format: "ip",
+              nullable: true,
+              description: "操作者IP",
+            },
             adminStaffID: {
               type: "string",
               format: "uuid",
@@ -935,8 +1024,16 @@ const swaggerOptions = {
           type: "object",
           properties: {
             // Common fields first
-            id: { type: "string", format: "uuid", description: "用户或员工ID (userID 或 staffID)" },
-            userType: { type: "string", enum: ["User", "Staff"], description: "用户类型" },
+            id: {
+              type: "string",
+              format: "uuid",
+              description: "用户或员工ID (userID 或 staffID)",
+            },
+            userType: {
+              type: "string",
+              enum: ["User", "Staff"],
+              description: "用户类型",
+            },
             username: { type: "string" },
             email: { type: "string", format: "email" },
             isActive: { type: "boolean" },
@@ -944,11 +1041,19 @@ const swaggerOptions = {
             updatedAt: { type: "string", format: "date-time" },
             // User specific (nullable)
             emailVerified: { type: "boolean", nullable: true },
-            lastLoginAt: { type: "string", format: "date-time", nullable: true },
+            lastLoginAt: {
+              type: "string",
+              format: "date-time",
+              nullable: true,
+            },
             // Staff specific (nullable)
             isAdmin: { type: "boolean", nullable: true },
             role: { type: "string", nullable: true, example: "ContentManager" },
-            department: { type: "string", nullable: true, example: "Editorial" },
+            department: {
+              type: "string",
+              nullable: true,
+              example: "Editorial",
+            },
             // Add other relevant fields, excluding sensitive ones like passwordHash
           },
           example: {
@@ -982,7 +1087,11 @@ const swaggerOptions = {
           type: "object",
           required: ["username", "email", "password", "role"],
           properties: {
-            username: { type: "string", description: "用户名", example: "newstaff" },
+            username: {
+              type: "string",
+              description: "用户名",
+              example: "newstaff",
+            },
             email: {
               type: "string",
               format: "email",
@@ -995,14 +1104,22 @@ const swaggerOptions = {
               description: "初始密码",
               example: "StaffP@sswOrd",
             },
-            role: { type: "string", description: "角色", example: "ContentEditor" },
+            role: {
+              type: "string",
+              description: "角色",
+              example: "ContentEditor",
+            },
             department: {
               type: "string",
               nullable: true,
               description: "部门",
               example: "Medical Content",
             },
-            isAdmin: { type: "boolean", default: false, description: "是否为管理员" },
+            isAdmin: {
+              type: "boolean",
+              default: false,
+              description: "是否为管理员",
+            },
             // avatarURL can be added if needed
           },
         },
@@ -1012,7 +1129,8 @@ const swaggerOptions = {
           properties: {
             isActive: {
               type: "boolean",
-              description: "新的激活状态 (true for active, false for inactive/disabled)",
+              description:
+                "新的激活状态 (true for active, false for inactive/disabled)",
             },
           },
         },
@@ -1036,7 +1154,11 @@ const swaggerOptions = {
         Notification: {
           type: "object",
           properties: {
-            notificationID: { type: "string", format: "uuid", description: "通知ID" },
+            notificationID: {
+              type: "string",
+              format: "uuid",
+              description: "通知ID",
+            },
             recipientUserID: {
               type: "string",
               format: "uuid",
@@ -1047,7 +1169,11 @@ const swaggerOptions = {
               enum: ["User", "Staff"],
               description: "接收者用户类型",
             },
-            type: { type: "string", description: "通知类型", example: "NEW_EXPERIENCE_COMMENT" },
+            type: {
+              type: "string",
+              description: "通知类型",
+              example: "NEW_EXPERIENCE_COMMENT",
+            },
             content: { type: "string", description: "通知内容" },
             relatedEntityType: {
               type: "string",
@@ -1119,7 +1245,11 @@ const swaggerOptions = {
           type: "object",
           properties: {
             message: { type: "string", example: "所有通知已标记为已读!" },
-            count: { type: "integer", description: "本次操作标记为已读的通知数量", example: 3 },
+            count: {
+              type: "integer",
+              description: "本次操作标记为已读的通知数量",
+              example: 3,
+            },
           },
         },
         // Notification Schemas End
@@ -1129,9 +1259,21 @@ const swaggerOptions = {
           type: "object",
           properties: {
             tagID: { type: "string", format: "uuid", description: "标签ID" },
-            tagName: { type: "string", description: "标签名称", example: "React" }, // Renamed from name in controller for consistency with model
-            articleCount: { type: "integer", description: "使用该标签的文章数量", example: 15 },
-            createdAt: { type: "string", format: "date-time", description: "创建时间" },
+            tagName: {
+              type: "string",
+              description: "标签名称",
+              example: "React",
+            }, // Renamed from name in controller for consistency with model
+            articleCount: {
+              type: "integer",
+              description: "使用该标签的文章数量",
+              example: 15,
+            },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              description: "创建时间",
+            },
             // UpdatedAt is false in model, so not included unless tagName can be updated
           },
         },
@@ -1143,7 +1285,11 @@ const swaggerOptions = {
             title: { type: "string" },
             summary: { type: "string", nullable: true },
             coverImageURL: { type: "string", format: "url", nullable: true },
-            publishedAt: { type: "string", format: "date-time", nullable: true },
+            publishedAt: {
+              type: "string",
+              format: "date-time",
+              nullable: true,
+            },
           },
         },
         TagWithArticles: {
@@ -1162,16 +1308,24 @@ const swaggerOptions = {
         },
         TagCreatePayload: {
           type: "object",
-          required: ["name"], // Controller uses 'name' in req.body
+          required: ["tagName"],
           properties: {
-            name: { type: "string", description: "新标签的名称", example: "JavaScript ES2023" },
+            tagName: {
+              type: "string",
+              description: "新标签的名称",
+              example: "JavaScript ES2023",
+            },
           },
         },
         TagUpdatePayload: {
           type: "object",
-          required: ["name"], // Controller uses 'name' in req.body
+          required: ["tagName"],
           properties: {
-            name: { type: "string", description: "标签的新名称", example: "ECMAScript 2023" },
+            tagName: {
+              type: "string",
+              description: "标签的新名称",
+              example: "ECMAScript 2023",
+            },
           },
         },
         TagResponse: {
@@ -1197,7 +1351,7 @@ const swaggerOptions = {
             tag: {
               type: "object",
               properties: {
-                name: { type: "string", description: "标签名称" }, // Controller returns nested tag.name
+                tagName: { type: "string", description: "标签名称" },
               },
             },
           },
@@ -1206,7 +1360,7 @@ const swaggerOptions = {
           type: "object",
           properties: {
             tagID: { type: "string", format: "uuid" },
-            name: { type: "string" }, // Controller returns tag.name directly for unused tags
+            tagName: { type: "string" },
           },
         },
         TagStatsResponse: {
@@ -1228,8 +1382,16 @@ const swaggerOptions = {
           type: "object",
           required: ["sourceTagId", "targetTagId"],
           properties: {
-            sourceTagId: { type: "string", format: "uuid", description: "要被合并的源标签ID" },
-            targetTagId: { type: "string", format: "uuid", description: "合并目标标签ID" },
+            sourceTagId: {
+              type: "string",
+              format: "uuid",
+              description: "要被合并的源标签ID",
+            },
+            targetTagId: {
+              type: "string",
+              format: "uuid",
+              description: "合并目标标签ID",
+            },
           },
         },
         MergeTagsResponse: {
@@ -1261,7 +1423,11 @@ const swaggerOptions = {
           type: "object",
           required: ["reason"],
           properties: {
-            reason: { type: "string", description: "举报原因", example: "内容不当" },
+            reason: {
+              type: "string",
+              description: "举报原因",
+              example: "内容不当",
+            },
             details: {
               type: "string",
               nullable: true,
@@ -1277,7 +1443,11 @@ const swaggerOptions = {
           // Base schema from models/knowledgeArticle.model.js
           type: "object",
           properties: {
-            articleID: { type: "string", format: "uuid", description: "知识文章ID" },
+            articleID: {
+              type: "string",
+              format: "uuid",
+              description: "知识文章ID",
+            },
             title: { type: "string", description: "标题" },
             summary: { type: "string", nullable: true, description: "简介" },
             coverImageURL: {
@@ -1286,11 +1456,26 @@ const swaggerOptions = {
               nullable: true,
               description: "封面图片链接",
             },
-            richTextContent: { type: "string", nullable: true, description: "富文本内容" },
-            videoURL: { type: "string", format: "url", nullable: true, description: "视频链接" },
+            richTextContent: {
+              type: "string",
+              nullable: true,
+              description: "富文本内容",
+            },
+            videoURL: {
+              type: "string",
+              format: "url",
+              nullable: true,
+              description: "视频链接",
+            },
             status: {
               type: "string",
-              enum: ["Draft", "PendingReview", "Published", "Archived", "Rejected"],
+              enum: [
+                "Draft",
+                "PendingReview",
+                "Published",
+                "Archived",
+                "Rejected",
+              ],
               description: "状态",
             },
             publishedAt: {
@@ -1313,15 +1498,27 @@ const swaggerOptions = {
               nullable: true,
               description: "所属分类ID",
             },
-            authorStaffID: { type: "string", format: "uuid", description: "作者Staff ID" },
+            authorStaffID: {
+              type: "string",
+              format: "uuid",
+              description: "作者Staff ID",
+            },
             parentArticleID: {
               type: "string",
               format: "uuid",
               nullable: true,
               description: "父文章ID (用于系列文章)",
             },
-            createdAt: { type: "string", format: "date-time", description: "创建时间" },
-            updatedAt: { type: "string", format: "date-time", description: "更新时间" },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              description: "创建时间",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+              description: "更新时间",
+            },
           },
         },
         ArticleAuthor: {
@@ -1347,7 +1544,10 @@ const swaggerOptions = {
           properties: {
             // Properties from KnowledgeArticle are inherited
             author: { $ref: "#/components/schemas/ArticleAuthor" },
-            category: { $ref: "#/components/schemas/ArticleCategorySummary", nullable: true },
+            category: {
+              $ref: "#/components/schemas/ArticleCategorySummary",
+              nullable: true,
+            },
             tags: {
               type: "array",
               items: { $ref: "#/components/schemas/Tag" },
@@ -1360,7 +1560,10 @@ const swaggerOptions = {
           type: "object",
           properties: {
             // Properties from KnowledgeArticleBrief are inherited
-            isBookmarked: { type: "boolean", description: "当前用户是否已收藏此文章" },
+            isBookmarked: {
+              type: "boolean",
+              description: "当前用户是否已收藏此文章",
+            },
             relatedArticles: {
               // Snippets of related articles
               type: "array",
@@ -1396,8 +1599,16 @@ const swaggerOptions = {
           type: "object",
           properties: {
             feedbackID: { type: "string", format: "uuid" },
-            articleID: { type: "string", format: "uuid", description: "所属文章ID" },
-            userID: { type: "string", format: "uuid", description: "提交反馈的用户ID" },
+            articleID: {
+              type: "string",
+              format: "uuid",
+              description: "所属文章ID",
+            },
+            userID: {
+              type: "string",
+              format: "uuid",
+              description: "提交反馈的用户ID",
+            },
             userType: { type: "string", enum: ["User", "Staff"] },
             rating: {
               type: "integer",
@@ -1406,7 +1617,11 @@ const swaggerOptions = {
               nullable: true,
               description: "评分 (1-5星)",
             },
-            comment: { type: "string", nullable: true, description: "评论内容" },
+            comment: {
+              type: "string",
+              nullable: true,
+              description: "评论内容",
+            },
             isAnonymous: { type: "boolean", description: "是否匿名反馈" },
             createdAt: { type: "string", format: "date-time" },
             user: {
@@ -1438,8 +1653,16 @@ const swaggerOptions = {
               nullable: true,
               description: "评分 (1-5 星)，可选",
             },
-            comment: { type: "string", nullable: true, description: "反馈评论内容，可选" },
-            isAnonymous: { type: "boolean", default: false, description: "是否匿名提交，可选" },
+            comment: {
+              type: "string",
+              nullable: true,
+              description: "反馈评论内容，可选",
+            },
+            isAnonymous: {
+              type: "boolean",
+              default: false,
+              description: "是否匿名提交，可选",
+            },
           },
           // At least one of rating or comment should be present, this can be handled by controller logic or a more complex schema (oneOf)
         },
@@ -1454,7 +1677,11 @@ const swaggerOptions = {
             summary: { type: "string", nullable: true },
             richTextContent: { type: "string", nullable: true },
             videoURL: { type: "string", format: "url", nullable: true },
-            authorStaffID: { type: "string", format: "uuid", description: "保存此版本的Staff ID" },
+            authorStaffID: {
+              type: "string",
+              format: "uuid",
+              description: "保存此版本的Staff ID",
+            },
             savedAt: { type: "string", format: "date-time" },
             author: {
               $ref: "#/components/schemas/ArticleAuthor",
@@ -1485,7 +1712,11 @@ const swaggerOptions = {
               example: "本文介绍了普通感冒的常见症状和诊断方法。",
             },
             coverImageURL: { type: "string", format: "url", nullable: true },
-            richTextContent: { type: "string", nullable: true, example: "<p>详细内容...</p>" },
+            richTextContent: {
+              type: "string",
+              nullable: true,
+              example: "<p>详细内容...</p>",
+            },
             videoURL: { type: "string", format: "url", nullable: true },
             categoryID: {
               type: "string",
@@ -1531,7 +1762,13 @@ const swaggerOptions = {
             },
             status: {
               type: "string",
-              enum: ["Draft", "PendingReview", "Published", "Archived", "Rejected"],
+              enum: [
+                "Draft",
+                "PendingReview",
+                "Published",
+                "Archived",
+                "Rejected",
+              ],
               nullable: true,
             },
             parentArticleID: { type: "string", format: "uuid", nullable: true },
@@ -1541,7 +1778,11 @@ const swaggerOptions = {
           type: "object",
           properties: {
             message: { type: "string", example: "取消收藏成功!" },
-            isBookmarked: { type: "boolean", example: false, description: "当前收藏状态" },
+            isBookmarked: {
+              type: "boolean",
+              example: false,
+              description: "当前收藏状态",
+            },
           },
         },
         // Knowledge Article Schemas End
@@ -1551,16 +1792,28 @@ const swaggerOptions = {
           // Based on models/medicalCategory.model.js
           type: "object",
           properties: {
-            categoryID: { type: "string", format: "uuid", description: "类别ID" },
+            categoryID: {
+              type: "string",
+              format: "uuid",
+              description: "类别ID",
+            },
             name: { type: "string", description: "类别名称", example: "内科" },
-            description: { type: "string", nullable: true, description: "类别描述" },
+            description: {
+              type: "string",
+              nullable: true,
+              description: "类别描述",
+            },
             parentCategoryID: {
               type: "string",
               format: "uuid",
               nullable: true,
               description: "父类别ID",
             },
-            isActive: { type: "boolean", default: true, description: "是否激活" },
+            isActive: {
+              type: "boolean",
+              default: true,
+              description: "是否激活",
+            },
             createdByStaffID: {
               type: "string",
               format: "uuid",
@@ -1595,7 +1848,11 @@ const swaggerOptions = {
           required: ["name"],
           properties: {
             name: { type: "string", example: "儿科" },
-            description: { type: "string", nullable: true, example: "关于儿童健康的分类" },
+            description: {
+              type: "string",
+              nullable: true,
+              example: "关于儿童健康的分类",
+            },
             parentCategoryID: {
               type: "string",
               format: "uuid",
@@ -1609,8 +1866,16 @@ const swaggerOptions = {
           properties: {
             name: { type: "string", nullable: true, example: "小儿内科" },
             description: { type: "string", nullable: true },
-            parentCategoryID: { type: "string", format: "uuid", nullable: true },
-            isActive: { type: "boolean", nullable: true, description: "设置类别是否激活" },
+            parentCategoryID: {
+              type: "string",
+              format: "uuid",
+              nullable: true,
+            },
+            isActive: {
+              type: "boolean",
+              nullable: true,
+              description: "设置类别是否激活",
+            },
           },
         },
         CategoryResponse: {
@@ -1626,7 +1891,8 @@ const swaggerOptions = {
           properties: {
             message: {
               type: "string",
-              example: "类别已成功删除! 或 类别已设置为非活跃状态，因为存在关联的文章!",
+              example:
+                "类别已成功删除! 或 类别已设置为非活跃状态，因为存在关联的文章!",
             },
             category: {
               $ref: "#/components/schemas/MedicalCategory",
@@ -1667,6 +1933,13 @@ const swaggerOptions = {
 
 // Initialize swagger-jsdoc -> returns validated swagger spec in json format
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
+
+try {
+  fs.writeFileSync("swagger.json", JSON.stringify(swaggerDocs, null, 2));
+  console.log("swagger.json has been generated successfully.");
+} catch (err) {
+  console.error("Error writing swagger.json:", err);
+}
 
 // Function to setup Swagger UI
 module.exports = function setupSwagger(app) {

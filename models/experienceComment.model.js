@@ -31,7 +31,29 @@ module.exports = (sequelize, Sequelize) => {
       timestamps: true, // 保留 createdAt
       updatedAt: false, // 通常评论不会被编辑
       comment: "学习心得评论表",
-    },
+      indexes: [
+        {
+          name: "idx_comment_experience",
+          fields: ["experienceID"],
+        },
+        {
+          name: "idx_comment_user",
+          fields: ["userID", "userType"],
+        },
+        {
+          name: "idx_comment_parent",
+          fields: ["parentCommentID"],
+        },
+        {
+          name: "idx_comment_status",
+          fields: ["status"],
+        },
+        {
+          name: "idx_comment_created",
+          fields: ["createdAt"],
+        },
+      ],
+    }
   );
 
   return ExperienceComment;

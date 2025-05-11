@@ -3,6 +3,7 @@ const Sequelize = require("sequelize");
 
 const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
   host: dbConfig.HOST,
+  port: dbConfig.PORT,
   dialect: dbConfig.dialect,
   operatorsAliases: 0, // Sequelize v5 an prior use 'operatorsAliases: false'. v6 and beyond, this is not needed.
   pool: {
@@ -20,21 +21,42 @@ db.sequelize = sequelize;
 // 加载模型
 db.users = require("./user.model.js")(sequelize, Sequelize);
 db.staff = require("./staff.model.js")(sequelize, Sequelize);
-db.medicalCategories = require("./medicalCategory.model.js")(sequelize, Sequelize);
+db.medicalCategories = require("./medicalCategory.model.js")(
+  sequelize,
+  Sequelize
+);
 db.tags = require("./tag.model.js")(sequelize, Sequelize);
-db.knowledgeArticles = require("./knowledgeArticle.model.js")(sequelize, Sequelize);
+db.knowledgeArticles = require("./knowledgeArticle.model.js")(
+  sequelize,
+  Sequelize
+);
 db.articleTags = require("./articleTag.model.js")(sequelize, Sequelize);
-db.learningExperiences = require("./learningExperience.model.js")(sequelize, Sequelize);
-db.experienceReviews = require("./experienceReview.model.js")(sequelize, Sequelize);
+db.learningExperiences = require("./learningExperience.model.js")(
+  sequelize,
+  Sequelize
+);
+db.experienceReviews = require("./experienceReview.model.js")(
+  sequelize,
+  Sequelize
+);
 db.articleVersions = require("./articleVersion.model.js")(sequelize, Sequelize);
-db.articleFeedbacks = require("./articleFeedback.model.js")(sequelize, Sequelize);
-db.experienceComments = require("./experienceComment.model.js")(sequelize, Sequelize);
+db.articleFeedbacks = require("./articleFeedback.model.js")(
+  sequelize,
+  Sequelize
+);
+db.experienceComments = require("./experienceComment.model.js")(
+  sequelize,
+  Sequelize
+);
 db.userBookmarks = require("./userBookmark.model.js")(sequelize, Sequelize);
 db.notifications = require("./notification.model.js")(sequelize, Sequelize);
 db.passwordResets = require("./passwordReset.model.js")(sequelize, Sequelize);
 db.auditLogs = require("./auditLog.model.js")(sequelize, Sequelize);
 db.systemConfigs = require("./systemConfig.model.js")(sequelize, Sequelize);
-db.emailVerifications = require("./emailVerification.model.js")(sequelize, Sequelize);
+db.emailVerifications = require("./emailVerification.model.js")(
+  sequelize,
+  Sequelize
+);
 
 // 建立模型关联
 
@@ -56,6 +78,16 @@ db.staff.hasMany(db.medicalCategories, {
 db.medicalCategories.belongsTo(db.staff, {
   foreignKey: "createdByStaffID",
   as: "creator",
+});
+
+// 医疗类别的自关联（父子关系）
+db.medicalCategories.hasMany(db.medicalCategories, {
+  foreignKey: "parentCategoryID",
+  as: "subcategories",
+});
+db.medicalCategories.belongsTo(db.medicalCategories, {
+  foreignKey: "parentCategoryID",
+  as: "parentCategory",
 });
 
 // 知识文章与类别、作者的关联
@@ -99,6 +131,27 @@ db.tags.belongsToMany(db.knowledgeArticles, {
   foreignKey: "tagID",
   otherKey: "articleID",
   as: "articles",
+});
+
+// Direct associations for the join table ArticleTags to facilitate queries
+// ArticleTag belongs to a Tag
+db.articleTags.belongsTo(db.tags, {
+  foreignKey: "tagID",
+  as: "tag", // This alias must match the one used in controller queries
+});
+db.tags.hasMany(db.articleTags, {
+  foreignKey: "tagID",
+  as: "articleTagLinks", // Alias for Tag to get its ArticleTag entries
+});
+
+// ArticleTag belongs to a KnowledgeArticle
+db.articleTags.belongsTo(db.knowledgeArticles, {
+  foreignKey: "articleID",
+  as: "article", // This alias can be used if querying ArticleTag and including KnowledgeArticle
+});
+db.knowledgeArticles.hasMany(db.articleTags, {
+  foreignKey: "articleID",
+  as: "articleTagLinks", // Alias for KnowledgeArticle to get its ArticleTag entries
 });
 
 // 文章历史版本的关联
@@ -166,6 +219,16 @@ db.users.hasMany(db.learningExperiences, {
 db.learningExperiences.belongsTo(db.users, {
   foreignKey: "userID",
   as: "user",
+});
+
+// 学习心得与相关文章的关联
+db.knowledgeArticles.hasMany(db.learningExperiences, {
+  foreignKey: "relatedArticleID",
+  as: "relatedExperiences",
+});
+db.learningExperiences.belongsTo(db.knowledgeArticles, {
+  foreignKey: "relatedArticleID",
+  as: "relatedArticle",
 });
 
 // 心得评论的关联

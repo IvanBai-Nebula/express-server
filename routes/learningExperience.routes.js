@@ -85,7 +85,9 @@ module.exports = function (app) {
     "/:experienceId",
     (req, res, next) => {
       // 如果没有令牌，继续处理请求，但不设置用户信息
-      const token = req.headers["x-access-token"] || req.headers["authorization"]?.split(" ")[1];
+      const token =
+        req.headers["x-access-token"] ||
+        req.headers["authorization"]?.split(" ")[1];
       if (!token) {
         return next();
       }
@@ -93,7 +95,7 @@ module.exports = function (app) {
       // 有令牌，验证令牌
       authMiddleware.verifyToken(req, res, next);
     },
-    controller.getExperienceById,
+    controller.getExperienceById
   );
 
   // 获取心得评论列表
@@ -590,7 +592,7 @@ module.exports = function (app) {
   router.put(
     "/:experienceId/comments/:commentId",
     authMiddleware.verifyToken,
-    controller.updateExperienceComment,
+    controller.updateExperienceComment
   );
 
   // 举报心得
@@ -653,7 +655,11 @@ module.exports = function (app) {
    *             schema:
    *               $ref: '#/components/schemas/GenericErrorMessage'
    */
-  router.post("/:experienceId/report", authMiddleware.verifyToken, controller.reportExperience);
+  router.post(
+    "/:experienceId/report",
+    authMiddleware.verifyToken,
+    controller.reportExperience
+  );
 
   // 举报评论
   /**
@@ -725,7 +731,7 @@ module.exports = function (app) {
   router.post(
     "/:experienceId/comments/:commentId/report",
     authMiddleware.verifyToken,
-    controller.reportExperienceComment,
+    controller.reportExperienceComment
   );
 
   // 注册路由

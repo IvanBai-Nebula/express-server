@@ -2,21 +2,18 @@ const nodemailer = require('nodemailer');
 
 // 创建邮件传输器配置
 const transporterConfig = {
-  host: process.env.MAIL_HOST || 'smtp.qq.com',
-  port: process.env.MAIL_PORT || 465,
+  host: process.env.MAIL_HOST,
+  port: process.env.MAIL_PORT,
   secure: process.env.MAIL_SECURE === 'false' ? false : true, // true表示使用SSL
   auth: {
-    user: process.env.MAIL_USER || 'tilony@qq.com', // QQ邮箱账号
-    pass: process.env.MAIL_PASSWORD || 'yxycsxlbdqdfdgbd' // QQ邮箱SMTP授权码
+    user: process.env.MAIL_USER,
+    pass: process.env.MAIL_PASSWORD
   }
 };
 
 // 检查配置完整性
-if (process.env.NODE_ENV === 'production') {
-  // 在生产环境中，需要明确设置邮件配置而不是使用默认值
-  if (!process.env.MAIL_USER || !process.env.MAIL_PASSWORD) {
-    console.error('警告: 生产环境中未设置MAIL_USER或MAIL_PASSWORD环境变量，使用了开发环境默认值');
-  }
+if (!process.env.MAIL_HOST || !process.env.MAIL_PORT || !process.env.MAIL_USER || !process.env.MAIL_PASSWORD) {
+  console.error('警告: 未设置邮件配置环境变量，请确保在.env文件中设置了所有必要的邮件配置');
 }
 
 // 创建邮件传输器
@@ -45,7 +42,7 @@ exports.sendMail = async (options) => {
     }
 
     const mailOptions = {
-      from: `"${process.env.MAIL_FROM_NAME || '医疗知识学习平台'}" <${process.env.MAIL_FROM || process.env.MAIL_USER}>`,
+      from: `"${process.env.MAIL_FROM_NAME}" <${process.env.MAIL_FROM}>`,
       to: options.to,
       subject: options.subject,
       text: options.text,
@@ -68,7 +65,7 @@ exports.sendMail = async (options) => {
  * @returns {Promise} - 发送结果
  */
 exports.sendVerificationEmail = async (user, token) => {
-  const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:8081'}/verify-email?token=${token}`;
+  const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${token}`;
   
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">

@@ -21,9 +21,9 @@ module.exports = function (app) {
    *         name: sortBy
    *         schema:
    *           type: string
-   *           enum: [name, createdAt, articleCount]
-   *           default: name
-   *         description: 排序字段 (name, createdAt, articleCount - articleCount may not be directly sortable by DB without specific query adjustments)
+   *           enum: [tagName, createdAt, articleCount]
+   *           default: tagName
+   *         description: 排序字段 (tagName, createdAt, articleCount - articleCount may not be directly sortable by DB without specific query adjustments)
    *       - in: query
    *         name: sortOrder
    *         schema:

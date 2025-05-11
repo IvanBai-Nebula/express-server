@@ -1,0 +1,7188 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "医疗知识学习平台 API",
+    "version": "1.0.0",
+    "description": "医疗知识学习平台 API 文档"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "UserProfile": {
+        "type": "object",
+        "properties": {
+          "userID": {
+            "type": "string",
+            "format": "uuid",
+            "description": "用户编号",
+            "example": "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+          },
+          "username": {
+            "type": "string",
+            "description": "用户名",
+            "example": "johndoe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "邮箱",
+            "example": "johndoe@example.com"
+          },
+          "avatarURL": {
+            "type": "string",
+            "format": "url",
+            "nullable": true,
+            "description": "头像链接",
+            "example": "http://example.com/avatar.jpg"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "账户是否激活/未注销",
+            "example": true
+          },
+          "emailVerified": {
+            "type": "boolean",
+            "description": "邮箱是否已验证",
+            "example": false
+          },
+          "lastLoginAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "最后登录时间"
+          },
+          "preferredLanguage": {
+            "type": "string",
+            "nullable": true,
+            "description": "偏好语言",
+            "example": "zh-CN"
+          },
+          "notificationPreferences": {
+            "type": "object",
+            "nullable": true,
+            "description": "通知偏好设置",
+            "properties": {},
+            "example": {
+              "emailEnabled": true,
+              "pushEnabled": false
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "创建时间"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "更新时间"
+          }
+        }
+      },
+      "LearningExperience": {
+        "type": "object",
+        "properties": {
+          "experienceID": {
+            "type": "string",
+            "format": "uuid",
+            "description": "心得编号"
+          },
+          "userID": {
+            "type": "string",
+            "format": "uuid",
+            "description": "用户编号 (作者)"
+          },
+          "title": {
+            "type": "string",
+            "description": "标题"
+          },
+          "richTextContent": {
+            "type": "string",
+            "description": "富文本内容"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Draft",
+              "PendingReview",
+              "Approved",
+              "Rejected",
+              "Published"
+            ],
+            "description": "状态"
+          },
+          "allowComments": {
+            "type": "boolean",
+            "description": "是否允许评论"
+          },
+          "upvoteCount": {
+            "type": "integer",
+            "description": "点赞数"
+          },
+          "relatedArticleID": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "关联的文章ID"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "创建时间"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "更新时间"
+          }
+        }
+      },
+      "AuthorInfo": {
+        "type": "object",
+        "properties": {
+          "userID": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "type": "string"
+          },
+          "avatarURL": {
+            "type": "string",
+            "format": "url",
+            "nullable": true
+          }
+        }
+      },
+      "RelatedArticleInfo": {
+        "type": "object",
+        "properties": {
+          "articleID": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "LearningExperienceBrief": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/LearningExperience"
+          }
+        ],
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/AuthorInfo"
+          },
+          "relatedArticle": {
+            "$ref": "#/components/schemas/RelatedArticleInfo",
+            "nullable": true
+          }
+        }
+      },
+      "ExperienceReviewInfo": {
+        "type": "object",
+        "properties": {
+          "reviewID": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reviewerStaffID": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reviewTimestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "statusGiven": {
+            "type": "string",
+            "enum": [
+              "Approved",
+              "Rejected",
+              "Published"
+            ]
+          },
+          "comments": {
+            "type": "string",
+            "nullable": true
+          },
+          "reviewer": {
+            "type": "object",
+            "properties": {
+              "staffID": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "username": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "LearningExperienceDetailed": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/LearningExperienceBrief"
+          }
+        ],
+        "type": "object",
+        "properties": {
+          "commentCount": {
+            "type": "integer",
+            "description": "评论数量"
+          },
+          "isBookmarked": {
+            "type": "boolean",
+            "description": "当前用户是否已收藏"
+          },
+          "reviews": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExperienceReviewInfo"
+            },
+            "nullable": true
+          }
+        }
+      },
+      "PaginatedLearningExperiences": {
+        "type": "object",
+        "properties": {
+          "totalItems": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          },
+          "currentPage": {
+            "type": "integer"
+          },
+          "experiences": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LearningExperienceBrief"
+            }
+          }
+        }
+      },
+      "ExperienceComment": {
+        "type": "object",
+        "properties": {
+          "commentID": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "experienceID": {
+            "type": "string",
+            "format": "uuid",
+            "description": "所属心得ID"
+          },
+          "userID": {
+            "type": "string",
+            "format": "uuid",
+            "description": "评论用户ID"
+          },
+          "userType": {
+            "type": "string",
+            "enum": [
+              "User",
+              "Staff"
+            ]
+          },
+          "commentText": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Visible",
+              "HiddenByModerator",
+              "DeletedByUser"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "user": {
+            "$ref": "#/components/schemas/AuthorInfo"
+          },
+          "parentCommentID": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "父评论ID (用于回复)"
+          }
+        }
+      },
+      "PaginatedExperienceComments": {
+        "type": "object",
+        "properties": {
+          "totalItems": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          },
+          "currentPage": {
+            "type": "integer"
+          },
+          "comments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExperienceComment"
+            }
+          }
+        }
+      },
+      "LearningExperienceCreatePayload": {
+        "type": "object",
+        "required": [
+          "title",
+          "richTextContent"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "我的学习心得标题"
+          },
+          "richTextContent": {
+            "type": "string",
+            "example": "<p>这是我的心得内容...</p>"
+          },
+          "allowComments": {
+            "type": "boolean",
+            "default": true
+          },
+          "relatedArticleID": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "关联的知识文章ID (可选)"
+          }
+        }
+      },
+      "LearningExperienceUpdatePayload": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "nullable": true,
+            "example": "更新后的心得标题"
+          },
+          "richTextContent": {
+            "type": "string",
+            "nullable": true,
+            "example": "<p>更新后的内容...</p>"
+          },
+          "allowComments": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Draft",
+              "PendingReview",
+              "Approved",
+              "Rejected",
+              "Published"
+            ],
+            "nullable": true,
+            "description": "更新状态 (用户可提交审核, 工作人员可改任意状态)"
+          }
+        }
+      },
+      "ExperienceCommentPayload": {
+        "type": "object",
+        "required": [
+          "commentText"
+        ],
+        "properties": {
+          "commentText": {
+            "type": "string",
+            "example": "这是一个很棒的心得！"
+          },
+          "parentCommentID": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "回复某条评论的ID (可选)"
+          }
+        }
+      },
+      "ToggleBookmarkResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "操作成功"
+          },
+          "isBookmarked": {
+            "type": "boolean",
+            "description": "当前心得是否已收藏"
+          }
+        }
+      },
+      "ExperienceReviewResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "心得审核通过成功！"
+          },
+          "experience": {
+            "$ref": "#/components/schemas/LearningExperienceBrief"
+          },
+          "review": {
+            "$ref": "#/components/schemas/ExperienceReviewInfo"
+          }
+        }
+      },
+      "ExperienceReviewHistoryResponse": {
+        "type": "object",
+        "properties": {
+          "experienceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "example": "我的学习心得"
+          },
+          "currentStatus": {
+            "type": "string",
+            "enum": [
+              "Draft",
+              "PendingReview",
+              "Approved",
+              "Rejected",
+              "Published"
+            ]
+          },
+          "reviews": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExperienceReviewInfo"
+            }
+          }
+        }
+      },
+      "UserRegistrationPayload": {
+        "type": "object",
+        "required": [
+          "username",
+          "email",
+          "password",
+          "confirmPassword"
+        ],
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "用户名",
+            "example": "newuser"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "电子邮箱",
+            "example": "newuser@example.com"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "description": "密码",
+            "example": "P@sswOrd123"
+          },
+          "confirmPassword": {
+            "type": "string",
+            "format": "password",
+            "description": "确认密码",
+            "example": "P@sswOrd123"
+          },
+          "avatarURL": {
+            "type": "string",
+            "format": "url",
+            "nullable": true,
+            "description": "头像链接 (可选)",
+            "example": "http://example.com/avatar.jpg"
+          },
+          "preferredLanguage": {
+            "type": "string",
+            "nullable": true,
+            "description": "偏好语言 (可选，默认 zh-CN)",
+            "example": "en-US"
+          },
+          "notificationPreferences": {
+            "type": "object",
+            "nullable": true,
+            "description": "通知偏好设置 (可选)",
+            "example": {
+              "emailNotifications": true
+            }
+          }
+        }
+      },
+      "UserRegistrationResponse": {
+        "type": "object",
+        "properties": {
+          "userID": {
+            "type": "string",
+            "format": "uuid",
+            "description": "用户ID"
+          },
+          "username": {
+            "type": "string",
+            "description": "用户名"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "电子邮箱"
+          },
+          "emailVerified": {
+            "type": "boolean",
+            "description": "邮箱是否已验证"
+          },
+          "avatarURL": {
+            "type": "string",
+            "format": "url",
+            "nullable": true,
+            "description": "头像链接"
+          },
+          "preferredLanguage": {
+            "type": "string",
+            "nullable": true,
+            "description": "偏好语言"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "创建时间"
+          }
+        }
+      },
+      "StaffRegistrationPayload": {
+        "type": "object",
+        "required": [
+          "username",
+          "email",
+          "password",
+          "confirmPassword"
+        ],
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "工作人员用户名",
+            "example": "staffmember"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "工作人员电子邮箱",
+            "example": "staff@example.com"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "description": "密码",
+            "example": "StaffP@sswOrd789"
+          },
+          "confirmPassword": {
+            "type": "string",
+            "format": "password",
+            "description": "确认密码",
+            "example": "StaffP@sswOrd789"
+          },
+          "isAdmin": {
+            "type": "boolean",
+            "description": "是否为管理员 (可选，默认 false)",
+            "example": false
+          },
+          "avatarURL": {
+            "type": "string",
+            "format": "url",
+            "nullable": true,
+            "description": "头像链接 (可选)",
+            "example": "http://example.com/staff_avatar.jpg"
+          },
+          "preferredLanguage": {
+            "type": "string",
+            "nullable": true,
+            "description": "偏好语言 (可选，默认 zh-CN)",
+            "example": "en-US"
+          },
+          "notificationPreferences": {
+            "type": "object",
+            "nullable": true,
+            "description": "通知偏好设置 (可选)",
+            "example": {
+              "emailNotifications": true
+            }
+          }
+        }
+      },
+      "StaffRegistrationResponse": {
+        "type": "object",
+        "properties": {
+          "staffID": {
+            "type": "string",
+            "format": "uuid",
+            "description": "工作人员ID"
+          },
+          "username": {
+            "type": "string",
+            "description": "用户名"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "电子邮箱"
+          },
+          "isAdmin": {
+            "type": "boolean",
+            "description": "是否为管理员"
+          },
+          "emailVerified": {
+            "type": "boolean",
+            "description": "邮箱是否已验证"
+          },
+          "avatarURL": {
+            "type": "string",
+            "format": "url",
+            "nullable": true,
+            "description": "头像链接"
+          },
+          "preferredLanguage": {
+            "type": "string",
+            "nullable": true,
+            "description": "偏好语言"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "创建时间"
+          }
+        }
+      },
+      "LoginPayload": {
+        "type": "object",
+        "required": [
+          "usernameOrEmail",
+          "password"
+        ],
+        "properties": {
+          "usernameOrEmail": {
+            "type": "string",
+            "description": "用户名或电子邮箱",
+            "example": "johndoe"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "description": "密码",
+            "example": "P@sswOrd123"
+          }
+        }
+      },
+      "LoginResponseUserSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "用户或工作人员ID"
+          },
+          "username": {
+            "type": "string",
+            "description": "用户名"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "电子邮箱"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "staff"
+            ],
+            "description": "用户角色"
+          },
+          "isAdmin": {
+            "type": "boolean",
+            "description": "是否为管理员 (仅当role为staff时相关)"
+          },
+          "avatar": {
+            "type": "string",
+            "format": "url",
+            "nullable": true,
+            "description": "头像链接"
+          },
+          "emailVerified": {
+            "type": "boolean",
+            "description": "邮箱是否已验证"
+          }
+        }
+      },
+      "LoginSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "登录成功!"
+          },
+          "token": {
+            "type": "string",
+            "description": "JWT 认证令牌",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+          },
+          "user": {
+            "$ref": "#/components/schemas/LoginResponseUserSummary"
+          }
+        }
+      },
+      "ForgotPasswordPayload": {
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "注册时使用的电子邮箱地址",
+            "example": "user@example.com"
+          }
+        }
+      },
+      "ResetPasswordPayload": {
+        "type": "object",
+        "required": [
+          "token",
+          "newPassword",
+          "confirmNewPassword"
+        ],
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "从重置密码邮件中获取的令牌",
+            "example": "reset_token_string_here"
+          },
+          "newPassword": {
+            "type": "string",
+            "format": "password",
+            "description": "新密码",
+            "example": "NewP@sswOrd456"
+          },
+          "confirmNewPassword": {
+            "type": "string",
+            "format": "password",
+            "description": "确认新密码",
+            "example": "NewP@sswOrd456"
+          }
+        }
+      },
+      "VerifyEmailPayload": {
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "从验证邮件中获取的令牌",
+            "example": "email_verification_token_string"
+          }
+        }
+      },
+      "GenericSuccessMessage": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "GenericErrorMessage": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "错误信息描述"
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "description": "详细错误内容 (可选)"
+          }
+        },
+        "example": {
+          "message": "请求处理失败。",
+          "error": "具体错误原因... (可选)"
+        }
+      },
+      "StaffProfile": {
+        "type": "object",
+        "properties": {
+          "staffID": {
+            "type": "string",
+            "format": "uuid",
+            "description": "工作人员编号",
+            "example": "s-a1b2-c3d4-e5f6-7890"
+          },
+          "username": {
+            "type": "string",
+            "description": "用户名"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "邮箱"
+          },
+          "isAdmin": {
+            "type": "boolean",
+            "description": "是否为管理员"
+          },
+          "avatarURL": {
+            "type": "string",
+            "format": "url",
+            "nullable": true,
+            "description": "头像链接"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "账户是否激活/未注销"
+          },
+          "emailVerified": {
+            "type": "boolean",
+            "description": "邮箱是否已验证"
+          },
+          "lastLoginAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "最后登录时间"
+          },
+          "preferredLanguage": {
+            "type": "string",
+            "nullable": true,
+            "description": "偏好语言"
+          },
+          "notificationPreferences": {
+            "type": "object",
+            "nullable": true,
+            "description": "通知偏好设置"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "创建时间"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "更新时间"
+          }
+        }
+      },
+      "StaffListResponse": {
+        "type": "object",
+        "properties": {
+          "totalItems": {
+            "type": "integer",
+            "description": "总条目数"
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "总页数"
+          },
+          "currentPage": {
+            "type": "integer",
+            "description": "当前页码"
+          },
+          "staffList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StaffProfile"
+            }
+          }
+        }
+      },
+      "UpdatePasswordPayload": {
+        "type": "object",
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ],
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "format": "password",
+            "description": "当前密码"
+          },
+          "newPassword": {
+            "type": "string",
+            "format": "password",
+            "description": "新密码"
+          }
+        }
+      },
+      "StaffUpdatePayloadByAdmin": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "新的用户名 (如果提供，必须唯一)"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "新的邮箱地址 (如果提供，必须唯一，且会导致 emailVerified 置为 false)"
+          },
+          "avatarURL": {
+            "type": "string",
+            "format": "url",
+            "nullable": true,
+            "description": "新的头像链接"
+          },
+          "isAdmin": {
+            "type": "boolean",
+            "description": "设置是否为管理员"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "设置账户是否激活"
+          }
+        }
+      },
+      "StaffResetPasswordPayload": {
+        "type": "object",
+        "required": [
+          "newPassword"
+        ],
+        "properties": {
+          "newPassword": {
+            "type": "string",
+            "format": "password",
+            "description": "要设置的新密码"
+          }
+        }
+      },
+      "DashboardStats": {
+        "type": "object",
+        "properties": {
+          "users": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer",
+                "example": 150
+              },
+              "newLastMonth": {
+                "type": "integer",
+                "example": 20
+              }
+            }
+          },
+          "staff": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer",
+                "example": 15
+              },
+              "admins": {
+                "type": "integer",
+                "example": 3
+              }
+            }
+          },
+          "content": {
+            "type": "object",
+            "properties": {
+              "articles": {
+                "type": "object",
+                "properties": {
+                  "total": {
+                    "type": "integer",
+                    "example": 200
+                  },
+                  "published": {
+                    "type": "integer",
+                    "example": 180
+                  },
+                  "newLastMonth": {
+                    "type": "integer",
+                    "example": 30
+                  }
+                }
+              },
+              "experiences": {
+                "type": "object",
+                "properties": {
+                  "total": {
+                    "type": "integer",
+                    "example": 100
+                  },
+                  "approved": {
+                    "type": "integer",
+                    "example": 85
+                  },
+                  "pending": {
+                    "type": "integer",
+                    "example": 10
+                  },
+                  "newLastMonth": {
+                    "type": "integer",
+                    "example": 15
+                  }
+                }
+              }
+            }
+          },
+          "taxonomy": {
+            "type": "object",
+            "properties": {
+              "categories": {
+                "type": "integer",
+                "example": 10
+              },
+              "tags": {
+                "type": "integer",
+                "example": 50
+              }
+            }
+          },
+          "popular": {
+            "type": "object",
+            "properties": {
+              "articles": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "articleID": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "viewCount": {
+                      "type": "integer"
+                    },
+                    "averageRating": {
+                      "type": "number",
+                      "format": "float"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              },
+              "experiences": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "experienceID": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "upvoteCount": {
+                      "type": "integer"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "管理员仪表盘统计数据"
+      },
+      "AuditLogAdmin": {
+        "type": "object",
+        "properties": {
+          "staffID": {
+            "type": "string",
+            "format": "uuid",
+            "description": "管理员ID"
+          },
+          "username": {
+            "type": "string",
+            "description": "管理员用户名"
+          }
+        }
+      },
+      "AuditLogEntry": {
+        "type": "object",
+        "properties": {
+          "logID": {
+            "type": "string",
+            "format": "uuid",
+            "description": "日志ID"
+          },
+          "actionType": {
+            "type": "string",
+            "description": "操作类型",
+            "example": "UPDATE_USER_STATUS"
+          },
+          "targetEntityType": {
+            "type": "string",
+            "nullable": true,
+            "description": "目标实体类型",
+            "example": "User"
+          },
+          "targetEntityID": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "目标实体ID"
+          },
+          "oldValue": {
+            "type": "object",
+            "nullable": true,
+            "description": "操作前数据 (JSON)",
+            "example": {
+              "status": "active"
+            }
+          },
+          "newValue": {
+            "type": "object",
+            "nullable": true,
+            "description": "操作后数据 (JSON)",
+            "example": {
+              "status": "inactive"
+            }
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "操作时间"
+          },
+          "ipAddress": {
+            "type": "string",
+            "format": "ip",
+            "nullable": true,
+            "description": "操作者IP"
+          },
+          "adminStaffID": {
+            "type": "string",
+            "format": "uuid",
+            "description": "执行操作的管理员Staff ID (外键)"
+          },
+          "admin": {
+            "$ref": "#/components/schemas/AuditLogAdmin"
+          }
+        }
+      },
+      "PaginatedAuditLogs": {
+        "type": "object",
+        "properties": {
+          "totalItems": {
+            "type": "integer",
+            "example": 100
+          },
+          "totalPages": {
+            "type": "integer",
+            "example": 5
+          },
+          "currentPage": {
+            "type": "integer",
+            "example": 1
+          },
+          "logs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuditLogEntry"
+            }
+          }
+        }
+      },
+      "AdminUserListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "用户或员工ID (userID 或 staffID)"
+          },
+          "userType": {
+            "type": "string",
+            "enum": [
+              "User",
+              "Staff"
+            ],
+            "description": "用户类型"
+          },
+          "username": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "emailVerified": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "lastLoginAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isAdmin": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "nullable": true,
+            "example": "ContentManager"
+          },
+          "department": {
+            "type": "string",
+            "nullable": true,
+            "example": "Editorial"
+          }
+        },
+        "example": {
+          "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+          "userType": "User",
+          "username": "johndoe",
+          "email": "johndoe@example.com",
+          "isActive": true,
+          "createdAt": "2023-01-01T12:00:00Z",
+          "updatedAt": "2023-01-10T10:00:00Z",
+          "emailVerified": true,
+          "lastLoginAt": "2023-01-10T09:00:00Z"
+        }
+      },
+      "PaginatedAdminUsers": {
+        "type": "object",
+        "properties": {
+          "totalItems": {
+            "type": "integer",
+            "example": 50
+          },
+          "totalPages": {
+            "type": "integer",
+            "example": 5
+          },
+          "currentPage": {
+            "type": "integer",
+            "example": 1
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminUserListItem"
+            }
+          }
+        }
+      },
+      "StaffCreationPayloadByAdmin": {
+        "type": "object",
+        "required": [
+          "username",
+          "email",
+          "password",
+          "role"
+        ],
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "用户名",
+            "example": "newstaff"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "邮箱",
+            "example": "newstaff@example.com"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "description": "初始密码",
+            "example": "StaffP@sswOrd"
+          },
+          "role": {
+            "type": "string",
+            "description": "角色",
+            "example": "ContentEditor"
+          },
+          "department": {
+            "type": "string",
+            "nullable": true,
+            "description": "部门",
+            "example": "Medical Content"
+          },
+          "isAdmin": {
+            "type": "boolean",
+            "default": false,
+            "description": "是否为管理员"
+          }
+        }
+      },
+      "UserStatusUpdatePayload": {
+        "type": "object",
+        "required": [
+          "isActive"
+        ],
+        "properties": {
+          "isActive": {
+            "type": "boolean",
+            "description": "新的激活状态 (true for active, false for inactive/disabled)"
+          }
+        }
+      },
+      "SystemConfig": {
+        "type": "object",
+        "properties": {
+          "siteName": {
+            "type": "string",
+            "example": "My Awesome Platform"
+          },
+          "maintenanceMode": {
+            "type": "boolean",
+            "example": false
+          },
+          "allowUserRegistration": {
+            "type": "boolean",
+            "example": true
+          },
+          "maxUploadFileSizeMB": {
+            "type": "integer",
+            "example": 50
+          },
+          "defaultLanguage": {
+            "type": "string",
+            "example": "zh-CN"
+          },
+          "version": {
+            "type": "string",
+            "example": "1.2.3"
+          }
+        }
+      },
+      "Notification": {
+        "type": "object",
+        "properties": {
+          "notificationID": {
+            "type": "string",
+            "format": "uuid",
+            "description": "通知ID"
+          },
+          "recipientUserID": {
+            "type": "string",
+            "format": "uuid",
+            "description": "接收用户ID (通过JWT确定, 此处为展示)"
+          },
+          "recipientUserType": {
+            "type": "string",
+            "enum": [
+              "User",
+              "Staff"
+            ],
+            "description": "接收者用户类型"
+          },
+          "type": {
+            "type": "string",
+            "description": "通知类型",
+            "example": "NEW_EXPERIENCE_COMMENT"
+          },
+          "content": {
+            "type": "string",
+            "description": "通知内容"
+          },
+          "relatedEntityType": {
+            "type": "string",
+            "nullable": true,
+            "description": "关联实体类型",
+            "example": "LearningExperience"
+          },
+          "relatedEntityID": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "关联实体ID"
+          },
+          "isRead": {
+            "type": "boolean",
+            "description": "是否已读"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "创建时间 (通知发送时间)"
+          }
+        }
+      },
+      "PaginatedNotifications": {
+        "type": "object",
+        "properties": {
+          "totalItems": {
+            "type": "integer",
+            "example": 50
+          },
+          "totalPages": {
+            "type": "integer",
+            "example": 5
+          },
+          "currentPage": {
+            "type": "integer",
+            "example": 1
+          },
+          "unreadCount": {
+            "type": "integer",
+            "example": 5
+          },
+          "notifications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Notification"
+            }
+          }
+        }
+      },
+      "NotificationSummary": {
+        "type": "object",
+        "properties": {
+          "unreadCount": {
+            "type": "integer",
+            "example": 5
+          },
+          "latestUnread": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Notification"
+            },
+            "description": "最新的几条未读通知"
+          }
+        }
+      },
+      "NotificationRelatedData": {
+        "type": "object",
+        "description": "通知关联的实体数据，具体结构取决于 relatedEntityType",
+        "example": {
+          "articleID": "article-uuid",
+          "title": "相关文章标题"
+        }
+      },
+      "NotificationDetails": {
+        "type": "object",
+        "properties": {
+          "notification": {
+            "$ref": "#/components/schemas/Notification"
+          },
+          "relatedData": {
+            "$ref": "#/components/schemas/NotificationRelatedData",
+            "nullable": true
+          }
+        }
+      },
+      "MarkAllNotificationsReadResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "所有通知已标记为已读!"
+          },
+          "count": {
+            "type": "integer",
+            "description": "本次操作标记为已读的通知数量",
+            "example": 3
+          }
+        }
+      },
+      "Tag": {
+        "type": "object",
+        "properties": {
+          "tagID": {
+            "type": "string",
+            "format": "uuid",
+            "description": "标签ID"
+          },
+          "tagName": {
+            "type": "string",
+            "description": "标签名称",
+            "example": "React"
+          },
+          "articleCount": {
+            "type": "integer",
+            "description": "使用该标签的文章数量",
+            "example": 15
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "创建时间"
+          }
+        }
+      },
+      "BriefArticleInfo": {
+        "type": "object",
+        "properties": {
+          "articleID": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          },
+          "coverImageURL": {
+            "type": "string",
+            "format": "url",
+            "nullable": true
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "TagWithArticles": {
+        "type": "object",
+        "properties": {
+          "tagID": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tagName": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "articles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BriefArticleInfo"
+            },
+            "description": "使用此标签的已发布文章列表"
+          }
+        }
+      },
+      "TagCreatePayload": {
+        "type": "object",
+        "required": [
+          "tagName"
+        ],
+        "properties": {
+          "tagName": {
+            "type": "string",
+            "description": "新标签的名称",
+            "example": "JavaScript ES2023"
+          }
+        }
+      },
+      "TagUpdatePayload": {
+        "type": "object",
+        "required": [
+          "tagName"
+        ],
+        "properties": {
+          "tagName": {
+            "type": "string",
+            "description": "标签的新名称",
+            "example": "ECMAScript 2023"
+          }
+        }
+      },
+      "TagResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "tag": {
+            "$ref": "#/components/schemas/Tag"
+          }
+        }
+      },
+      "DeleteTagErrorResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "标签正在被使用，无法删除!"
+          },
+          "usageCount": {
+            "type": "integer",
+            "example": 5
+          }
+        }
+      },
+      "PopularTagStat": {
+        "type": "object",
+        "properties": {
+          "tagID": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "count": {
+            "type": "integer",
+            "description": "使用次数"
+          },
+          "tag": {
+            "type": "object",
+            "properties": {
+              "tagName": {
+                "type": "string",
+                "description": "标签名称"
+              }
+            }
+          }
+        }
+      },
+      "UnusedTagInfo": {
+        "type": "object",
+        "properties": {
+          "tagID": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tagName": {
+            "type": "string"
+          }
+        }
+      },
+      "TagStatsResponse": {
+        "type": "object",
+        "properties": {
+          "popularTags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PopularTagStat"
+            }
+          },
+          "totalTags": {
+            "type": "integer",
+            "example": 100
+          },
+          "unusedTagsCount": {
+            "type": "integer",
+            "example": 10
+          },
+          "unusedTags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UnusedTagInfo"
+            }
+          }
+        }
+      },
+      "MergeTagsPayload": {
+        "type": "object",
+        "required": [
+          "sourceTagId",
+          "targetTagId"
+        ],
+        "properties": {
+          "sourceTagId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "要被合并的源标签ID"
+          },
+          "targetTagId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "合并目标标签ID"
+          }
+        }
+      },
+      "MergeTagsResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "标签合并成功!"
+          },
+          "targetTag": {
+            "$ref": "#/components/schemas/Tag"
+          }
+        }
+      },
+      "UpdateExperienceCommentPayload": {
+        "type": "object",
+        "required": [
+          "commentText"
+        ],
+        "properties": {
+          "commentText": {
+            "type": "string",
+            "description": "新的评论内容",
+            "example": "这是更新后的评论。"
+          }
+        }
+      },
+      "UpdateExperienceCommentResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "评论修改成功!"
+          },
+          "comment": {
+            "$ref": "#/components/schemas/ExperienceComment"
+          }
+        }
+      },
+      "ReportPayload": {
+        "type": "object",
+        "required": [
+          "reason"
+        ],
+        "properties": {
+          "reason": {
+            "type": "string",
+            "description": "举报原因",
+            "example": "内容不当"
+          },
+          "details": {
+            "type": "string",
+            "nullable": true,
+            "description": "详细说明 (可选)",
+            "example": "评论中包含攻击性言论。"
+          }
+        }
+      },
+      "KnowledgeArticle": {
+        "type": "object",
+        "properties": {
+          "articleID": {
+            "type": "string",
+            "format": "uuid",
+            "description": "知识文章ID"
+          },
+          "title": {
+            "type": "string",
+            "description": "标题"
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true,
+            "description": "简介"
+          },
+          "coverImageURL": {
+            "type": "string",
+            "format": "url",
+            "nullable": true,
+            "description": "封面图片链接"
+          },
+          "richTextContent": {
+            "type": "string",
+            "nullable": true,
+            "description": "富文本内容"
+          },
+          "videoURL": {
+            "type": "string",
+            "format": "url",
+            "nullable": true,
+            "description": "视频链接"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Draft",
+              "PendingReview",
+              "Published",
+              "Archived",
+              "Rejected"
+            ],
+            "description": "状态"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "发布时间"
+          },
+          "version": {
+            "type": "integer",
+            "description": "当前版本号"
+          },
+          "averageRating": {
+            "type": "number",
+            "format": "float",
+            "nullable": true,
+            "description": "平均评分"
+          },
+          "viewCount": {
+            "type": "integer",
+            "description": "浏览次数"
+          },
+          "categoryID": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "所属分类ID"
+          },
+          "authorStaffID": {
+            "type": "string",
+            "format": "uuid",
+            "description": "作者Staff ID"
+          },
+          "parentArticleID": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "父文章ID (用于系列文章)"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "创建时间"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "更新时间"
+          }
+        }
+      },
+      "ArticleAuthor": {
+        "type": "object",
+        "properties": {
+          "staffID": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "type": "string"
+          },
+          "avatarURL": {
+            "type": "string",
+            "format": "url",
+            "nullable": true
+          }
+        }
+      },
+      "ArticleCategorySummary": {
+        "type": "object",
+        "properties": {
+          "categoryID": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "KnowledgeArticleBrief": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/KnowledgeArticle"
+          }
+        ],
+        "type": "object",
+        "properties": {
+          "author": {
+            "$ref": "#/components/schemas/ArticleAuthor"
+          },
+          "category": {
+            "$ref": "#/components/schemas/ArticleCategorySummary",
+            "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            }
+          }
+        }
+      },
+      "KnowledgeArticleDetailed": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/KnowledgeArticleBrief"
+          }
+        ],
+        "type": "object",
+        "properties": {
+          "isBookmarked": {
+            "type": "boolean",
+            "description": "当前用户是否已收藏此文章"
+          },
+          "relatedArticles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BriefArticleInfo"
+            },
+            "nullable": true
+          },
+          "parentArticle": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "articleID": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "title": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "PaginatedKnowledgeArticles": {
+        "type": "object",
+        "properties": {
+          "totalItems": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          },
+          "currentPage": {
+            "type": "integer"
+          },
+          "articles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeArticleBrief"
+            }
+          }
+        }
+      },
+      "ArticleFeedback": {
+        "type": "object",
+        "properties": {
+          "feedbackID": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "articleID": {
+            "type": "string",
+            "format": "uuid",
+            "description": "所属文章ID"
+          },
+          "userID": {
+            "type": "string",
+            "format": "uuid",
+            "description": "提交反馈的用户ID"
+          },
+          "userType": {
+            "type": "string",
+            "enum": [
+              "User",
+              "Staff"
+            ]
+          },
+          "rating": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "nullable": true,
+            "description": "评分 (1-5星)"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true,
+            "description": "评论内容"
+          },
+          "isAnonymous": {
+            "type": "boolean",
+            "description": "是否匿名反馈"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "user": {
+            "$ref": "#/components/schemas/AuthorInfo",
+            "description": "提交反馈的用户信息 (如果非匿名)",
+            "nullable": true
+          }
+        }
+      },
+      "PaginatedArticleFeedbacks": {
+        "type": "object",
+        "properties": {
+          "totalItems": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          },
+          "currentPage": {
+            "type": "integer"
+          },
+          "feedbacks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArticleFeedback"
+            }
+          }
+        }
+      },
+      "ArticleFeedbackPayload": {
+        "type": "object",
+        "properties": {
+          "rating": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "nullable": true,
+            "description": "评分 (1-5 星)，可选"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true,
+            "description": "反馈评论内容，可选"
+          },
+          "isAnonymous": {
+            "type": "boolean",
+            "default": false,
+            "description": "是否匿名提交，可选"
+          }
+        }
+      },
+      "ArticleVersion": {
+        "type": "object",
+        "properties": {
+          "versionID": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "articleID": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versionNumber": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          },
+          "richTextContent": {
+            "type": "string",
+            "nullable": true
+          },
+          "videoURL": {
+            "type": "string",
+            "format": "url",
+            "nullable": true
+          },
+          "authorStaffID": {
+            "type": "string",
+            "format": "uuid",
+            "description": "保存此版本的Staff ID"
+          },
+          "savedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "author": {
+            "$ref": "#/components/schemas/ArticleAuthor",
+            "description": "保存此版本的员工信息"
+          }
+        }
+      },
+      "PaginatedArticleVersions": {
+        "type": "object",
+        "properties": {
+          "totalItems": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          },
+          "currentPage": {
+            "type": "integer"
+          },
+          "versions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArticleVersion"
+            }
+          }
+        }
+      },
+      "KnowledgeArticleCreatePayload": {
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "如何诊断普通感冒"
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true,
+            "example": "本文介绍了普通感冒的常见症状和诊断方法。"
+          },
+          "coverImageURL": {
+            "type": "string",
+            "format": "url",
+            "nullable": true
+          },
+          "richTextContent": {
+            "type": "string",
+            "nullable": true,
+            "example": "<p>详细内容...</p>"
+          },
+          "videoURL": {
+            "type": "string",
+            "format": "url",
+            "nullable": true
+          },
+          "categoryID": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "所属分类ID"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true,
+            "description": "标签名称或ID数组",
+            "example": [
+              "感冒",
+              "呼吸道"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Draft",
+              "PendingReview",
+              "Published"
+            ],
+            "default": "Draft",
+            "description": "文章状态"
+          },
+          "parentArticleID": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "父文章ID (用于系列文章)"
+          }
+        }
+      },
+      "KnowledgeArticleUpdatePayload": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          },
+          "coverImageURL": {
+            "type": "string",
+            "format": "url",
+            "nullable": true
+          },
+          "richTextContent": {
+            "type": "string",
+            "nullable": true
+          },
+          "videoURL": {
+            "type": "string",
+            "format": "url",
+            "nullable": true
+          },
+          "categoryID": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true,
+            "description": "标签名称或ID数组 (会替换现有标签)"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Draft",
+              "PendingReview",
+              "Published",
+              "Archived",
+              "Rejected"
+            ],
+            "nullable": true
+          },
+          "parentArticleID": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        }
+      },
+      "UnbookmarkArticleResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "取消收藏成功!"
+          },
+          "isBookmarked": {
+            "type": "boolean",
+            "example": false,
+            "description": "当前收藏状态"
+          }
+        }
+      },
+      "MedicalCategory": {
+        "type": "object",
+        "properties": {
+          "categoryID": {
+            "type": "string",
+            "format": "uuid",
+            "description": "类别ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "类别名称",
+            "example": "内科"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "类别描述"
+          },
+          "parentCategoryID": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "父类别ID"
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true,
+            "description": "是否激活"
+          },
+          "createdByStaffID": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "创建人Staff ID"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "subcategories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MedicalCategory"
+            },
+            "description": "子类别列表 (仅活跃的)",
+            "nullable": true
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MedicalCategory"
+            },
+            "description": "子类别 (用于树形结构显示)",
+            "nullable": true
+          },
+          "articleCount": {
+            "type": "integer",
+            "nullable": true,
+            "description": "该类别下的文章数量 (可能在特定查询中提供)"
+          }
+        }
+      },
+      "MedicalCategoryCreatePayload": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "儿科"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "关于儿童健康的分类"
+          },
+          "parentCategoryID": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "父类别ID (可选)"
+          }
+        }
+      },
+      "MedicalCategoryUpdatePayload": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "小儿内科"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "parentCategoryID": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "设置类别是否激活"
+          }
+        }
+      },
+      "CategoryResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "category": {
+            "$ref": "#/components/schemas/MedicalCategory"
+          }
+        }
+      },
+      "DeleteCategoryResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "类别已成功删除! 或 类别已设置为非活跃状态，因为存在关联的文章!"
+          },
+          "category": {
+            "$ref": "#/components/schemas/MedicalCategory",
+            "nullable": true,
+            "description": "如果类别被设为非活跃，则返回类别对象"
+          }
+        }
+      },
+      "PaginatedCategoryArticles": {
+        "type": "object",
+        "properties": {
+          "totalItems": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          },
+          "currentPage": {
+            "type": "integer"
+          },
+          "category": {
+            "$ref": "#/components/schemas/MedicalCategory",
+            "description": "当前分类信息 (不含子分类和文章列表)"
+          },
+          "articles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeArticleBrief"
+            }
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/api/admin/dashboard/stats": {
+      "get": {
+        "summary": "获取管理员仪表盘统计数据",
+        "tags": [
+          "Admin - Dashboard"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取仪表盘统计数据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardStats"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/audit-logs": {
+      "get": {
+        "summary": "获取系统审计日志 (分页)",
+        "tags": [
+          "Admin - AuditLogs"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "页码"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 20
+            },
+            "description": "每页数量"
+          },
+          {
+            "in": "query",
+            "name": "actionType",
+            "schema": {
+              "type": "string"
+            },
+            "description": "按操作类型过滤 (可选)"
+          },
+          {
+            "in": "query",
+            "name": "adminId",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "按执行管理员ID过滤 (可选)"
+          },
+          {
+            "in": "query",
+            "name": "fromDate",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "起始日期 (YYYY-MM-DD) (可选)"
+          },
+          {
+            "in": "query",
+            "name": "toDate",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "结束日期 (YYYY-MM-DD) (可选)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取审计日志列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedAuditLogs"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/users": {
+      "get": {
+        "summary": "获取用户列表 (包括普通用户和工作人员, 分页)",
+        "tags": [
+          "Admin - UserManagement"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "页码"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "每页数量"
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "user",
+                "staff"
+              ],
+              "default": "all"
+            },
+            "description": "用户类型过滤 (all, user, staff)"
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string"
+            },
+            "description": "按用户名或邮箱搜索 (可选)"
+          },
+          {
+            "in": "query",
+            "name": "isActive",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "按激活状态过滤 (true 或 false) (可选)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取用户列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedAdminUsers"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/staff": {
+      "post": {
+        "summary": "管理员创建新的工作人员账户",
+        "tags": [
+          "Admin - StaffManagement"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffCreationPayloadByAdmin"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "工作人员账户创建成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffProfile"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误或邮箱/用户名已存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/staff/{staffId}": {
+      "get": {
+        "summary": "获取特定工作人员的详细信息 (管理员权限)",
+        "tags": [
+          "Admin - StaffManagement"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "staffId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "工作人员的ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取工作人员信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffProfile"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权"
+          },
+          "403": {
+            "description": "禁止访问 (用户不是管理员)"
+          },
+          "404": {
+            "description": "工作人员未找到"
+          },
+          "500": {
+            "description": "服务器内部错误"
+          }
+        }
+      },
+      "put": {
+        "summary": "更新特定工作人员的信息 (管理员权限)",
+        "tags": [
+          "Admin - StaffManagement"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "staffId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "要更新的工作人员ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffUpdatePayloadByAdmin"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "工作人员信息更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "工作人员信息已更新!"
+                    },
+                    "staff": {
+                      "$ref": "#/components/schemas/StaffProfile"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求无效 (例如，用户名或邮箱已被使用)"
+          },
+          "401": {
+            "description": "未授权"
+          },
+          "403": {
+            "description": "禁止访问 (用户不是管理员)"
+          },
+          "404": {
+            "description": "工作人员未找到"
+          },
+          "500": {
+            "description": "服务器内部错误"
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除特定工作人员的账户 (软删除，管理员权限)",
+        "tags": [
+          "Admin - StaffManagement"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "staffId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "要删除的工作人员ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "工作人员账户删除成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessMessage",
+                  "example": {
+                    "message": "工作人员账户已删除!"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求无效 (例如，试图删除自己的账户)"
+          },
+          "401": {
+            "description": "未授权"
+          },
+          "403": {
+            "description": "禁止访问 (用户不是管理员)"
+          },
+          "404": {
+            "description": "工作人员未找到"
+          },
+          "500": {
+            "description": "服务器内部错误"
+          }
+        }
+      }
+    },
+    "/api/admin/staff/{staffId}/reset-password": {
+      "put": {
+        "summary": "重置特定工作人员的密码 (管理员权限)",
+        "tags": [
+          "Admin - StaffManagement"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "staffId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "工作人员的ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffResetPasswordPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "工作人员密码重置成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessMessage",
+                  "example": {
+                    "message": "工作人员密码已重置!"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求无效 (例如，未提供新密码)"
+          },
+          "401": {
+            "description": "未授权"
+          },
+          "403": {
+            "description": "禁止访问 (用户不是管理员)"
+          },
+          "404": {
+            "description": "工作人员未找到"
+          },
+          "500": {
+            "description": "服务器内部错误"
+          }
+        }
+      }
+    },
+    "/api/admin/users/{userType}/{userId}/status": {
+      "put": {
+        "summary": "更新用户或工作人员的账户状态 (激活/禁用)",
+        "tags": [
+          "Admin - UserManagement"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userType",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "user",
+                "staff"
+              ]
+            },
+            "description": "目标账户类型 (user 或 staff)"
+          },
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "目标账户的ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserStatusUpdatePayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "账户状态更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessMessage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误 (例如无效的 userType)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "未找到指定的用户/工作人员",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/tags/{tagId}": {
+      "delete": {
+        "summary": "删除标签 (需要管理员权限)",
+        "tags": [
+          "Admin - TagManagement"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tagId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "要删除的标签ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "标签删除成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessMessage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "标签正在被使用，无法删除",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteTagErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限操作 (非管理员)"
+          },
+          "404": {
+            "description": "标签不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/admin/tags/merge": {
+      "post": {
+        "summary": "合并两个标签 (需要管理员权限)",
+        "description": "将源标签的所有关联迁移到目标标签，然后删除源标签。",
+        "tags": [
+          "Admin - TagManagement"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MergeTagsPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "标签合并成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MergeTagsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误 (例如，源和目标ID相同，或ID无效)"
+          },
+          "403": {
+            "description": "无权限操作 (非管理员)"
+          },
+          "404": {
+            "description": "源标签或目标标签不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/admin/system-config": {
+      "get": {
+        "summary": "获取系统配置信息",
+        "tags": [
+          "Admin - SystemConfig"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取系统配置",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemConfig"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "更新系统配置信息",
+        "tags": [
+          "Admin - SystemConfig"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SystemConfig"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "系统配置更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemConfig"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register/user": {
+      "post": {
+        "summary": "注册新用户账户",
+        "tags": [
+          "Client - Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRegistrationPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "用户注册成功，提示检查邮箱激活账户",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "用户注册成功！请检查您的邮箱以激活账户。"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/UserRegistrationResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求无效 (例如，信息不完整、密码不匹配、用户名或邮箱已被使用)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部注册过程中发生错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "summary": "用户或工作人员登录",
+        "tags": [
+          "Client - Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "登录成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求无效 (例如，未提供用户名/邮箱或密码)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "认证失败 (用户名/邮箱或密码不正确)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "禁止访问 (例如，账户已被停用)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部登录过程中发生错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "summary": "获取当前登录的用户或工作人员的详细信息",
+        "tags": [
+          "Client - Auth"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取当前实体（用户或工作人员）的信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/UserProfile"
+                    },
+                    {
+                      "$ref": "#/components/schemas/StaffProfile"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权 (令牌无效或过期)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "实体未找到",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh-token": {
+      "post": {
+        "summary": "刷新访问令牌",
+        "tags": [
+          "Client - Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "refreshToken"
+                ],
+                "properties": {
+                  "refreshToken": {
+                    "type": "string",
+                    "description": "刷新令牌"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功刷新令牌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accessToken": {
+                      "type": "string",
+                      "description": "新的访问令牌"
+                    },
+                    "refreshToken": {
+                      "type": "string",
+                      "description": "新的刷新令牌（可能与旧的相同）"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求无效（未提供刷新令牌）"
+          },
+          "401": {
+            "description": "刷新令牌无效或已过期"
+          },
+          "500": {
+            "description": "服务器内部错误"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "summary": "用户或工作人员退出登录",
+        "tags": [
+          "Client - Auth"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功退出登录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessMessage",
+                  "example": {
+                    "message": "已成功退出登录!"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权 (令牌无效)"
+          },
+          "500": {
+            "description": "服务器内部错误"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/forgot-password": {
+      "post": {
+        "summary": "请求发送重置密码邮件",
+        "tags": [
+          "Client - Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "请求成功，提示用户检查邮箱",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessMessage",
+                  "example": {
+                    "message": "如果邮箱地址存在于我们的系统中，您将会收到一封包含重置密码指示的邮件。"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求无效 (例如，未提供邮箱或邮箱格式不正确)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "邮箱地址未在系统中找到 (或者为了安全，即使找不到也返回200)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误 (例如，邮件发送失败)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/reset-password": {
+      "post": {
+        "summary": "使用令牌重置密码",
+        "tags": [
+          "Client - Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "密码重置成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessMessage",
+                  "example": {
+                    "message": "密码已成功重置，您现在可以使用新密码登录。"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求无效 (例如，令牌无效或已过期、密码不匹配、新密码不符合要求)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/verify-email": {
+      "post": {
+        "summary": "使用令牌验证用户邮箱地址",
+        "tags": [
+          "Client - Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyEmailPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "邮箱验证成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessMessage",
+                  "example": {
+                    "message": "邮箱已成功验证！"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求无效 (例如，令牌无效或已过期)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/articles/": {
+      "get": {
+        "summary": "获取知识文章列表 (公开，默认获取已发布的)",
+        "tags": [
+          "Client - KnowledgeArticles"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Published",
+                "Draft",
+                "PendingReview",
+                "Archived",
+                "Rejected"
+              ],
+              "default": "Published"
+            },
+            "description": "按状态筛选 (Published 对所有人可见, 其他状态仅工作人员可见)"
+          },
+          {
+            "in": "query",
+            "name": "categoryID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "按分类ID筛选"
+          },
+          {
+            "in": "query",
+            "name": "tag",
+            "schema": {
+              "type": "string"
+            },
+            "description": "按标签名称筛选"
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string"
+            },
+            "description": "按标题或摘要搜索"
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "publishedAt",
+                "createdAt",
+                "title",
+                "viewCount",
+                "averageRating"
+              ],
+              "default": "publishedAt"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sortOrder",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "default": "DESC"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取文章列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedKnowledgeArticles"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      },
+      "post": {
+        "summary": "创建新的知识文章 (工作人员)",
+        "tags": [
+          "Client - KnowledgeArticles"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KnowledgeArticleCreatePayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "文章创建成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "article": {
+                      "$ref": "#/components/schemas/KnowledgeArticleDetailed"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误"
+          },
+          "403": {
+            "description": "无权限 (非工作人员)"
+          },
+          "404": {
+            "description": "分类不存在 (如果提供了categoryID)"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/v1/articles/{articleId}": {
+      "get": {
+        "summary": "获取特定知识文章的详情",
+        "tags": [
+          "Client - KnowledgeArticles"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "articleId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "文章ID"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取文章详情",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeArticleDetailed"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权访问此文章 (如文章未发布且非工作人员)"
+          },
+          "404": {
+            "description": "文章不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      },
+      "put": {
+        "summary": "更新知识文章 (工作人员)",
+        "tags": [
+          "Client - KnowledgeArticles"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "articleId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "文章ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KnowledgeArticleUpdatePayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "文章更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "article": {
+                      "$ref": "#/components/schemas/KnowledgeArticleDetailed"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误"
+          },
+          "403": {
+            "description": "无权限 (非工作人员)"
+          },
+          "404": {
+            "description": "文章或分类不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除知识文章 (工作人员)",
+        "tags": [
+          "Client - KnowledgeArticles"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "articleId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "文章ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "文章删除成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessMessage"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限 (非工作人员)"
+          },
+          "404": {
+            "description": "文章不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/v1/articles/{articleId}/bookmark": {
+      "post": {
+        "summary": "收藏/取消收藏知识文章",
+        "tags": [
+          "Client - KnowledgeArticles"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "articleId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "文章ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "操作成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToggleBookmarkResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "文章不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/v1/articles/{articleId}/feedback": {
+      "get": {
+        "summary": "获取指定知识文章的反馈列表 (分页)",
+        "tags": [
+          "Client - KnowledgeArticles"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "articleId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "文章ID"
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "rating"
+              ],
+              "default": "createdAt"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sortOrder",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "default": "DESC"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取反馈列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedArticleFeedbacks"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "文章不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      },
+      "post": {
+        "summary": "提交对知识文章的反馈 (评分/评论)",
+        "tags": [
+          "Client - KnowledgeArticles"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "articleId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "文章ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArticleFeedbackPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "反馈已更新",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "feedback": {
+                      "$ref": "#/components/schemas/ArticleFeedback"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "反馈提交成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "feedback": {
+                      "$ref": "#/components/schemas/ArticleFeedback"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误"
+          },
+          "404": {
+            "description": "文章不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/v1/articles/{articleId}/versions": {
+      "get": {
+        "summary": "获取知识文章的版本历史 (工作人员)",
+        "tags": [
+          "Client - KnowledgeArticles"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "articleId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "文章ID"
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取版本历史",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedArticleVersions"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限 (非工作人员)"
+          },
+          "404": {
+            "description": "文章不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      },
+      "post": {
+        "summary": "创建新的文章版本 (工作人员)",
+        "description": "基于文章当前内容创建一个新的版本记录，并增加主文章的版本号。",
+        "tags": [
+          "Client - KnowledgeArticles"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "articleId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "文章ID"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "新版本创建成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "$ref": "#/components/schemas/ArticleVersion"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限 (非工作人员)"
+          },
+          "404": {
+            "description": "文章不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/v1/articles/{articleId}/versions/{versionId}": {
+      "get": {
+        "summary": "获取知识文章的特定版本详情 (工作人员)",
+        "tags": [
+          "Client - KnowledgeArticles"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "articleId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "文章ID"
+          },
+          {
+            "in": "path",
+            "name": "versionId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "版本ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取文章版本详情",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleVersion"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限 (非工作人员)"
+          },
+          "404": {
+            "description": "文章或版本不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/v1/articles/{articleId}/status": {
+      "put": {
+        "summary": "更新文章状态 (工作人员)",
+        "tags": [
+          "Client - KnowledgeArticles"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "articleId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "文章ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "status"
+                ],
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "Draft",
+                      "PendingReview",
+                      "Published",
+                      "Archived",
+                      "Rejected"
+                    ],
+                    "description": "新的文章状态"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "文章状态更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeArticle"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "无效的状态值"
+          },
+          "403": {
+            "description": "无权限 (非工作人员)"
+          },
+          "404": {
+            "description": "文章不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/v1/articles/{articleId}/tags": {
+      "post": {
+        "summary": "为文章添加标签 (工作人员)",
+        "tags": [
+          "Client - KnowledgeArticles"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "articleId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "文章ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "tagIds"
+                ],
+                "properties": {
+                  "tagIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "description": "标签ID数组"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "标签添加成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "article": {
+                      "$ref": "#/components/schemas/KnowledgeArticleDetailed"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "标签ID列表不能为空或标签不存在"
+          },
+          "403": {
+            "description": "无权限 (非工作人员)"
+          },
+          "404": {
+            "description": "文章不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/v1/articles/{articleId}/tags/{tagId}": {
+      "delete": {
+        "summary": "从文章移除标签 (工作人员)",
+        "tags": [
+          "Client - KnowledgeArticles"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "articleId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "文章ID"
+          },
+          {
+            "in": "path",
+            "name": "tagId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "标签ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "标签移除成功"
+          },
+          "403": {
+            "description": "无权限 (非工作人员)"
+          },
+          "404": {
+            "description": "文章或标签不存在，或文章没有此标签"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/v1/experiences/": {
+      "get": {
+        "summary": "获取学习心得列表 (公开，默认获取已批准的)",
+        "tags": [
+          "Client - LearningExperiences"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "页码"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "每页数量"
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Approved",
+                "PendingReview",
+                "Draft",
+                "Rejected",
+                "Published"
+              ],
+              "default": "Approved"
+            },
+            "description": "按状态筛选 (仅工作人员可查看非Approved或非Published状态的心得，除非是用户查看自己的)"
+          },
+          {
+            "in": "query",
+            "name": "userId",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "按用户ID筛选 (查看特定用户的心得)"
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string"
+            },
+            "description": "按标题或内容搜索"
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "upvoteCount",
+                "title"
+              ],
+              "default": "createdAt"
+            },
+            "description": "排序字段"
+          },
+          {
+            "in": "query",
+            "name": "sortOrder",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "default": "DESC"
+            },
+            "description": "排序顺序"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取心得列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedLearningExperiences"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      },
+      "post": {
+        "summary": "用户创建新的学习心得",
+        "tags": [
+          "Client - LearningExperiences"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LearningExperienceCreatePayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "心得创建成功 (默认为草稿状态)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "experience": {
+                      "$ref": "#/components/schemas/LearningExperience"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误 (如标题内容为空)"
+          },
+          "404": {
+            "description": "关联的文章不存在 (如果提供了relatedArticleID)"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/v1/experiences/{experienceId}": {
+      "get": {
+        "summary": "获取特定学习心得的详情",
+        "tags": [
+          "Client - LearningExperiences"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "experienceId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "心得ID"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取心得详情",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LearningExperienceDetailed"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权访问此心得 (例如，心得未批准且非作者/工作人员)"
+          },
+          "404": {
+            "description": "心得不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      },
+      "put": {
+        "summary": "更新学习心得 (作者更新内容，工作人员可更新状态)",
+        "tags": [
+          "Client - LearningExperiences"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "experienceId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "心得ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LearningExperienceUpdatePayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "心得更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "experience": {
+                      "$ref": "#/components/schemas/LearningExperienceDetailed"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求错误 (如用户修改已审核心得，或状态转换无效)"
+          },
+          "403": {
+            "description": "无权限修改"
+          },
+          "404": {
+            "description": "心得不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除学习心得 (作者或工作人员)",
+        "tags": [
+          "Client - LearningExperiences"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "experienceId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "心得ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "心得删除成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessMessage"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限删除"
+          },
+          "404": {
+            "description": "心得不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/v1/experiences/{experienceId}/comments": {
+      "get": {
+        "summary": "获取指定学习心得的评论列表 (分页)",
+        "tags": [
+          "Client - LearningExperiences"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "experienceId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "心得ID"
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取评论列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedExperienceComments"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "心得不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      },
+      "post": {
+        "summary": "发表对学习心得的评论",
+        "tags": [
+          "Client - LearningExperiences"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "experienceId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "心得ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExperienceCommentPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "评论发表成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperienceComment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "评论内容为空或心得不允许评论"
+          },
+          "404": {
+            "description": "心得不存在或父评论不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/v1/experiences/comments/{commentId}": {
+      "delete": {
+        "summary": "删除心得评论 (评论作者或工作人员)",
+        "tags": [
+          "Client - LearningExperiences"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "commentId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "评论ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "评论删除成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessMessage"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限删除此评论"
+          },
+          "404": {
+            "description": "评论不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/v1/experiences/{experienceId}/upvote": {
+      "post": {
+        "summary": "点赞/取消点赞学习心得",
+        "tags": [
+          "Client - LearningExperiences"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "experienceId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "心得ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "操作成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "upvoteCount": {
+                      "type": "integer"
+                    },
+                    "action": {
+                      "type": "string",
+                      "enum": [
+                        "upvoted",
+                        "removed_upvote"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "心得不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/v1/experiences/{experienceId}/bookmark": {
+      "post": {
+        "summary": "收藏/取消收藏学习心得",
+        "tags": [
+          "Client - LearningExperiences"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "experienceId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "心得ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "操作成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToggleBookmarkResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "心得不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/v1/experiences/{experienceId}/submit": {
+      "post": {
+        "summary": "用户提交心得进行审核",
+        "tags": [
+          "Client - LearningExperiences"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "experienceId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "心得ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "心得已成功提交审核",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "experience": {
+                      "$ref": "#/components/schemas/LearningExperienceBrief"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求错误 (如心得状态不是草稿)"
+          },
+          "403": {
+            "description": "无权限提交审核 (不是心得作者)"
+          },
+          "404": {
+            "description": "心得不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/v1/experiences/{experienceId}/reviews": {
+      "get": {
+        "summary": "获取心得的审核历史记录",
+        "tags": [
+          "Client - LearningExperiences"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "experienceId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "心得ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取审核历史",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperienceReviewHistoryResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限查看 (非心得作者或非工作人员)"
+          },
+          "404": {
+            "description": "心得不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/v1/experiences/staff/{experienceId}/review": {
+      "post": {
+        "summary": "工作人员审核心得",
+        "tags": [
+          "Client - LearningExperiences"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "experienceId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "心得ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "status"
+                ],
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "Approved",
+                      "Rejected",
+                      "Published"
+                    ],
+                    "description": "审核结果"
+                  },
+                  "reviewComments": {
+                    "type": "string",
+                    "description": "审核意见 (可选)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "审核成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperienceReviewResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求错误 (如心得状态不是待审核)"
+          },
+          "403": {
+            "description": "无权限审核 (非工作人员)"
+          },
+          "404": {
+            "description": "心得不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/v1/experiences/staff/pending": {
+      "get": {
+        "summary": "获取待审核的学习心得列表 (工作人员)",
+        "tags": [
+          "Client - LearningExperiences"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "schema": {
+              "type": "string",
+              "default": "createdAt"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sortOrder",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "default": "ASC"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取待审核心得列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedLearningExperiences"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限 (非工作人员)"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/v1/experiences/{experienceId}/comments/{commentId}": {
+      "put": {
+        "summary": "修改学习心得评论",
+        "tags": [
+          "Client - LearningExperiences"
+        ],
+        "description": "用户修改自己发布的学习心得评论。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "experienceId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "学习心得的ID。"
+          },
+          {
+            "in": "path",
+            "name": "commentId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "要修改的评论ID。"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateExperienceCommentPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "评论修改成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateExperienceCommentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "无效的输入或评论不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权，需要登录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "禁止访问 (例如，尝试修改他人评论)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "心得或评论未找到",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/experiences/{experienceId}/report": {
+      "post": {
+        "summary": "举报学习心得",
+        "tags": [
+          "Client - LearningExperiences"
+        ],
+        "description": "任何已登录用户可以举报一篇学习心得。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "experienceId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "被举报学习心得的ID。"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "举报已提交",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "学习心得举报成功，我们会尽快处理。"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "无效的输入或举报原因缺失",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权，需要登录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "学习心得未找到",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/experiences/{experienceId}/comments/{commentId}/report": {
+      "post": {
+        "summary": "举报学习心得的评论",
+        "tags": [
+          "Client - LearningExperiences"
+        ],
+        "description": "任何已登录用户可以举报学习心得下的某条评论。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "experienceId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "学习心得的ID。"
+          },
+          {
+            "in": "path",
+            "name": "commentId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "被举报评论的ID。"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "评论举报已提交",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "评论举报成功，我们会尽快处理。"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "无效的输入或举报原因缺失",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权，需要登录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "学习心得或评论未找到",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/categories/": {
+      "get": {
+        "summary": "获取医疗知识类别列表",
+        "tags": [
+          "Client - MedicalCategories"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "flat",
+                "tree"
+              ],
+              "default": "flat"
+            },
+            "description": "返回格式 (flat - 扁平列表, tree - 树形结构)"
+          },
+          {
+            "in": "query",
+            "name": "onlyActive",
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "description": "是否只返回激活的类别"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取类别列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MedicalCategory"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      },
+      "post": {
+        "summary": "创建新的医疗知识类别 (工作人员)",
+        "tags": [
+          "Client - MedicalCategories"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MedicalCategoryCreatePayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "类别创建成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误 (如名称已存在)"
+          },
+          "403": {
+            "description": "无权限 (非工作人员)"
+          },
+          "404": {
+            "description": "父类别不存在 (如果提供了 parentCategoryID)"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/v1/categories/{categoryId}": {
+      "get": {
+        "summary": "获取特定医疗类别的详情 (包含子类别)",
+        "tags": [
+          "Client - MedicalCategories"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "categoryId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "类别ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取类别详情",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MedicalCategory"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "类别不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      },
+      "put": {
+        "summary": "更新医疗知识类别 (工作人员)",
+        "tags": [
+          "Client - MedicalCategories"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "categoryId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "类别ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MedicalCategoryUpdatePayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "类别更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误 (如名称已存在，或循环依赖)"
+          },
+          "403": {
+            "description": "无权限 (非工作人员)"
+          },
+          "404": {
+            "description": "类别或父类别不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除医疗知识类别 (工作人员)",
+        "description": "如果类别包含子类别，则无法删除。如果类别有关联文章，则将其设为非活跃状态，否则物理删除。",
+        "tags": [
+          "Client - MedicalCategories"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "categoryId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "类别ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "操作成功 (类别已删除或已设为非活跃)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteCategoryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "无法删除 (如包含子类别)"
+          },
+          "403": {
+            "description": "无权限 (非工作人员)"
+          },
+          "404": {
+            "description": "类别不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/v1/categories/{categoryId}/articles": {
+      "get": {
+        "summary": "获取特定医疗类别下的知识文章列表 (分页)",
+        "tags": [
+          "Client - MedicalCategories"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "categoryId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "类别ID"
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "in": "query",
+            "name": "includeSubcategories",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "是否包含子分类下的文章"
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Published",
+                "Draft",
+                "PendingReview"
+              ],
+              "default": "Published"
+            },
+            "description": "文章状态 (仅工作人员可查看非Published的文章)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取类别下的文章列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedCategoryArticles"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "类别不存在"
+          },
+          "500": {
+            "description": "服务器错误"
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/": {
+      "get": {
+        "summary": "获取当前用户的通知列表 (分页)",
+        "tags": [
+          "Client - Notifications"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "页码"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "每页数量"
+          },
+          {
+            "in": "query",
+            "name": "isRead",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "按已读/未读状态过滤 (true 或 false) (可选)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取通知列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedNotifications"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/summary": {
+      "get": {
+        "summary": "获取当前用户的通知汇总信息 (未读数量和最新几条)",
+        "tags": [
+          "Client - Notifications"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取通知汇总",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationSummary"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/read-all": {
+      "put": {
+        "summary": "标记当前用户的所有未读通知为已读",
+        "tags": [
+          "Client - Notifications"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功标记所有通知为已读",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarkAllNotificationsReadResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/{notificationId}": {
+      "get": {
+        "summary": "获取指定通知的详情，并自动标记为已读",
+        "tags": [
+          "Client - Notifications"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "notificationId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "通知的ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取通知详情",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权查看此通知",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "通知不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除指定通知",
+        "tags": [
+          "Client - Notifications"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "notificationId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "通知的ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "通知已成功删除",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessMessage"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权删除此通知",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "通知不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/{notificationId}/read": {
+      "put": {
+        "summary": "标记指定通知为已读",
+        "tags": [
+          "Client - Notifications"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "notificationId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "通知的ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "通知已标记为已读 (或本身已是已读状态)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessMessage"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权修改此通知",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "通知不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/staff/profile": {
+      "get": {
+        "summary": "获取当前登录工作人员的个人资料",
+        "tags": [
+          "Client - Staff Profile"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取工作人员个人资料",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffProfile"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权 (令牌无效或过期)"
+          },
+          "403": {
+            "description": "禁止访问 (用户不是工作人员)"
+          },
+          "404": {
+            "description": "工作人员未找到"
+          },
+          "500": {
+            "description": "服务器内部错误"
+          }
+        }
+      },
+      "put": {
+        "summary": "更新当前登录工作人员的个人资料",
+        "tags": [
+          "Client - Staff Profile"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "新的用户名 (如果提供，必须唯一)",
+                    "example": "updatedstaffuser"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "新的邮箱地址 (如果提供，必须唯一，且会导致 emailVerified 置为 false)",
+                    "example": "updatedstaff@example.com"
+                  },
+                  "avatarURL": {
+                    "type": "string",
+                    "format": "url",
+                    "nullable": true,
+                    "description": "新的头像链接",
+                    "example": "http://example.com/new_staff_avatar.jpg"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "个人资料更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "个人资料已更新!"
+                    },
+                    "staff": {
+                      "$ref": "#/components/schemas/StaffProfile"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求无效 (例如，用户名或邮箱已被使用)"
+          },
+          "401": {
+            "description": "未授权"
+          },
+          "403": {
+            "description": "禁止访问 (用户不是工作人员)"
+          },
+          "404": {
+            "description": "工作人员未找到"
+          },
+          "500": {
+            "description": "服务器内部错误"
+          }
+        }
+      }
+    },
+    "/api/v1/staff/password": {
+      "put": {
+        "summary": "更新当前登录工作人员的密码",
+        "tags": [
+          "Client - Staff Profile"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePasswordPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "密码更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccessMessage",
+                  "example": {
+                    "message": "密码已成功更新!"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求无效 (例如，未提供当前密码或新密码)"
+          },
+          "401": {
+            "description": "未授权 (例如，当前密码不正确)"
+          },
+          "403": {
+            "description": "禁止访问 (用户不是工作人员)"
+          },
+          "404": {
+            "description": "工作人员未找到"
+          },
+          "500": {
+            "description": "服务器内部错误"
+          }
+        }
+      }
+    },
+    "/api/v1/tags/": {
+      "get": {
+        "summary": "获取所有标签列表",
+        "tags": [
+          "Client - Tags"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string"
+            },
+            "description": "按标签名称搜索 (可选)"
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "tagName",
+                "createdAt",
+                "articleCount"
+              ],
+              "default": "tagName"
+            },
+            "description": "排序字段 (tagName, createdAt, articleCount - articleCount may not be directly sortable by DB without specific query adjustments)"
+          },
+          {
+            "in": "query",
+            "name": "sortOrder",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "default": "ASC"
+            },
+            "description": "排序顺序"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取标签列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Tag"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "创建新标签 (需要工作人员权限)",
+        "tags": [
+          "Client - Tags"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagCreatePayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "标签创建成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误或标签已存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限操作 (非工作人员)"
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tags/{tagId}": {
+      "get": {
+        "summary": "获取特定标签的详情及其关联的文章",
+        "tags": [
+          "Client - Tags"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tagId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "标签的ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取标签详情",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagWithArticles"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "标签不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "更新标签名称 (需要工作人员权限)",
+        "tags": [
+          "Client - Tags"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tagId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "要更新的标签ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagUpdatePayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "标签更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误或新标签名称已存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限操作 (非工作人员)"
+          },
+          "404": {
+            "description": "标签不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tags/stats/usage": {
+      "get": {
+        "summary": "获取标签使用统计 (需要工作人员权限)",
+        "tags": [
+          "Client - Tags"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取标签统计数据",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagStatsResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限操作 (非工作人员)"
+          },
+          "500": {
+            "description": "服务器错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/profile": {
+      "get": {
+        "summary": "获取当前登录用户的个人资料",
+        "tags": [
+          "Client - Users"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取用户个人资料",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfile"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权 - 需要有效的认证令牌"
+          },
+          "404": {
+            "description": "用户未找到"
+          },
+          "500": {
+            "description": "服务器内部错误"
+          }
+        }
+      },
+      "put": {
+        "summary": "更新当前登录用户的个人资料",
+        "tags": [
+          "Client - Users"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "新的用户名 (如果提供，必须唯一)",
+                    "example": "newjohndoe"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "新的邮箱地址 (如果提供，必须唯一，且会导致 emailVerified 置为 false)",
+                    "example": "newjohndoe@example.com"
+                  },
+                  "avatarURL": {
+                    "type": "string",
+                    "format": "url",
+                    "nullable": true,
+                    "description": "新的头像链接",
+                    "example": "http://example.com/new_avatar.jpg"
+                  },
+                  "preferredLanguage": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "偏好语言",
+                    "example": "en-US"
+                  },
+                  "notificationPreferences": {
+                    "type": "object",
+                    "nullable": true,
+                    "description": "通知偏好设置",
+                    "example": {
+                      "emailEnabled": false,
+                      "pushEnabled": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "个人资料更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "个人资料已更新!"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/UserProfile"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "无效的输入数据 (例如，用户名或邮箱已被使用)"
+          },
+          "401": {
+            "description": "未授权"
+          },
+          "404": {
+            "description": "用户未找到"
+          },
+          "500": {
+            "description": "服务器内部错误"
+          }
+        }
+      }
+    },
+    "/api/v1/users/password": {
+      "put": {
+        "summary": "更新当前登录用户的密码",
+        "tags": [
+          "Client - Users"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "currentPassword",
+                  "newPassword"
+                ],
+                "properties": {
+                  "currentPassword": {
+                    "type": "string",
+                    "format": "password",
+                    "description": "当前密码",
+                    "example": "currentSecurePassword123"
+                  },
+                  "newPassword": {
+                    "type": "string",
+                    "format": "password",
+                    "description": "新密码 (应符合一定的复杂度要求，但此处未具体定义)",
+                    "example": "newSecurePassword456"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "密码更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "密码已成功更新!"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求无效 (例如，未提供当前密码或新密码)"
+          },
+          "401": {
+            "description": "未授权 (例如，当前密码不正确)"
+          },
+          "404": {
+            "description": "用户未找到"
+          },
+          "500": {
+            "description": "服务器内部错误"
+          }
+        }
+      }
+    },
+    "/api/v1/users/notification-preferences": {
+      "put": {
+        "summary": "更新当前登录用户的通知设置",
+        "tags": [
+          "Client - Users"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "用户的通知偏好设置对象。具体结构应与 UserProfile schema 中 notificationPreferences 的定义一致。",
+                "example": {
+                  "emailEnabled": true,
+                  "pushEnabled": false
+                },
+                "properties": {
+                  "emailEnabled": {
+                    "type": "boolean"
+                  },
+                  "pushEnabled": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "通知设置更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "通知设置已更新!"
+                    },
+                    "notificationPreferences": {
+                      "type": "object",
+                      "example": {
+                        "emailEnabled": true,
+                        "pushEnabled": false
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求无效 (例如，未提供通知设置)"
+          },
+          "401": {
+            "description": "未授权"
+          },
+          "404": {
+            "description": "用户未找到"
+          },
+          "500": {
+            "description": "服务器内部错误"
+          }
+        }
+      }
+    },
+    "/api/v1/users": {
+      "delete": {
+        "summary": "注销当前登录用户的账户 (软删除)",
+        "tags": [
+          "Client - Users"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "password"
+                ],
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "description": "用户当前密码以确认操作",
+                    "example": "currentSecurePassword123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "账户注销成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "账户已成功注销!"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求无效 (例如，未提供密码)"
+          },
+          "401": {
+            "description": "未授权 (例如，密码不正确)"
+          },
+          "404": {
+            "description": "用户未找到"
+          },
+          "500": {
+            "description": "服务器内部错误"
+          }
+        }
+      }
+    },
+    "/api/v1/users/experiences": {
+      "get": {
+        "summary": "获取当前登录用户的所有学习心得列表",
+        "tags": [
+          "Client - Users"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取学习心得列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LearningExperience"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权"
+          },
+          "500": {
+            "description": "服务器内部错误"
+          }
+        }
+      }
+    }
+  },
+  "tags": []
+}

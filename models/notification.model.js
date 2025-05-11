@@ -47,7 +47,29 @@ module.exports = (sequelize, Sequelize) => {
       timestamps: true, // 保留 createdAt 作为通知发送时间
       updatedAt: false, // 通知内容通常不会更新
       comment: "通知表",
-    },
+      indexes: [
+        {
+          name: "idx_notification_recipient",
+          fields: ["recipientUserID", "recipientUserType"],
+        },
+        {
+          name: "idx_notification_is_read",
+          fields: ["isRead"],
+        },
+        {
+          name: "idx_notification_type",
+          fields: ["type"],
+        },
+        {
+          name: "idx_notification_created",
+          fields: ["createdAt"],
+        },
+        {
+          name: "idx_notification_related_entity",
+          fields: ["relatedEntityType", "relatedEntityID"],
+        },
+      ],
+    }
   );
 
   return Notification;

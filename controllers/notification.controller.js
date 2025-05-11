@@ -6,7 +6,24 @@ const Notification = db.notifications;
  */
 exports.getUserNotifications = async (req, res) => {
   try {
-    const { page = 1, limit = 10, isRead } = req.query;
+    let { page = 1, limit = 10, isRead } = req.query;
+
+    // 验证页码和限制参数
+    page = parseInt(page);
+    limit = parseInt(limit);
+
+    if (isNaN(page) || page < 1) {
+      return res
+        .status(400)
+        .json({ message: "无效的页码，必须为大于0的整数!" });
+    }
+
+    if (isNaN(limit) || limit < 1 || limit > 100) {
+      return res
+        .status(400)
+        .json({ message: "无效的限制参数，必须为1-100之间的整数!" });
+    }
+
     const offset = (page - 1) * limit;
 
     // 构建查询条件
@@ -23,8 +40,8 @@ exports.getUserNotifications = async (req, res) => {
     // 查询通知
     const { count, rows } = await Notification.findAndCountAll({
       where: whereClause,
-      limit: parseInt(limit),
-      offset: parseInt(offset),
+      limit: limit,
+      offset: offset,
       order: [["createdAt", "DESC"]],
     });
 
@@ -40,12 +57,14 @@ exports.getUserNotifications = async (req, res) => {
     res.status(200).json({
       totalItems: count,
       totalPages: Math.ceil(count / limit),
-      currentPage: parseInt(page),
+      currentPage: page,
       unreadCount,
       notifications: rows,
     });
   } catch (error) {
-    res.status(500).json({ message: "获取通知列表时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "获取通知列表时发生错误!", error: error.message });
   }
 };
 
@@ -65,7 +84,8 @@ exports.markAsRead = async (req, res) => {
     // 验证权限：只能标记自己的通知
     if (
       notification.recipientUserID !== req.userId ||
-      notification.recipientUserType !== (req.userRole === "staff" ? "Staff" : "User")
+      notification.recipientUserType !==
+        (req.userRole === "staff" ? "Staff" : "User")
     ) {
       return res.status(403).json({ message: "您无权修改此通知!" });
     }
@@ -80,7 +100,9 @@ exports.markAsRead = async (req, res) => {
 
     res.status(200).json({ message: "通知已标记为已读!" });
   } catch (error) {
-    res.status(500).json({ message: "标记通知已读时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "标记通知已读时发生错误!", error: error.message });
   }
 };
 
@@ -98,7 +120,7 @@ exports.markAllAsRead = async (req, res) => {
           recipientUserType: req.userRole === "staff" ? "Staff" : "User",
           isRead: false,
         },
-      },
+      }
     );
 
     const updatedCount = result[0]; // Sequelize 返回的受影响行数
@@ -108,7 +130,9 @@ exports.markAllAsRead = async (req, res) => {
       count: updatedCount,
     });
   } catch (error) {
-    res.status(500).json({ message: "标记所有通知已读时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "标记所有通知已读时发生错误!", error: error.message });
   }
 };
 
@@ -128,9 +152,44 @@ exports.deleteNotification = async (req, res) => {
     // 验证权限：只能删除自己的通知
     if (
       notification.recipientUserID !== req.userId ||
-      notification.recipientUserType !== (req.userRole === "staff" ? "Staff" : "User")
+      notification.recipientUserType !==
+        (req.userRole === "staff" ? "Staff" : "User")
     ) {
       return res.status(403).json({ message: "您无权删除此通知!" });
+    }
+
+    // 检查通知是否与相关实体存在关联
+    if (notification.relatedEntityID && notification.relatedEntityType) {
+      let entityExists = false;
+
+      switch (notification.relatedEntityType) {
+        case "KnowledgeArticle":
+          entityExists = await db.knowledgeArticles.findByPk(
+            notification.relatedEntityID
+          );
+          break;
+        case "LearningExperience":
+          entityExists = await db.learningExperiences.findByPk(
+            notification.relatedEntityID
+          );
+          break;
+        case "ExperienceComment":
+          entityExists = await db.experienceComments.findByPk(
+            notification.relatedEntityID
+          );
+          break;
+        case "ArticleFeedback":
+          entityExists = await db.articleFeedbacks.findByPk(
+            notification.relatedEntityID
+          );
+          break;
+      }
+
+      if (!entityExists) {
+        console.log(
+          `通知关联的实体 ${notification.relatedEntityType} ID ${notification.relatedEntityID} 不存在`
+        );
+      }
     }
 
     // 删除通知
@@ -138,7 +197,9 @@ exports.deleteNotification = async (req, res) => {
 
     res.status(200).json({ message: "通知已成功删除!" });
   } catch (error) {
-    res.status(500).json({ message: "删除通知时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "删除通知时发生错误!", error: error.message });
   }
 };
 
@@ -158,7 +219,8 @@ exports.getNotificationDetails = async (req, res) => {
     // 验证权限：只能查看自己的通知
     if (
       notification.recipientUserID !== req.userId ||
-      notification.recipientUserType !== (req.userRole === "staff" ? "Staff" : "User")
+      notification.recipientUserType !==
+        (req.userRole === "staff" ? "Staff" : "User")
     ) {
       return res.status(403).json({ message: "您无权查看此通知!" });
     }
@@ -174,36 +236,54 @@ exports.getNotificationDetails = async (req, res) => {
     if (notification.relatedEntityType && notification.relatedEntityID) {
       switch (notification.relatedEntityType) {
         case "KnowledgeArticle":
-          extraData = await db.knowledgeArticles.findByPk(notification.relatedEntityID, {
-            attributes: ["articleID", "title", "coverImageURL", "status", "publishedAt"],
-          });
+          extraData = await db.knowledgeArticles.findByPk(
+            notification.relatedEntityID,
+            {
+              attributes: [
+                "articleID",
+                "title",
+                "coverImageURL",
+                "status",
+                "publishedAt",
+              ],
+            }
+          );
           break;
         case "LearningExperience":
-          extraData = await db.learningExperiences.findByPk(notification.relatedEntityID, {
-            attributes: ["experienceID", "title", "status", "createdAt"],
-          });
+          extraData = await db.learningExperiences.findByPk(
+            notification.relatedEntityID,
+            {
+              attributes: ["experienceID", "title", "status", "createdAt"],
+            }
+          );
           break;
         case "ExperienceComment":
-          extraData = await db.experienceComments.findByPk(notification.relatedEntityID, {
-            include: [
-              {
-                model: db.learningExperiences,
-                as: "experience",
-                attributes: ["experienceID", "title"],
-              },
-            ],
-          });
+          extraData = await db.experienceComments.findByPk(
+            notification.relatedEntityID,
+            {
+              include: [
+                {
+                  model: db.learningExperiences,
+                  as: "experience",
+                  attributes: ["experienceID", "title"],
+                },
+              ],
+            }
+          );
           break;
         case "ArticleFeedback":
-          extraData = await db.articleFeedbacks.findByPk(notification.relatedEntityID, {
-            include: [
-              {
-                model: db.knowledgeArticles,
-                as: "article",
-                attributes: ["articleID", "title"],
-              },
-            ],
-          });
+          extraData = await db.articleFeedbacks.findByPk(
+            notification.relatedEntityID,
+            {
+              include: [
+                {
+                  model: db.knowledgeArticles,
+                  as: "article",
+                  attributes: ["articleID", "title"],
+                },
+              ],
+            }
+          );
           break;
       }
     }
@@ -213,7 +293,9 @@ exports.getNotificationDetails = async (req, res) => {
       relatedData: extraData,
     });
   } catch (error) {
-    res.status(500).json({ message: "获取通知详情时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "获取通知详情时发生错误!", error: error.message });
   }
 };
 
@@ -247,6 +329,8 @@ exports.getNotificationSummary = async (req, res) => {
       latestUnread,
     });
   } catch (error) {
-    res.status(500).json({ message: "获取通知汇总信息时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "获取通知汇总信息时发生错误!", error: error.message });
   }
 };

@@ -45,6 +45,9 @@ module.exports = function (app) {
   // 用户注册
   router.post("/register/user", controller.registerUser);
 
+  // 增加通用注册路径重定向
+  router.post("/register", controller.registerUser);
+
   /**
    * @swagger
    * /api/v1/auth/login:
@@ -170,7 +173,11 @@ module.exports = function (app) {
    *         description: 服务器内部错误
    */
   // 刷新访问令牌
-  router.post("/refresh-token", authMiddleware.verifyRefreshToken, controller.refreshToken);
+  router.post(
+    "/refresh-token",
+    authMiddleware.verifyRefreshToken,
+    controller.refreshToken
+  );
 
   /**
    * @swagger

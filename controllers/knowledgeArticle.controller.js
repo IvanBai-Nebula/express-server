@@ -14,6 +14,9 @@ const Notification = db.notifications;
  * 创建新文章
  */
 exports.createArticle = async (req, res) => {
+  // 启动数据库事务
+  const t = await db.sequelize.transaction();
+
   try {
     const {
       title,
@@ -26,17 +29,47 @@ exports.createArticle = async (req, res) => {
       status = "Draft",
     } = req.body;
 
-    // 基本验证
+    // 增强验证
     if (!title) {
       return res.status(400).json({ message: "文章标题不能为空!" });
     }
 
+    if (title.length > 200) {
+      return res.status(400).json({ message: "文章标题不能超过200个字符!" });
+    }
+
+    if (summary && summary.length > 500) {
+      return res.status(400).json({ message: "文章摘要不能超过500个字符!" });
+    }
+
+    if (videoURL && !/^(https?:\/\/)/i.test(videoURL)) {
+      return res
+        .status(400)
+        .json({ message: "视频URL格式无效，必须以http://或https://开头!" });
+    }
+
     // 验证类别
     if (categoryID) {
-      const category = await MedicalCategory.findByPk(categoryID);
+      const category = await MedicalCategory.findByPk(categoryID, {
+        transaction: t,
+      });
       if (!category) {
+        await t.rollback();
         return res.status(404).json({ message: "所选类别不存在!" });
       }
+    }
+
+    // 验证状态值
+    const validStatuses = [
+      "Draft",
+      "PendingReview",
+      "Published",
+      "Archived",
+      "Rejected",
+    ];
+    if (!validStatuses.includes(status)) {
+      await t.rollback();
+      return res.status(400).json({ message: "无效的文章状态值!" });
     }
 
     // 创建文章
@@ -56,23 +89,28 @@ exports.createArticle = async (req, res) => {
       articleData.publishedAt = new Date();
     }
 
-    const article = await KnowledgeArticle.create(articleData);
+    const article = await KnowledgeArticle.create(articleData, {
+      transaction: t,
+    });
 
     // 如果提供了标签，处理标签关联
     if (tags && Array.isArray(tags) && tags.length > 0) {
-      await handleArticleTags(article.articleID, tags);
+      await handleArticleTags(article.articleID, tags, t);
     }
 
     // 创建第一个版本记录
-    await ArticleVersion.create({
-      articleID: article.articleID,
-      versionNumber: 1,
-      title: article.title,
-      summary: article.summary,
-      richTextContent: article.richTextContent,
-      videoURL: article.videoURL,
-      authorStaffID: req.userId,
-    });
+    await ArticleVersion.create(
+      {
+        articleID: article.articleID,
+        versionNumber: 1,
+        title: article.title,
+        summary: article.summary,
+        richTextContent: article.richTextContent,
+        videoURL: article.videoURL,
+        authorStaffID: req.userId,
+      },
+      { transaction: t }
+    );
 
     // 获取完整的文章（包括关联数据）
     const createdArticle = await KnowledgeArticle.findByPk(article.articleID, {
@@ -92,14 +130,34 @@ exports.createArticle = async (req, res) => {
           attributes: ["staffID", "username", "avatarURL"],
         },
       ],
+      transaction: t,
     });
+
+    // 提交事务
+    await t.commit();
 
     res.status(201).json({
       message: "文章创建成功!",
       article: createdArticle,
     });
   } catch (error) {
-    res.status(500).json({ message: "创建文章时发生错误!", error: error.message });
+    // 回滚事务
+    await t.rollback();
+
+    // 详细错误处理
+    if (error.name === "SequelizeUniqueConstraintError") {
+      return res
+        .status(409)
+        .json({ message: "文章标题已存在，请使用不同的标题!" });
+    }
+
+    if (error.name === "SequelizeForeignKeyConstraintError") {
+      return res.status(400).json({ message: "引用了不存在的外键值!" });
+    }
+
+    res
+      .status(500)
+      .json({ message: "创建文章时发生错误!", error: error.message });
   }
 };
 
@@ -161,7 +219,7 @@ exports.getAllArticles = async (req, res) => {
 
     // 如果按标签过滤
     if (tag) {
-      include[2].where = { name: tag };
+      include[2].where = { tagName: tag };
     }
 
     // 排序选项
@@ -184,7 +242,9 @@ exports.getAllArticles = async (req, res) => {
       articles: rows,
     });
   } catch (error) {
-    res.status(500).json({ message: "获取文章列表时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "获取文章列表时发生错误!", error: error.message });
   }
 };
 
@@ -214,7 +274,7 @@ exports.getArticleById = async (req, res) => {
         },
         {
           model: KnowledgeArticle,
-          as: "parentArticle",
+          as: "previousVersion",
           attributes: ["articleID", "title"],
         },
       ],
@@ -246,7 +306,13 @@ exports.getArticleById = async (req, res) => {
       },
       limit: 5,
       order: [["publishedAt", "DESC"]],
-      attributes: ["articleID", "title", "summary", "coverImageURL", "publishedAt"],
+      attributes: [
+        "articleID",
+        "title",
+        "summary",
+        "coverImageURL",
+        "publishedAt",
+      ],
     });
 
     // 检查当前用户是否已收藏该文章
@@ -272,7 +338,9 @@ exports.getArticleById = async (req, res) => {
 
     res.status(200).json(response);
   } catch (error) {
-    res.status(500).json({ message: "获取文章详情时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "获取文章详情时发生错误!", error: error.message });
   }
 };
 
@@ -282,8 +350,16 @@ exports.getArticleById = async (req, res) => {
 exports.updateArticle = async (req, res) => {
   try {
     const { articleId } = req.params;
-    const { title, summary, coverImageURL, richTextContent, videoURL, categoryID, tags, status } =
-      req.body;
+    const {
+      title,
+      summary,
+      coverImageURL,
+      richTextContent,
+      videoURL,
+      categoryID,
+      tags,
+      status,
+    } = req.body;
 
     // 查找文章
     const article = await KnowledgeArticle.findByPk(articleId);
@@ -317,7 +393,8 @@ exports.updateArticle = async (req, res) => {
     if (title) updateData.title = title;
     if (summary !== undefined) updateData.summary = summary;
     if (coverImageURL !== undefined) updateData.coverImageURL = coverImageURL;
-    if (richTextContent !== undefined) updateData.richTextContent = richTextContent;
+    if (richTextContent !== undefined)
+      updateData.richTextContent = richTextContent;
     if (videoURL !== undefined) updateData.videoURL = videoURL;
     if (categoryID) updateData.categoryID = categoryID;
     if (status) {
@@ -371,7 +448,9 @@ exports.updateArticle = async (req, res) => {
       article: updatedArticle,
     });
   } catch (error) {
-    res.status(500).json({ message: "更新文章时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "更新文章时发生错误!", error: error.message });
   }
 };
 
@@ -434,7 +513,9 @@ exports.deleteArticle = async (req, res) => {
 
     res.status(200).json({ message: "文章已成功删除!" });
   } catch (error) {
-    res.status(500).json({ message: "删除文章时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "删除文章时发生错误!", error: error.message });
   }
 };
 
@@ -467,7 +548,9 @@ exports.getArticleVersions = async (req, res) => {
 
     res.status(200).json(versions);
   } catch (error) {
-    res.status(500).json({ message: "获取文章版本历史时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "获取文章版本历史时发生错误!", error: error.message });
   }
 };
 
@@ -506,7 +589,9 @@ exports.getArticleVersion = async (req, res) => {
 
     res.status(200).json(version);
   } catch (error) {
-    res.status(500).json({ message: "获取文章版本时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "获取文章版本时发生错误!", error: error.message });
   }
 };
 
@@ -598,7 +683,9 @@ exports.submitFeedback = async (req, res) => {
       });
     }
   } catch (error) {
-    res.status(500).json({ message: "提交反馈时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "提交反馈时发生错误!", error: error.message });
   }
 };
 
@@ -634,7 +721,7 @@ exports.getArticleFeedbacks = async (req, res) => {
         },
         {
           model: Staff,
-          as: "staff",
+          as: "staffUser",
           attributes: ["staffID", "username", "avatarURL"],
           required: false,
         },
@@ -647,7 +734,7 @@ exports.getArticleFeedbacks = async (req, res) => {
 
       if (feedback.isAnonymous) {
         delete result.user;
-        delete result.staff;
+        delete result.staffUser;
         result.anonymousUser = true;
       }
 
@@ -661,7 +748,9 @@ exports.getArticleFeedbacks = async (req, res) => {
       feedbacks,
     });
   } catch (error) {
-    res.status(500).json({ message: "获取文章反馈时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "获取文章反馈时发生错误!", error: error.message });
   }
 };
 
@@ -712,7 +801,9 @@ exports.toggleBookmark = async (req, res) => {
       });
     }
   } catch (error) {
-    res.status(500).json({ message: "操作收藏时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "操作收藏时发生错误!", error: error.message });
   }
 };
 
@@ -721,10 +812,11 @@ exports.toggleBookmark = async (req, res) => {
  * @param {string} articleId - 文章ID
  * @param {Array} tagNames - 标签名称数组
  */
-async function handleArticleTags(articleId, tagNames) {
+async function handleArticleTags(articleId, tagNames, t) {
   // 删除现有标签关联
   await ArticleTag.destroy({
     where: { articleID: articleId },
+    transaction: t,
   });
 
   if (!tagNames || tagNames.length === 0) {
@@ -735,18 +827,22 @@ async function handleArticleTags(articleId, tagNames) {
   for (const tagName of tagNames) {
     // 查找或创建标签
     let tag = await Tag.findOne({
-      where: { name: tagName },
+      where: { tagName: tagName },
+      transaction: t,
     });
 
     if (!tag) {
-      tag = await Tag.create({ name: tagName });
+      tag = await Tag.create({ tagName: tagName }, { transaction: t });
     }
 
     // 建立文章与标签的关联
-    await ArticleTag.create({
-      articleID: articleId,
-      tagID: tag.tagID,
-    });
+    await ArticleTag.create(
+      {
+        articleID: articleId,
+        tagID: tag.tagID,
+      },
+      { transaction: t }
+    );
   }
 }
 
@@ -758,7 +854,13 @@ exports.updateArticleStatus = async (req, res) => {
     const { articleId } = req.params;
     const { status } = req.body;
 
-    const validStatuses = ["Draft", "PendingReview", "Published", "Archived", "Rejected"];
+    const validStatuses = [
+      "Draft",
+      "PendingReview",
+      "Published",
+      "Archived",
+      "Rejected",
+    ];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: "无效的文章状态值!" });
     }
@@ -793,7 +895,9 @@ exports.updateArticleStatus = async (req, res) => {
     res.status(200).json(updatedArticle);
   } catch (error) {
     // console.error('更新文章状态出错:', error); // 控制台日志可以保留英文或按需修改
-    res.status(500).json({ message: "更新文章状态时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "更新文章状态时发生错误!", error: error.message });
   }
 };
 
@@ -818,16 +922,19 @@ exports.addTagsToArticle = async (req, res) => {
     if (existingTags.length !== tagIds.length) {
       const foundDbTagIds = existingTags.map((t) => t.tagID);
       const notFoundIds = tagIds.filter((id) => !foundDbTagIds.includes(id));
-      return res
-        .status(400)
-        .json({ message: `一个或多个提供的标签ID不存在: ${notFoundIds.join(", ")}` });
+      return res.status(400).json({
+        message: `一个或多个提供的标签ID不存在: ${notFoundIds.join(", ")}`,
+      });
     }
 
     await article.addTags(existingTags);
 
-    const updatedArticleWithTags = await db.knowledgeArticles.findByPk(articleId, {
-      include: [{ model: db.tags, as: "tags", through: { attributes: [] } }],
-    });
+    const updatedArticleWithTags = await db.knowledgeArticles.findByPk(
+      articleId,
+      {
+        include: [{ model: db.tags, as: "tags", through: { attributes: [] } }],
+      }
+    );
 
     res.status(200).json({
       message: "标签添加成功!",
@@ -835,7 +942,9 @@ exports.addTagsToArticle = async (req, res) => {
     });
   } catch (error) {
     // console.error('添加文章标签出错:', error);
-    res.status(500).json({ message: "为文章添加标签时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "为文章添加标签时发生错误!", error: error.message });
   }
 };
 
@@ -865,7 +974,9 @@ exports.removeTagFromArticle = async (req, res) => {
     res.status(200).json({ message: "标签移除成功!" });
   } catch (error) {
     // console.error('移除文章标签出错:', error);
-    res.status(500).json({ message: "从文章移除标签时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "从文章移除标签时发生错误!", error: error.message });
   }
 };
 
@@ -907,7 +1018,9 @@ exports.createNewArticleVersion = async (req, res) => {
     });
   } catch (error) {
     // console.error('创建文章新版本出错:', error);
-    res.status(500).json({ message: "创建文章新版本时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "创建文章新版本时发生错误!", error: error.message });
   }
 };
 

@@ -49,7 +49,9 @@ exports.registerUser = async (req, res) => {
       // 其他可选字段
       avatarURL: req.body.avatarURL || null,
       preferredLanguage: req.body.preferredLanguage || "zh-CN",
-      notificationPreferences: req.body.notificationPreferences || { emailNotifications: true },
+      notificationPreferences: req.body.notificationPreferences || {
+        emailNotifications: true,
+      },
     });
 
     // 移除敏感信息
@@ -73,7 +75,7 @@ exports.registerUser = async (req, res) => {
       userType: "User",
       token: token,
       expiresAt: expiryDate,
-      isUsed: false
+      isUsed: false,
     });
 
     // 发送验证邮件
@@ -90,7 +92,9 @@ exports.registerUser = async (req, res) => {
       user: userResponse,
     });
   } catch (error) {
-    res.status(500).json({ message: "注册过程中发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "注册过程中发生错误!", error: error.message });
   }
 };
 
@@ -139,7 +143,9 @@ exports.registerStaff = async (req, res) => {
       // 其他可选字段
       avatarURL: req.body.avatarURL || null,
       preferredLanguage: req.body.preferredLanguage || "zh-CN",
-      notificationPreferences: req.body.notificationPreferences || { emailNotifications: true },
+      notificationPreferences: req.body.notificationPreferences || {
+        emailNotifications: true,
+      },
     });
 
     // 移除敏感信息
@@ -164,7 +170,7 @@ exports.registerStaff = async (req, res) => {
       userType: "Staff",
       token: token,
       expiresAt: expiryDate,
-      isUsed: false
+      isUsed: false,
     });
 
     // 发送验证邮件
@@ -181,7 +187,9 @@ exports.registerStaff = async (req, res) => {
       staff: staffResponse,
     });
   } catch (error) {
-    res.status(500).json({ message: "注册过程中发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "注册过程中发生错误!", error: error.message });
   }
 };
 
@@ -200,7 +208,10 @@ exports.login = async (req, res) => {
     // 先尝试用户登录
     let user = await User.findOne({
       where: {
-        [db.Sequelize.Op.or]: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
+        [db.Sequelize.Op.or]: [
+          { username: usernameOrEmail },
+          { email: usernameOrEmail },
+        ],
       },
     });
 
@@ -210,7 +221,10 @@ exports.login = async (req, res) => {
     if (!user) {
       user = await Staff.findOne({
         where: {
-          [db.Sequelize.Op.or]: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
+          [db.Sequelize.Op.or]: [
+            { username: usernameOrEmail },
+            { email: usernameOrEmail },
+          ],
         },
       });
 
@@ -222,7 +236,10 @@ exports.login = async (req, res) => {
     }
 
     // 验证密码
-    const isPasswordValid = await authUtils.comparePassword(password, user.passwordHash);
+    const isPasswordValid = await authUtils.comparePassword(
+      password,
+      user.passwordHash
+    );
 
     if (!isPasswordValid) {
       return res.status(401).json({ message: "用户名/邮箱或密码不正确!" });
@@ -233,12 +250,54 @@ exports.login = async (req, res) => {
       return res.status(403).json({ message: "账户已被停用，请联系管理员!" });
     }
 
+    // 检查邮箱是否已验证（非工作人员必须验证邮箱）
+    if (!isStaff && !user.emailVerified) {
+      // 生成新的验证令牌
+      const token = authUtils.generateRandomToken();
+      const expiryDate = authUtils.generateExpiryDate(24); // 24小时有效期
+
+      // 将之前的验证令牌标记为失效
+      await db.emailVerifications.update(
+        { isUsed: true },
+        {
+          where: {
+            userID: user.userID,
+            userType: "User",
+            isUsed: false,
+          },
+        }
+      );
+
+      // 创建新的验证令牌
+      await db.emailVerifications.create({
+        userID: user.userID,
+        userType: "User",
+        token: token,
+        expiresAt: expiryDate,
+        isUsed: false,
+      });
+
+      // 尝试发送验证邮件
+      try {
+        await mailUtils.sendVerificationEmail(user, token);
+        console.log(`验证邮件已发送至 ${user.email}`);
+      } catch (emailError) {
+        console.error("发送验证邮件失败:", emailError);
+      }
+
+      return res.status(403).json({
+        message:
+          "您的邮箱尚未验证，请检查邮箱并完成验证后再登录。新的验证邮件已发送至您的邮箱。",
+        emailVerificationRequired: true,
+      });
+    }
+
     // 准备用户信息载荷
     const payload = {
       id: isStaff ? user.staffID : user.userID,
       role: isStaff ? "staff" : "user",
       isAdmin: isStaff ? user.isAdmin : false,
-      tokenVersion: user.tokenVersion || 0
+      tokenVersion: user.tokenVersion || 0,
     };
 
     // 生成访问令牌和刷新令牌
@@ -267,34 +326,27 @@ exports.login = async (req, res) => {
     });
   } catch (error) {
     console.error("登录过程中出错:", error);
-    res.status(500).json({ message: "登录过程中发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "登录过程中发生错误!", error: error.message });
   }
 };
 
 /**
- * 获取当前用户信息
+ * 获取当前用户信息 (将逻辑委托给具体的控制器)
  */
 exports.getMe = async (req, res) => {
   try {
-    let user;
-
+    // 根据用户角色重定向到相应的控制器方法
     if (req.userRole === "user") {
-      user = await User.findByPk(req.userId, {
-        attributes: { exclude: ["passwordHash"] },
-      });
+      return require("./user.controller").getCurrentUser(req, res);
     } else {
-      user = await Staff.findByPk(req.userId, {
-        attributes: { exclude: ["passwordHash"] },
-      });
+      return require("./staff.controller").getCurrentStaff(req, res);
     }
-
-    if (!user) {
-      return res.status(404).json({ message: "用户不存在!" });
-    }
-
-    res.status(200).json(user);
   } catch (error) {
-    res.status(500).json({ message: "获取用户信息时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "获取用户信息时发生错误!", error: error.message });
   }
 };
 
@@ -340,7 +392,7 @@ exports.refreshToken = async (req, res) => {
       id: userId,
       role: userRole,
       isAdmin: userRole === "staff" ? user.isAdmin : false,
-      tokenVersion: user.tokenVersion || 0
+      tokenVersion: user.tokenVersion || 0,
     };
 
     // 生成新的访问令牌，继续使用相同的刷新令牌
@@ -352,11 +404,13 @@ exports.refreshToken = async (req, res) => {
 
     return res.status(200).json({
       accessToken,
-      refreshToken // 返回相同的刷新令牌
+      refreshToken, // 返回相同的刷新令牌
     });
   } catch (error) {
     console.error("刷新令牌过程中出错:", error);
-    return res.status(500).json({ message: "服务器错误", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "服务器错误", error: error.message });
   }
 };
 
@@ -374,7 +428,9 @@ exports.logout = async (req, res) => {
     return res.status(200).json({ message: "已成功退出登录!" });
   } catch (error) {
     console.error("退出登录过程中出错:", error);
-    return res.status(500).json({ message: "服务器错误", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "服务器错误", error: error.message });
   }
 };
 
@@ -390,7 +446,9 @@ exports.forgotPassword = async (req, res) => {
     }
 
     if (!userType || !["user", "staff"].includes(userType)) {
-      return res.status(400).json({ message: "请提供有效的用户类型 (user 或 staff)!" });
+      return res
+        .status(400)
+        .json({ message: "请提供有效的用户类型 (user 或 staff)!" });
     }
 
     // 根据用户类型查找用户
@@ -403,9 +461,9 @@ exports.forgotPassword = async (req, res) => {
 
     if (!user) {
       // 出于安全考虑，即使用户不存在也返回成功
-      return res
-        .status(200)
-        .json({ message: "如果该邮箱存在，我们已发送密码重置邮件。请查收您的邮箱。" });
+      return res.status(200).json({
+        message: "如果该邮箱存在，我们已发送密码重置邮件。请查收您的邮箱。",
+      });
     }
 
     // 生成重置令牌
@@ -429,11 +487,15 @@ exports.forgotPassword = async (req, res) => {
       // 出于安全考虑，即使邮件发送失败也返回相同的成功消息
     }
 
-    res.status(200).json({ message: "如果该邮箱存在，我们已发送密码重置邮件。请查收您的邮箱。" });
+    res.status(200).json({
+      message: "如果该邮箱存在，我们已发送密码重置邮件。请查收您的邮箱。",
+    });
   } catch (error) {
     console.error("请求重置密码过程中出错:", error);
     // 出于安全考虑，即使发生错误也不暴露详细信息
-    res.status(200).json({ message: "如果该邮箱存在，我们已发送密码重置邮件。请查收您的邮箱。" });
+    res.status(200).json({
+      message: "如果该邮箱存在，我们已发送密码重置邮件。请查收您的邮箱。",
+    });
   }
 };
 
@@ -488,10 +550,10 @@ exports.resetPassword = async (req, res) => {
 
     // 更新密码
     const hashedPassword = await authUtils.hashPassword(newPassword);
-    await user.update({ 
+    await user.update({
       passwordHash: hashedPassword,
       // 增加令牌版本，使所有已颁发的令牌失效
-      tokenVersion: (user.tokenVersion || 0) + 1
+      tokenVersion: (user.tokenVersion || 0) + 1,
     });
 
     // 标记密码重置记录为已使用
@@ -499,7 +561,9 @@ exports.resetPassword = async (req, res) => {
 
     res.status(200).json({ message: "密码已成功重置!" });
   } catch (error) {
-    res.status(500).json({ message: "密码重置过程中发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "密码重置过程中发生错误!", error: error.message });
   }
 };
 
@@ -519,8 +583,8 @@ exports.verifyEmail = async (req, res) => {
       where: {
         token,
         expiresAt: { [db.Sequelize.Op.gt]: new Date() }, // 未过期
-        isUsed: false
-      }
+        isUsed: false,
+      },
     });
 
     if (!verification) {
@@ -530,7 +594,7 @@ exports.verifyEmail = async (req, res) => {
     // 更新用户邮箱验证状态
     const userType = verification.userType;
     const userId = verification.userID;
-    
+
     let user;
     if (userType === "User") {
       user = await User.findByPk(userId);
@@ -551,6 +615,8 @@ exports.verifyEmail = async (req, res) => {
       verified: true,
     });
   } catch (error) {
-    res.status(500).json({ message: "邮箱验证过程中发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "邮箱验证过程中发生错误!", error: error.message });
   }
 };

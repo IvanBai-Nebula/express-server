@@ -1,7 +1,14 @@
 // 加载环境变量
-const NODE_ENV = process.env.NODE_ENV || 'development';
+const NODE_ENV = process.env.NODE_ENV || "production";
 const envFile = `.env.${NODE_ENV}`;
-const fs = require('fs');
+const fs = require("fs");
+const express = require("express");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const db = require("./models");
+const setupSwagger = require("./swagger-api.js");
+const authUtils = require("./utils/auth.utils");
+const path = require("path");
 
 // 首先尝试加载特定环境的配置文件
 if (fs.existsSync(envFile)) {
@@ -9,39 +16,77 @@ if (fs.existsSync(envFile)) {
   require("dotenv").config({ path: envFile });
 } else {
   // 如果特定环境的配置文件不存在，则加载默认配置
-  console.log('未找到特定环境配置文件，加载默认.env配置');
+  console.log("未找到特定环境配置文件，加载默认.env配置");
   require("dotenv").config();
 }
 
-const express = require("express");
-const cors = require("cors");
-const bodyParser = require("body-parser");
-const db = require("./models");
-const setupSwagger = require("./swagger-api.js"); // 引入 Swagger 设置函数
-const seedData = require("./utils/seedData"); // 引入种子数据函数
-const authUtils = require("./utils/auth.utils"); // 引入认证工具
+// 在开发环境下输出配置信息
+if (NODE_ENV === "development") {
+  const dbConfig = require("./config/db.config.js");
+  console.log("======= 当前环境变量配置 =======");
+  console.log("数据库配置:");
+  console.log(` - 主机: ${dbConfig.HOST}`);
+  console.log(` - 端口: ${dbConfig.PORT}`);
+  console.log(` - 用户名: ${dbConfig.USER}`);
+  console.log(` - 数据库名: ${dbConfig.DB}`);
+  console.log(` - 数据库类型: ${dbConfig.dialect}`);
+  console.log("邮件配置:");
+  console.log(` - 主机: ${process.env.MAIL_HOST || "未设置"}`);
+  console.log(` - 端口: ${process.env.MAIL_PORT || "未设置"}`);
+  console.log(` - 用户名: ${process.env.MAIL_USER || "未设置"}`);
+  console.log(` - 发件人: ${process.env.MAIL_FROM || "未设置"}`);
+  console.log("其他配置:");
+  console.log(` - 前端URL: ${process.env.FRONTEND_URL || "未设置"}`);
+  console.log(` - CORS源: ${process.env.CORS_ORIGIN || "未设置"}`);
+  console.log("===============================");
+}
 
 const app = express();
 
-// 配置 CORS
-var corsOptions = {
-  origin: process.env.CORS_ORIGIN || "http://localhost:8081",
+// 创建日志目录
+const logsDir = path.join(__dirname, "logs");
+if (!fs.existsSync(logsDir)) {
+  fs.mkdirSync(logsDir);
+}
+
+// 生产环境安全设置
+app.disable("x-powered-by"); // 隐藏Express标识
+app.set("trust proxy", 1); // 信任反向代理
+
+// 配置 CORS - 生产环境严格限制来源
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN || "https://example.com",
+  credentials: true,
+  optionsSuccessStatus: 200,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
 app.use(cors(corsOptions));
 
-// 解析 Content-Type 为 application/json 的请求
-app.use(bodyParser.json());
+// 请求体解析和限制
+app.use(bodyParser.json({ limit: "5mb" }));
+app.use(bodyParser.urlencoded({ extended: true, limit: "5mb" }));
 
-// 解析 Content-Type 为 application/x-www-form-urlencoded 的请求
-app.use(bodyParser.urlencoded({ extended: true }));
+// 添加基本安全头
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  next();
+});
 
-// 同步数据库模型
+// 请求ID中间件 - 用于日志跟踪
+app.use((req, res, next) => {
+  req.requestId =
+    Date.now() + "-" + Math.random().toString(36).substring(2, 15);
+  next();
+});
+
+// 同步数据库模型 - 生产环境不强制重建表
 db.sequelize
-  .sync({ force: true })
+  .sync({ force: false })
   .then(() => {
     console.log("已同步数据库模型");
-    // 开发环境添加初始数据 (种子数据)
-    seedData();
   })
   .catch((err) => {
     console.error("无法同步数据库模型:", err);
@@ -50,6 +95,11 @@ db.sequelize
 // 简单路由
 app.get("/", (req, res) => {
   res.json({ message: "欢迎使用医疗知识学习平台 API" });
+});
+
+// 健康检查端点
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", time: new Date().toISOString() });
 });
 
 // 加载路由
@@ -63,57 +113,73 @@ require("./routes/tag.routes")(app);
 require("./routes/notification.routes")(app);
 require("./routes/admin.routes")(app);
 
-// 在所有业务路由之后，但在 app.listen() 之前，设置 Swagger
-setupSwagger(app);
+// 错误处理中间件 - 放在所有路由之后
+app.use((err, req, res, next) => {
+  console.error(`错误 [${req.requestId}]:`, err.stack);
+  res.status(500).json({
+    error: "服务器内部错误",
+    requestId: req.requestId,
+  });
+});
 
-// 设置监听端口
+// 404处理
+app.use((req, res) => {
+  res.status(404).json({ error: "未找到请求的资源" });
+});
+
+// 在所有路由之后设置 Swagger（仅当环境变量允许时）
+if (process.env.ENABLE_SWAGGER === "true") {
+  setupSwagger(app);
+}
+
 const PORT = process.env.PORT || 8080;
+
+// 启动服务器
 const server = app.listen(PORT, () => {
-  console.log(`服务器运行在端口 ${PORT}，当前环境: ${NODE_ENV}`);
+  console.log(
+    `服务器运行在端口 ${PORT}，环境: ${process.env.NODE_ENV || "production"}`
+  );
 });
 
-// 优雅关闭应用
-process.on('SIGTERM', () => {
-  console.log('收到 SIGTERM 信号，正在优雅关闭服务...');
-  shutdownApp();
-});
-
-process.on('SIGINT', () => {
-  console.log('收到 SIGINT 信号，正在优雅关闭服务...');
-  shutdownApp();
-});
-
-async function shutdownApp() {
+// 优雅关闭逻辑
+async function shutdownApp(signal) {
+  console.log(`收到 ${signal} 信号，正在优雅关闭服务...`);
   try {
-    // 关闭HTTP服务器
-    server.close(() => {
-      console.log('HTTP服务器已关闭');
+    // 首先关闭HTTP服务器，不再接受新连接
+    await new Promise((resolve) => {
+      server.close(resolve);
+      console.log("HTTP服务器已关闭");
     });
-    
+
     // 关闭Redis连接
     await authUtils.closeRedisConnection();
-    console.log('Redis连接已关闭');
-    
-    // 关闭数据库连接
+    console.log("Redis连接已关闭");
+
+    // 最后关闭数据库连接
     await db.sequelize.close();
-    console.log('数据库连接已关闭');
-    
-    console.log('应用已优雅关闭');
+    console.log("数据库连接已关闭");
+
+    console.log("应用已优雅关闭");
     process.exit(0);
   } catch (error) {
-    console.error('关闭应用时出错:', error);
+    console.error("关闭应用时出错:", error);
     process.exit(1);
   }
 }
 
-// 处理未捕获的异常，防止应用崩溃
+// 注册信号处理程序
+process.on("SIGTERM", () => shutdownApp("SIGTERM"));
+process.on("SIGINT", () => shutdownApp("SIGINT"));
+
+// 全局错误处理
 process.on("uncaughtException", (error) => {
   console.error("未捕获的异常:", error);
-  // 在生产环境中，可能需要将错误记录到日志并通知管理员
+  // 在生产环境中记录严重错误但保持服务运行
 });
 
-// 处理未处理的 Promise rejection
 process.on("unhandledRejection", (reason, promise) => {
   console.error("未处理的 Promise rejection:", reason);
-  // 在生产环境中，可能需要将错误记录到日志并通知管理员
+  // 在生产环境中记录未处理的Promise拒绝但保持服务运行
 });
+
+module.exports = app; // 导出 app 实例供测试使用

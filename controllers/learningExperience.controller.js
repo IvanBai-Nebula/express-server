@@ -13,7 +13,12 @@ const KnowledgeArticle = db.knowledgeArticles;
  */
 exports.createExperience = async (req, res) => {
   try {
-    const { title, richTextContent, allowComments = true, relatedArticleID } = req.body;
+    const {
+      title,
+      richTextContent,
+      allowComments = true,
+      relatedArticleID,
+    } = req.body;
 
     // 基本验证
     if (!title || !richTextContent) {
@@ -43,7 +48,9 @@ exports.createExperience = async (req, res) => {
       experience,
     });
   } catch (error) {
-    res.status(500).json({ message: "创建心得时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "创建心得时发生错误!", error: error.message });
   }
 };
 
@@ -55,7 +62,7 @@ exports.getAllExperiences = async (req, res) => {
     const {
       page = 1,
       limit = 10,
-      status = "Approved,Published",
+      status = "Approved,Published,Draft",
       userId,
       search,
       sortBy = "createdAt",
@@ -69,6 +76,7 @@ exports.getAllExperiences = async (req, res) => {
     if (status) {
       const statusArray = status.split(",");
       whereClause.status = { [db.Sequelize.Op.in]: statusArray };
+      console.log("Status filter:", whereClause.status);
     }
 
     // 用户过滤
@@ -83,6 +91,8 @@ exports.getAllExperiences = async (req, res) => {
         { richTextContent: { [db.Sequelize.Op.like]: `%${search}%` } },
       ];
     }
+
+    console.log("Final where clause:", JSON.stringify(whereClause));
 
     // 查询心得
     const { count, rows } = await LearningExperience.findAndCountAll({
@@ -105,6 +115,28 @@ exports.getAllExperiences = async (req, res) => {
       ],
     });
 
+    console.log(`Found ${count} experiences`);
+
+    // 如果没有找到记录，查询数据库中的状态值
+    if (count === 0) {
+      // 检查数据库中是否有记录
+      const totalCount = await LearningExperience.count();
+      console.log(`Total experiences in database: ${totalCount}`);
+
+      // 如果有记录，获取状态分布
+      if (totalCount > 0) {
+        const statusCounts = await LearningExperience.findAll({
+          attributes: [
+            "status",
+            [db.Sequelize.fn("count", db.Sequelize.col("status")), "count"],
+          ],
+          group: ["status"],
+          raw: true,
+        });
+        console.log("Experiences by status:", statusCounts);
+      }
+    }
+
     res.status(200).json({
       totalItems: count,
       totalPages: Math.ceil(count / limit),
@@ -112,7 +144,10 @@ exports.getAllExperiences = async (req, res) => {
       experiences: rows,
     });
   } catch (error) {
-    res.status(500).json({ message: "获取心得列表时发生错误!", error: error.message });
+    console.error("Error in getAllExperiences:", error);
+    res
+      .status(500)
+      .json({ message: "获取心得列表时发生错误!", error: error.message });
   }
 };
 
@@ -161,7 +196,12 @@ exports.getExperienceById = async (req, res) => {
     const isOwner = req.userId === experience.userID;
 
     // 如果不是已批准状态，且不是工作人员或作者，则拒绝访问
-    if (experience.status !== "Approved" && experience.status !== "Published" && !isStaff && !isOwner) {
+    if (
+      experience.status !== "Approved" &&
+      experience.status !== "Published" &&
+      !isStaff &&
+      !isOwner
+    ) {
       return res.status(403).json({ message: "您无权访问此心得!" });
     }
 
@@ -196,7 +236,9 @@ exports.getExperienceById = async (req, res) => {
 
     res.status(200).json(response);
   } catch (error) {
-    res.status(500).json({ message: "获取心得详情时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "获取心得详情时发生错误!", error: error.message });
   }
 };
 
@@ -224,7 +266,10 @@ exports.updateExperience = async (req, res) => {
     }
 
     // 普通用户不能修改已批准或已拒绝的心得
-    if (!isStaff && (experience.status === "Approved" || experience.status === "Rejected")) {
+    if (
+      !isStaff &&
+      (experience.status === "Approved" || experience.status === "Rejected")
+    ) {
       return res.status(400).json({ message: "已审核的心得不能修改!" });
     }
 
@@ -234,7 +279,8 @@ exports.updateExperience = async (req, res) => {
     // 作者可以更新的字段
     if (isOwner) {
       if (title !== undefined) updateData.title = title;
-      if (richTextContent !== undefined) updateData.richTextContent = richTextContent;
+      if (richTextContent !== undefined)
+        updateData.richTextContent = richTextContent;
       if (allowComments !== undefined) updateData.allowComments = allowComments;
 
       // 如果心得状态为草稿，可以提交审核
@@ -268,7 +314,13 @@ exports.updateExperience = async (req, res) => {
         recipientUserType: "User",
         type: `EXPERIENCE_${status.toUpperCase()}`,
         content: `您的心得"${experience.title}"已${
-          status === "Approved" ? "通过审核" : status === "Rejected" ? "被拒绝" : status === "Published" ? "发布" : "需要修改"
+          status === "Approved"
+            ? "通过审核"
+            : status === "Rejected"
+            ? "被拒绝"
+            : status === "Published"
+            ? "发布"
+            : "需要修改"
         }`,
         relatedEntityType: "LearningExperience",
         relatedEntityID: experienceId,
@@ -297,7 +349,9 @@ exports.updateExperience = async (req, res) => {
       experience: updatedExperience,
     });
   } catch (error) {
-    res.status(500).json({ message: "更新心得时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "更新心得时发生错误!", error: error.message });
   }
 };
 
@@ -354,7 +408,9 @@ exports.deleteExperience = async (req, res) => {
 
     res.status(200).json({ message: "心得已成功删除!" });
   } catch (error) {
-    res.status(500).json({ message: "删除心得时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "删除心得时发生错误!", error: error.message });
   }
 };
 
@@ -397,7 +453,9 @@ exports.addComment = async (req, res) => {
       }
 
       if (parentComment.status !== "Visible") {
-        return res.status(403).json({ message: "无法回复已隐藏或已删除的评论!" });
+        return res
+          .status(403)
+          .json({ message: "无法回复已隐藏或已删除的评论!" });
       }
     }
 
@@ -451,7 +509,7 @@ exports.addComment = async (req, res) => {
         },
         {
           model: Staff,
-          as: "staff",
+          as: "staffUser",
           attributes: ["staffID", "username", "avatarURL"],
           required: false,
         },
@@ -463,7 +521,9 @@ exports.addComment = async (req, res) => {
       comment: createdComment,
     });
   } catch (error) {
-    res.status(500).json({ message: "添加评论时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "添加评论时发生错误!", error: error.message });
   }
 };
 
@@ -503,7 +563,7 @@ exports.getComments = async (req, res) => {
         },
         {
           model: Staff,
-          as: "staff",
+          as: "staffUser",
           attributes: ["staffID", "username", "avatarURL"],
           required: false,
         },
@@ -528,7 +588,7 @@ exports.getComments = async (req, res) => {
             },
             {
               model: Staff,
-              as: "staff",
+              as: "staffUser",
               attributes: ["staffID", "username", "avatarURL"],
               required: false,
             },
@@ -539,7 +599,7 @@ exports.getComments = async (req, res) => {
           ...comment.toJSON(),
           replies,
         };
-      }),
+      })
     );
 
     res.status(200).json({
@@ -549,7 +609,9 @@ exports.getComments = async (req, res) => {
       comments: commentsWithReplies,
     });
   } catch (error) {
-    res.status(500).json({ message: "获取评论列表时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "获取评论列表时发生错误!", error: error.message });
   }
 };
 
@@ -591,7 +653,9 @@ exports.deleteComment = async (req, res) => {
 
     res.status(200).json({ message: "评论已成功删除/隐藏!" });
   } catch (error) {
-    res.status(500).json({ message: "删除评论时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "删除评论时发生错误!", error: error.message });
   }
 };
 
@@ -676,7 +740,9 @@ exports.toggleBookmark = async (req, res) => {
       });
     }
   } catch (error) {
-    res.status(500).json({ message: "操作收藏时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "操作收藏时发生错误!", error: error.message });
   }
 };
 
@@ -711,7 +777,9 @@ exports.getPendingExperiences = async (req, res) => {
       experiences: rows,
     });
   } catch (error) {
-    res.status(500).json({ message: "获取待审核心得列表时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "获取待审核心得列表时发生错误!", error: error.message });
   }
 };
 
@@ -757,14 +825,20 @@ exports.updateExperienceComment = async (req, res) => {
         {
           model: userType === "User" ? db.users : db.staff,
           as: userType.toLowerCase(), // 'user' or 'staff' based on userType
-          attributes: [userType === "User" ? "userID" : "staffID", "username", "avatarURL"],
+          attributes: [
+            userType === "User" ? "userID" : "staffID",
+            "username",
+            "avatarURL",
+          ],
         },
       ],
     });
 
     res.status(200).json({ message: "评论修改成功!", comment: updatedComment });
   } catch (error) {
-    res.status(500).json({ message: "修改心得评论时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "修改心得评论时发生错误!", error: error.message });
   }
 };
 
@@ -790,13 +864,19 @@ exports.reportExperience = async (req, res) => {
 
     // TODO: 实现举报存储逻辑，例如存到新的 Report表 或通过通知系统通知管理员
     // 例如，创建一个通知给所有管理员
-    const admins = await db.staff.findAll({ where: { isAdmin: true, isActive: true } });
+    const admins = await db.staff.findAll({
+      where: { isAdmin: true, isActive: true },
+    });
     const notificationPromises = admins.map((admin) => {
       return db.notifications.create({
         recipientUserID: admin.staffID,
         recipientUserType: "Staff",
         type: "EXPERIENCE_REPORTED",
-        content: `学习心得 (ID: ${experienceId}, 标题: "${experience.title}") 被用户 (ID: ${reporterUserId}, 类型: ${reporterUserType}) 举报。原因: ${reason}. 详情: ${details || "无"}`,
+        content: `学习心得 (ID: ${experienceId}, 标题: "${
+          experience.title
+        }") 被用户 (ID: ${reporterUserId}, 类型: ${reporterUserType}) 举报。原因: ${reason}. 详情: ${
+          details || "无"
+        }`,
         relatedEntityType: "LearningExperience",
         relatedEntityID: experienceId,
       });
@@ -805,7 +885,9 @@ exports.reportExperience = async (req, res) => {
 
     res.status(200).json({ message: "举报已提交,感谢您的反馈!" });
   } catch (error) {
-    res.status(500).json({ message: "举报学习心得时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "举报学习心得时发生错误!", error: error.message });
   }
 };
 
@@ -832,13 +914,21 @@ exports.reportExperienceComment = async (req, res) => {
     }
 
     // TODO: 实现举报存储逻辑
-    const admins = await db.staff.findAll({ where: { isAdmin: true, isActive: true } });
+    const admins = await db.staff.findAll({
+      where: { isAdmin: true, isActive: true },
+    });
     const notificationPromises = admins.map((admin) => {
       return db.notifications.create({
         recipientUserID: admin.staffID,
         recipientUserType: "Staff",
         type: "EXPERIENCE_COMMENT_REPORTED",
-        content: `心得评论 (ID: ${commentId}) 在心得 (ID: ${comment.experienceID}, 标题: "${comment.experience ? comment.experience.title : "N/A"}") 下被用户 (ID: ${reporterUserId}, 类型: ${reporterUserType}) 举报。原因: ${reason}. 详情: ${details || "无"}`,
+        content: `心得评论 (ID: ${commentId}) 在心得 (ID: ${
+          comment.experienceID
+        }, 标题: "${
+          comment.experience ? comment.experience.title : "N/A"
+        }") 下被用户 (ID: ${reporterUserId}, 类型: ${reporterUserType}) 举报。原因: ${reason}. 详情: ${
+          details || "无"
+        }`,
         relatedEntityType: "ExperienceComment",
         relatedEntityID: commentId,
       });
@@ -847,7 +937,9 @@ exports.reportExperienceComment = async (req, res) => {
 
     res.status(200).json({ message: "评论举报已提交,感谢您的反馈!" });
   } catch (error) {
-    res.status(500).json({ message: "举报心得评论时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "举报心得评论时发生错误!", error: error.message });
   }
 };
 
@@ -902,7 +994,9 @@ exports.submitForReview = async (req, res) => {
       experience: updatedExperience,
     });
   } catch (error) {
-    res.status(500).json({ message: "提交心得审核时发生错误！", error: error.message });
+    res
+      .status(500)
+      .json({ message: "提交心得审核时发生错误！", error: error.message });
   }
 };
 
@@ -916,9 +1010,10 @@ exports.reviewExperience = async (req, res) => {
 
     // 验证请求
     if (!status || !["Approved", "Rejected", "Published"].includes(status)) {
-      return res
-        .status(400)
-        .json({ message: "无效的审核结果！审核结果必须为 'Approved'、'Rejected' 或 'Published'" });
+      return res.status(400).json({
+        message:
+          "无效的审核结果！审核结果必须为 'Approved'、'Rejected' 或 'Published'",
+      });
     }
 
     // 查找心得
@@ -951,7 +1046,13 @@ exports.reviewExperience = async (req, res) => {
       recipientUserID: experience.userID,
       recipientUserType: "User",
       type: `EXPERIENCE_${status.toUpperCase()}`,
-      content: `您的心得"${experience.title}"已${status === "Approved" ? "通过审核" : status === "Published" ? "发布" : "被拒绝"}${reviewComments ? "，审核意见：" + reviewComments : ""}`,
+      content: `您的心得"${experience.title}"已${
+        status === "Approved"
+          ? "通过审核"
+          : status === "Published"
+          ? "发布"
+          : "被拒绝"
+      }${reviewComments ? "，审核意见：" + reviewComments : ""}`,
       relatedEntityType: "LearningExperience",
       relatedEntityID: experienceId,
     });
@@ -979,12 +1080,20 @@ exports.reviewExperience = async (req, res) => {
     });
 
     res.status(200).json({
-      message: `心得审核${status === "Approved" ? "通过" : status === "Published" ? "并发布" : "拒绝"}成功！`,
+      message: `心得审核${
+        status === "Approved"
+          ? "通过"
+          : status === "Published"
+          ? "并发布"
+          : "拒绝"
+      }成功！`,
       experience: updatedExperience,
       review: reviewWithDetails,
     });
   } catch (error) {
-    res.status(500).json({ message: "审核心得时发生错误！", error: error.message });
+    res
+      .status(500)
+      .json({ message: "审核心得时发生错误！", error: error.message });
   }
 };
 
@@ -1007,7 +1116,9 @@ exports.getReviewHistory = async (req, res) => {
     const isOwner = req.userId === experience.userID;
 
     if (!isStaff && !isOwner) {
-      return res.status(403).json({ message: "您没有权限查看此心得的审核历史！" });
+      return res
+        .status(403)
+        .json({ message: "您没有权限查看此心得的审核历史！" });
     }
 
     // 获取审核历史记录
@@ -1030,6 +1141,8 @@ exports.getReviewHistory = async (req, res) => {
       reviews,
     });
   } catch (error) {
-    res.status(500).json({ message: "获取审核历史时发生错误！", error: error.message });
+    res
+      .status(500)
+      .json({ message: "获取审核历史时发生错误！", error: error.message });
   }
 };

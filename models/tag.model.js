@@ -22,7 +22,14 @@ module.exports = (sequelize, Sequelize) => {
       timestamps: true, // 只会创建 createdAt，如果需要 updatedAt，确保模型或业务逻辑支持修改标签名
       updatedAt: false, // 通常标签创建后不修改名称，如果需要修改，则设为true
       comment: "标签表",
-    },
+      indexes: [
+        {
+          name: "idx_tag_name",
+          fields: ["tagName"],
+          unique: true,
+        },
+      ],
+    }
   );
 
   return Tag;

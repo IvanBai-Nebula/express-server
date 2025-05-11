@@ -17,7 +17,9 @@ exports.getCurrentStaff = async (req, res) => {
 
     res.status(200).json(staff);
   } catch (error) {
-    res.status(500).json({ message: "获取工作人员信息时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "获取工作人员信息时发生错误!", error: error.message });
   }
 };
 
@@ -80,7 +82,9 @@ exports.updateProfile = async (req, res) => {
       staff: updatedStaff,
     });
   } catch (error) {
-    res.status(500).json({ message: "更新个人资料时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "更新个人资料时发生错误!", error: error.message });
   }
 };
 
@@ -95,6 +99,21 @@ exports.updatePassword = async (req, res) => {
       return res.status(400).json({ message: "请提供当前密码和新密码!" });
     }
 
+    // 验证新密码格式
+    if (newPassword.length < 8) {
+      return res.status(400).json({ message: "新密码长度必须至少为8位!" });
+    }
+
+    if (
+      !/[A-Z]/.test(newPassword) ||
+      !/[a-z]/.test(newPassword) ||
+      !/[0-9]/.test(newPassword)
+    ) {
+      return res
+        .status(400)
+        .json({ message: "新密码必须包含大写字母、小写字母和数字!" });
+    }
+
     const staff = await Staff.findByPk(req.userId);
 
     if (!staff) {
@@ -102,7 +121,10 @@ exports.updatePassword = async (req, res) => {
     }
 
     // 验证当前密码
-    const isPasswordValid = await authUtils.comparePassword(currentPassword, staff.passwordHash);
+    const isPasswordValid = await authUtils.comparePassword(
+      currentPassword,
+      staff.passwordHash
+    );
 
     if (!isPasswordValid) {
       return res.status(401).json({ message: "当前密码不正确!" });
@@ -111,11 +133,17 @@ exports.updatePassword = async (req, res) => {
     // 对新密码进行散列处理
     const hashedPassword = await authUtils.hashPassword(newPassword);
 
-    // 更新密码
-    await staff.update({ passwordHash: hashedPassword });
+    // 更新密码并递增令牌版本，使当前所有有效的令牌失效
+    const currentTokenVersion = staff.tokenVersion || 0;
+    await staff.update({
+      passwordHash: hashedPassword,
+      tokenVersion: currentTokenVersion + 1,
+    });
 
-    res.status(200).json({ message: "密码已成功更新!" });
+    res.status(200).json({ message: "密码已成功更新，请重新登录!" });
   } catch (error) {
-    res.status(500).json({ message: "更新密码时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "更新密码时发生错误!", error: error.message });
   }
 };

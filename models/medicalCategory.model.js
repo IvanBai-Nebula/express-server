@@ -20,6 +20,17 @@ module.exports = (sequelize, Sequelize) => {
         allowNull: true,
         comment: "描述",
       },
+      parentCategoryID: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        comment: "父类别ID",
+      },
+      isActive: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: true,
+        comment: "是否启用",
+      },
       // createdByStaffID 将作为外键关联在模型关系定义中处理
       // CreatedAt 和 UpdatedAt 字段 Sequelize 会自动添加
     },
@@ -27,7 +38,7 @@ module.exports = (sequelize, Sequelize) => {
       tableName: "MedicalCategories",
       timestamps: true,
       comment: "医疗类别表",
-    },
+    }
   );
 
   return MedicalCategory;

@@ -80,7 +80,35 @@ module.exports = (sequelize, Sequelize) => {
       tableName: "Staff", // 明确指定表名，与文档一致
       timestamps: true,
       comment: "工作人员表",
-    },
+      indexes: [
+        {
+          name: "idx_staff_username",
+          fields: ["username"],
+          unique: true,
+        },
+        {
+          name: "idx_staff_email",
+          fields: ["email"],
+          unique: true,
+        },
+        {
+          name: "idx_staff_is_admin",
+          fields: ["isAdmin"],
+        },
+        {
+          name: "idx_staff_is_active",
+          fields: ["isActive"],
+        },
+        {
+          name: "idx_staff_email_verified",
+          fields: ["emailVerified"],
+        },
+        {
+          name: "idx_staff_last_login",
+          fields: ["lastLoginAt"],
+        },
+      ],
+    }
   );
 
   return Staff;

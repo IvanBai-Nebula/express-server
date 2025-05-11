@@ -9,10 +9,12 @@ const Staff = db.staff;
  */
 exports.verifyToken = async (req, res, next) => {
   try {
-    const token = req.headers["x-access-token"] || req.headers["authorization"]?.split(" ")[1];
+    const token =
+      req.headers["x-access-token"] ||
+      req.headers["authorization"]?.split(" ")[1];
 
     if (!token) {
-      return res.status(403).json({ message: "未提供访问令牌" });
+      return res.status(401).json({ message: "未提供访问令牌" });
     }
 
     const decoded = await authUtils.verifyAccessToken(token);
@@ -22,7 +24,7 @@ exports.verifyToken = async (req, res, next) => {
 
     // 存储令牌以便在后续操作中使用（如退出登录）
     req.token = token;
-    
+
     // 存储解码后的用户信息供后续中间件和路由处理器使用
     req.userId = decoded.id;
     req.userRole = decoded.role; // 'user' 或 'staff'
@@ -58,7 +60,9 @@ exports.verifyRefreshToken = async (req, res, next) => {
 
     next();
   } catch (error) {
-    return res.status(401).json({ message: "刷新令牌验证失败", error: error.message });
+    return res
+      .status(401)
+      .json({ message: "刷新令牌验证失败", error: error.message });
   }
 };
 
@@ -91,7 +95,11 @@ exports.isStaff = (req, res, next) => {
  * @param {String} paramName - URL参数名称
  * @param {String} userIdField - 模型中表示用户ID的字段名
  */
-exports.isResourceOwner = (modelAccessor, paramName, userIdField = "userID") => {
+exports.isResourceOwner = (
+  modelAccessor,
+  paramName,
+  userIdField = "userID"
+) => {
   return async (req, res, next) => {
     try {
       const resourceId = req.params[paramName];
@@ -116,7 +124,9 @@ exports.isResourceOwner = (modelAccessor, paramName, userIdField = "userID") => 
 
       next();
     } catch (error) {
-      return res.status(500).json({ message: "服务器错误", error: error.message });
+      return res
+        .status(500)
+        .json({ message: "服务器错误", error: error.message });
     }
   };
 };

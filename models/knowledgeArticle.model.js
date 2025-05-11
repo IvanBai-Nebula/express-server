@@ -35,7 +35,13 @@ module.exports = (sequelize, Sequelize) => {
         comment: "视频链接",
       },
       status: {
-        type: Sequelize.ENUM("Draft", "PendingReview", "Published", "Archived", "Rejected"),
+        type: Sequelize.ENUM(
+          "Draft",
+          "PendingReview",
+          "Published",
+          "Archived",
+          "Rejected"
+        ),
         allowNull: false,
         defaultValue: "Draft",
         comment: "状态 (草稿, 待审核, 已发布, 已归档, 已拒绝)",
@@ -69,7 +75,41 @@ module.exports = (sequelize, Sequelize) => {
       tableName: "KnowledgeArticles",
       timestamps: true,
       comment: "医疗知识表",
-    },
+      indexes: [
+        {
+          name: "idx_article_status",
+          fields: ["status"],
+        },
+        {
+          name: "idx_article_published_at",
+          fields: ["publishedAt"],
+        },
+        {
+          name: "idx_article_category",
+          fields: ["categoryID"],
+        },
+        {
+          name: "idx_article_author",
+          fields: ["authorStaffID"],
+        },
+        {
+          name: "idx_article_title",
+          fields: ["title"],
+        },
+        {
+          name: "idx_article_parent",
+          fields: ["parentArticleID"],
+        },
+        {
+          name: "idx_article_view_count",
+          fields: ["viewCount"],
+        },
+        {
+          name: "idx_article_rating",
+          fields: ["averageRating"],
+        },
+      ],
+    }
   );
 
   return KnowledgeArticle;

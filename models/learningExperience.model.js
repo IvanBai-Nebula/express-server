@@ -20,7 +20,13 @@ module.exports = (sequelize, Sequelize) => {
         comment: "富文本内容",
       },
       status: {
-        type: Sequelize.ENUM("Draft", "PendingReview", "Approved", "Rejected", "Published"),
+        type: Sequelize.ENUM(
+          "Draft",
+          "PendingReview",
+          "Approved",
+          "Rejected",
+          "Published"
+        ),
         allowNull: false,
         defaultValue: "Draft",
         comment: "状态 (草稿, 待审核, 已批准, 已拒绝, 已发布)",
@@ -43,7 +49,29 @@ module.exports = (sequelize, Sequelize) => {
       tableName: "LearningExperiences",
       timestamps: true,
       comment: "学习心得表",
-    },
+      indexes: [
+        {
+          name: "idx_experience_status",
+          fields: ["status"],
+        },
+        {
+          name: "idx_experience_user",
+          fields: ["userID"],
+        },
+        {
+          name: "idx_experience_related_article",
+          fields: ["relatedArticleID"],
+        },
+        {
+          name: "idx_experience_created",
+          fields: ["createdAt"],
+        },
+        {
+          name: "idx_experience_upvote",
+          fields: ["upvoteCount"],
+        },
+      ],
+    }
   );
 
   return LearningExperience;

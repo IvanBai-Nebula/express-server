@@ -37,7 +37,7 @@ exports.createCategory = async (req, res) => {
       name,
       description,
       parentCategoryID,
-      createdBy: req.userId,
+      createdByStaffID: req.userId,
     });
 
     res.status(201).json({
@@ -45,7 +45,9 @@ exports.createCategory = async (req, res) => {
       category: newCategory,
     });
   } catch (error) {
-    res.status(500).json({ message: "创建类别时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "创建类别时发生错误!", error: error.message });
   }
 };
 
@@ -55,18 +57,10 @@ exports.createCategory = async (req, res) => {
 exports.getAllCategories = async (req, res) => {
   try {
     // 支持扁平列表或树形结构
-    const { format = "flat", onlyActive = "true" } = req.query;
-
-    // 构建查询条件
-    const whereClause = {};
-
-    if (onlyActive === "true") {
-      whereClause.isActive = true;
-    }
+    const { format = "flat" } = req.query;
 
     // 获取所有类别
     const categories = await MedicalCategory.findAll({
-      where: whereClause,
       order: [["name", "ASC"]],
     });
 
@@ -87,9 +81,14 @@ exports.getAllCategories = async (req, res) => {
       categories.forEach((category) => {
         const categoryWithChildren = categoriesMap[category.categoryID];
 
-        if (category.parentCategoryID && categoriesMap[category.parentCategoryID]) {
+        if (
+          category.parentCategoryID &&
+          categoriesMap[category.parentCategoryID]
+        ) {
           // 添加到父类别的children
-          categoriesMap[category.parentCategoryID].children.push(categoryWithChildren);
+          categoriesMap[category.parentCategoryID].children.push(
+            categoryWithChildren
+          );
         } else {
           // 根类别
           rootCategories.push(categoryWithChildren);
@@ -102,7 +101,9 @@ exports.getAllCategories = async (req, res) => {
     // 返回扁平结构
     res.status(200).json(categories);
   } catch (error) {
-    res.status(500).json({ message: "获取类别列表时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "获取类别列表时发生错误!", error: error.message });
   }
 };
 
@@ -120,6 +121,14 @@ exports.getCategoryById = async (req, res) => {
           as: "subcategories",
           where: { isActive: true },
           required: false,
+          include: [
+            {
+              model: MedicalCategory,
+              as: "subcategories",
+              where: { isActive: true },
+              required: false,
+            },
+          ],
         },
       ],
     });
@@ -130,7 +139,9 @@ exports.getCategoryById = async (req, res) => {
 
     res.status(200).json(category);
   } catch (error) {
-    res.status(500).json({ message: "获取类别详情时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "获取类别详情时发生错误!", error: error.message });
   }
 };
 
@@ -162,7 +173,10 @@ exports.updateCategory = async (req, res) => {
     // 如果更改父类别，检查父类别是否存在
     if (parentCategoryID && parentCategoryID !== category.parentCategoryID) {
       // 防止循环依赖：不能将类别的子类别设置为其父类别
-      const isCircular = await isCircularDependency(categoryId, parentCategoryID);
+      const isCircular = await isCircularDependency(
+        categoryId,
+        parentCategoryID
+      );
 
       if (isCircular) {
         return res.status(400).json({ message: "无法设置循环依赖的父类别!" });
@@ -180,7 +194,8 @@ exports.updateCategory = async (req, res) => {
 
     if (name) updates.name = name;
     if (description !== undefined) updates.description = description;
-    if (parentCategoryID !== undefined) updates.parentCategoryID = parentCategoryID;
+    if (parentCategoryID !== undefined)
+      updates.parentCategoryID = parentCategoryID;
     if (isActive !== undefined) updates.isActive = isActive;
 
     await category.update(updates);
@@ -190,7 +205,9 @@ exports.updateCategory = async (req, res) => {
       category,
     });
   } catch (error) {
-    res.status(500).json({ message: "更新类别时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "更新类别时发生错误!", error: error.message });
   }
 };
 
@@ -236,7 +253,9 @@ exports.deleteCategory = async (req, res) => {
 
     res.status(200).json({ message: "类别已成功删除!" });
   } catch (error) {
-    res.status(500).json({ message: "删除类别时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "删除类别时发生错误!", error: error.message });
   }
 };
 
@@ -246,7 +265,12 @@ exports.deleteCategory = async (req, res) => {
 exports.getCategoryArticles = async (req, res) => {
   try {
     const { categoryId } = req.params;
-    const { page = 1, limit = 10, includeSubcategories = "false", status } = req.query;
+    const {
+      page = 1,
+      limit = 10,
+      includeSubcategories = "false",
+      status,
+    } = req.query;
 
     const category = await MedicalCategory.findByPk(categoryId);
 
@@ -261,8 +285,8 @@ exports.getCategoryArticles = async (req, res) => {
     if (status) {
       whereClause.status = status;
     } else {
-      // 默认只显示已发布的文章
-      whereClause.status = "Published";
+      // 不再默认只显示已发布的文章
+      // whereClause.status = "Published";
     }
 
     let categoryIDs = [categoryId];
@@ -289,7 +313,9 @@ exports.getCategoryArticles = async (req, res) => {
       articles: rows,
     });
   } catch (error) {
-    res.status(500).json({ message: "获取类别文章时发生错误!", error: error.message });
+    res
+      .status(500)
+      .json({ message: "获取类别文章时发生错误!", error: error.message });
   }
 };
 
@@ -313,30 +339,46 @@ async function getAllSubcategoryIDs(categoryId) {
 
 /**
  * 检查是否存在循环依赖
+ * @param {number} categoryId 当前类别ID
+ * @param {number} newParentId 新的父类别ID
+ * @returns {Promise<boolean>} 是否存在循环依赖
  */
 async function isCircularDependency(categoryId, newParentId) {
-  // 检查是否将类别设置为自身的父类别
-  if (categoryId === newParentId) {
-    return true;
-  }
+  // 使用哈希表存储已检查过的节点，提高大型类别树效率
+  const visitedNodes = new Set();
+  let currentNodeId = newParentId;
 
-  // 递归检查所有父类别
-  let currentParentId = newParentId;
+  // 最大深度限制，防止无限循环
+  const maxDepth = 100;
+  let currentDepth = 0;
 
-  while (currentParentId) {
-    const parentCategory = await MedicalCategory.findByPk(currentParentId);
-
-    if (!parentCategory) {
-      return false;
-    }
-
-    // 如果父类别的父类别是当前类别，则存在循环依赖
-    if (parentCategory.parentCategoryID === categoryId) {
+  while (currentNodeId && currentDepth < maxDepth) {
+    // 如果当前节点是目标节点，存在循环依赖
+    if (currentNodeId === categoryId) {
       return true;
     }
 
-    currentParentId = parentCategory.parentCategoryID;
+    // 如果当前节点已被访问过，可以提前结束
+    if (visitedNodes.has(currentNodeId)) {
+      break;
+    }
+
+    // 记录已访问节点
+    visitedNodes.add(currentNodeId);
+
+    // 查找父节点
+    const category = await MedicalCategory.findByPk(currentNodeId);
+
+    // 如果没有父节点，结束
+    if (!category || !category.parentCategoryID) {
+      break;
+    }
+
+    // 移至父节点
+    currentNodeId = category.parentCategoryID;
+    currentDepth++;
   }
 
+  // 如果到达根节点或最大深度仍未发现循环，则无循环依赖
   return false;
 }
