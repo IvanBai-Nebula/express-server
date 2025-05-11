@@ -9,6 +9,13 @@ const db = require("./models");
 const setupSwagger = require("./swagger-api.js");
 const authUtils = require("./utils/auth.utils");
 const path = require("path");
+const { errorHandler } = require("./middleware/errorHandler.middleware");
+const {
+  globalLimiter,
+  loginLimiter,
+  registerLimiter,
+  passwordResetLimiter,
+} = require("./middleware/rateLimit.middleware");
 
 // 首先尝试加载特定环境的配置文件
 if (fs.existsSync(envFile)) {
@@ -82,6 +89,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// 应用全局API速率限制
+app.use(globalLimiter);
+
 // 同步数据库模型 - 生产环境不强制重建表
 db.sequelize
   .sync({ force: false })
@@ -102,6 +112,11 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", time: new Date().toISOString() });
 });
 
+// 为特定API路径应用特定的速率限制
+app.use("/api/auth/login", loginLimiter);
+app.use("/api/auth/register", registerLimiter);
+app.use("/api/auth/request-password-reset", passwordResetLimiter);
+
 // 加载路由
 require("./routes/auth.routes")(app);
 require("./routes/user.routes")(app);
@@ -113,14 +128,8 @@ require("./routes/tag.routes")(app);
 require("./routes/notification.routes")(app);
 require("./routes/admin.routes")(app);
 
-// 错误处理中间件 - 放在所有路由之后
-app.use((err, req, res, next) => {
-  console.error(`错误 [${req.requestId}]:`, err.stack);
-  res.status(500).json({
-    error: "服务器内部错误",
-    requestId: req.requestId,
-  });
-});
+// 应用错误处理中间件 - 放在所有路由之后
+app.use(errorHandler);
 
 // 404处理
 app.use((req, res) => {

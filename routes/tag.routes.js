@@ -1,5 +1,6 @@
 const controller = require("../controllers/tag.controller");
 const authMiddleware = require("../middleware/auth.middleware");
+const { tagCreateLimiter } = require("../middleware/rateLimit.middleware");
 
 module.exports = function (app) {
   const router = require("express").Router();
@@ -31,15 +32,50 @@ module.exports = function (app) {
    *           enum: [ASC, DESC]
    *           default: ASC
    *         description: 排序顺序
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           default: 1
+   *         description: 页码 (从1开始)
+   *       - in: query
+   *         name: pageSize
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 100
+   *           default: 10
+   *         description: 每页记录数
    *     responses:
    *       200:
    *         description: 成功获取标签列表
    *         content:
    *           application/json:
    *             schema:
-   *               type: array
-   *               items:
-   *                 $ref: '#/components/schemas/Tag'
+   *               type: object
+   *               properties:
+   *                 tags:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Tag'
+   *                 pagination:
+   *                   type: object
+   *                   properties:
+   *                     page:
+   *                       type: integer
+   *                     pageSize:
+   *                       type: integer
+   *                     totalCount:
+   *                       type: integer
+   *                     totalPages:
+   *                       type: integer
+   *       400:
+   *         description: 请求参数错误
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/GenericErrorMessage'
    *       500:
    *         description: 服务器错误
    *         content:
@@ -119,6 +155,12 @@ module.exports = function (app) {
    *               $ref: '#/components/schemas/GenericErrorMessage'
    *       403:
    *         description: 无权限操作 (非工作人员)
+   *       429:
+   *         description: 请求过于频繁
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/GenericErrorMessage'
    *       500:
    *         description: 服务器错误
    *         content:
@@ -126,7 +168,7 @@ module.exports = function (app) {
    *             schema:
    *               $ref: '#/components/schemas/GenericErrorMessage'
    */
-  router.post("/", controller.createTag);
+  router.post("/", tagCreateLimiter, controller.createTag);
 
   /**
    * @swagger

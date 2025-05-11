@@ -348,6 +348,9 @@ exports.getArticleById = async (req, res) => {
  * 更新文章
  */
 exports.updateArticle = async (req, res) => {
+  // 启动数据库事务
+  const t = await db.sequelize.transaction();
+
   try {
     const { articleId } = req.params;
     const {
@@ -362,30 +365,71 @@ exports.updateArticle = async (req, res) => {
     } = req.body;
 
     // 查找文章
-    const article = await KnowledgeArticle.findByPk(articleId);
+    const article = await KnowledgeArticle.findByPk(articleId, {
+      transaction: t,
+    });
 
     if (!article) {
+      await t.rollback();
       return res.status(404).json({ message: "文章不存在!" });
+    }
+
+    // 数据验证
+    if (title && title.length > 200) {
+      await t.rollback();
+      return res.status(400).json({ message: "文章标题不能超过200个字符!" });
+    }
+
+    if (summary && summary.length > 500) {
+      await t.rollback();
+      return res.status(400).json({ message: "文章摘要不能超过500个字符!" });
+    }
+
+    if (videoURL && !/^(https?:\/\/)/i.test(videoURL)) {
+      await t.rollback();
+      return res
+        .status(400)
+        .json({ message: "视频URL格式无效，必须以http://或https://开头!" });
+    }
+
+    if (status) {
+      const validStatuses = [
+        "Draft",
+        "PendingReview",
+        "Published",
+        "Archived",
+        "Rejected",
+      ];
+      if (!validStatuses.includes(status)) {
+        await t.rollback();
+        return res.status(400).json({ message: "无效的文章状态值!" });
+      }
     }
 
     // 验证类别
     if (categoryID && categoryID !== article.categoryID) {
-      const category = await MedicalCategory.findByPk(categoryID);
+      const category = await MedicalCategory.findByPk(categoryID, {
+        transaction: t,
+      });
       if (!category) {
+        await t.rollback();
         return res.status(404).json({ message: "所选类别不存在!" });
       }
     }
 
     // 创建文章版本记录
-    await ArticleVersion.create({
-      articleID: article.articleID,
-      versionNumber: article.version + 1,
-      title: article.title,
-      summary: article.summary,
-      richTextContent: article.richTextContent,
-      videoURL: article.videoURL,
-      authorStaffID: req.userId,
-    });
+    await ArticleVersion.create(
+      {
+        articleID: article.articleID,
+        versionNumber: article.version + 1,
+        title: article.title,
+        summary: article.summary,
+        richTextContent: article.richTextContent,
+        videoURL: article.videoURL,
+        authorStaffID: req.userId,
+      },
+      { transaction: t }
+    );
 
     // 准备更新数据
     const updateData = {};
@@ -410,11 +454,11 @@ exports.updateArticle = async (req, res) => {
     updateData.version = article.version + 1;
 
     // 更新文章
-    await article.update(updateData);
+    await article.update(updateData, { transaction: t });
 
     // 如果提供了标签，处理标签关联
     if (tags && Array.isArray(tags)) {
-      await handleArticleTags(articleId, tags);
+      await handleArticleTags(articleId, tags, t);
     }
 
     // 如果状态变为已发布，发送通知
@@ -441,13 +485,31 @@ exports.updateArticle = async (req, res) => {
           attributes: ["staffID", "username", "avatarURL"],
         },
       ],
+      transaction: t,
     });
+
+    // 提交事务
+    await t.commit();
 
     res.status(200).json({
       message: "文章更新成功!",
       article: updatedArticle,
     });
   } catch (error) {
+    // 回滚事务
+    await t.rollback();
+
+    // 详细错误处理
+    if (error.name === "SequelizeUniqueConstraintError") {
+      return res
+        .status(409)
+        .json({ message: "文章标题已存在，请使用不同的标题!" });
+    }
+
+    if (error.name === "SequelizeForeignKeyConstraintError") {
+      return res.status(400).json({ message: "引用了不存在的外键值!" });
+    }
+
     res
       .status(500)
       .json({ message: "更新文章时发生错误!", error: error.message });
@@ -458,38 +520,49 @@ exports.updateArticle = async (req, res) => {
  * 删除文章
  */
 exports.deleteArticle = async (req, res) => {
+  // 启动数据库事务
+  const t = await db.sequelize.transaction();
+
   try {
     const { articleId } = req.params;
 
     // 查找文章
-    const article = await KnowledgeArticle.findByPk(articleId);
+    const article = await KnowledgeArticle.findByPk(articleId, {
+      transaction: t,
+    });
 
     if (!article) {
+      await t.rollback();
       return res.status(404).json({ message: "文章不存在!" });
     }
 
     // 检查是否有子文章
     const childArticles = await KnowledgeArticle.count({
       where: { parentArticleID: articleId },
+      transaction: t,
     });
 
     if (childArticles > 0) {
+      await t.rollback();
       return res.status(400).json({ message: "无法删除有关联子文章的文章!" });
     }
 
     // 删除文章相关的标签关联
     await ArticleTag.destroy({
       where: { articleID: articleId },
+      transaction: t,
     });
 
     // 删除文章版本记录
     await ArticleVersion.destroy({
       where: { articleID: articleId },
+      transaction: t,
     });
 
     // 删除文章反馈
     await ArticleFeedback.destroy({
       where: { articleID: articleId },
+      transaction: t,
     });
 
     // 删除文章收藏
@@ -498,6 +571,7 @@ exports.deleteArticle = async (req, res) => {
         entityType: "KnowledgeArticle",
         entityID: articleId,
       },
+      transaction: t,
     });
 
     // 删除相关通知
@@ -506,13 +580,20 @@ exports.deleteArticle = async (req, res) => {
         relatedEntityType: "KnowledgeArticle",
         relatedEntityID: articleId,
       },
+      transaction: t,
     });
 
     // 删除文章
-    await article.destroy();
+    await article.destroy({ transaction: t });
+
+    // 提交事务
+    await t.commit();
 
     res.status(200).json({ message: "文章已成功删除!" });
   } catch (error) {
+    // 回滚事务
+    await t.rollback();
+
     res
       .status(500)
       .json({ message: "删除文章时发生错误!", error: error.message });
@@ -603,9 +684,21 @@ exports.submitFeedback = async (req, res) => {
     const { articleId } = req.params;
     const { rating, comment, isAnonymous = false } = req.body;
 
-    // 验证请求
+    // 增强验证
     if (rating === undefined && !comment) {
       return res.status(400).json({ message: "至少需要提供评分或评论!" });
+    }
+
+    // 验证评分范围
+    if (rating !== undefined) {
+      if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+        return res.status(400).json({ message: "评分必须是1到5之间的整数!" });
+      }
+    }
+
+    // 评论长度验证
+    if (comment && comment.length > 1000) {
+      return res.status(400).json({ message: "评论不能超过1000个字符!" });
     }
 
     // 检查文章是否存在
