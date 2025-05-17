@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人中心 - 医疗知识学习平台</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      color: #333;
+      background-color: #f5f7fa;
+    }
+    .header {
+      background-color: #409EFF;
+      color: white;
+      padding: 0 20px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+    .nav-link {
+      color: white;
+      text-decoration: none;
+    }
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: #fff;
+    }
+    .page-container {
+      display: flex;
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 0 20px;
+      gap: 20px;
+    }
+    .sidebar {
+      width: 240px;
+      flex-shrink: 0;
+    }
+    .main-content {
+      flex-grow: 1;
+    }
+    .panel {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 16px;
+      font-weight: bold;
+      background-color: #fafafa;
+    }
+    .panel-body {
+      padding: 20px;
+    }
+    .menu-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .menu-item {
+      padding: 15px 20px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .menu-item.active {
+      background-color: #ecf5ff;
+      color: #409EFF;
+      border-right: 3px solid #409EFF;
+    }
+    .menu-item:hover:not(.active) {
+      background-color: #f5f7fa;
+    }
+    .menu-item-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-label {
+      display: block;
+      font-size: 14px;
+      color: #606266;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .form-input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: #409EFF;
+    }
+    .btn {
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background-color: #409EFF;
+      border: 1px solid #409EFF;
+      color: white;
+    }
+    .btn-primary:hover {
+      background-color: #66b1ff;
+    }
+    .avatar-uploader {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .avatar-preview {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin: 0 auto 15px;
+      border: 4px solid #f0f0f0;
+    }
+    .avatar-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .avatar-upload-btn {
+      font-size: 14px;
+      color: #409EFF;
+      cursor: pointer;
+    }
+    .form-hint {
+      font-size: 12px;
+      color: #909399;
+      margin-top: 5px;
+    }
+    .tab-nav {
+      display: flex;
+      border-bottom: 1px solid #e4e7ed;
+      margin-bottom: 20px;
+    }
+    .tab-item {
+      padding: 10px 20px;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .tab-item.active {
+      color: #409EFF;
+      border-bottom-color: #409EFF;
+    }
+    .tab-content {
+      padding-top: 10px;
+    }
+    .card-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background-color: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    }
+    .card-image {
+      height: 150px;
+      overflow: hidden;
+    }
+    .card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .card-body {
+      padding: 15px;
+    }
+    .card-title {
+      margin: 0 0 10px;
+      font-size: 16px;
+      font-weight: 500;
+      color: #303133;
+    }
+    .card-meta {
+      font-size: 12px;
+      color: #909399;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .card-actions {
+      margin-top: 15px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .footer {
+      background-color: #f0f2f5;
+      padding: 20px;
+      text-align: center;
+      color: #606266;
+      font-size: 14px;
+      border-top: 1px solid #e4e7ed;
+      margin-top: 50px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 12px;
+      color: white;
+      margin-left: 5px;
+    }
+    .badge-primary {
+      background-color: #409EFF;
+    }
+    .badge-success {
+      background-color: #67C23A;
+    }
+    .badge-warning {
+      background-color: #E6A23C;
+    }
+    .badge-danger {
+      background-color: #F56C6C;
+    }
+    .notification-list {
+      list-style: none;
+      padding: 0;
+    }
+    .notification-item {
+      padding: 15px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .notification-item:last-child {
+      border-bottom: none;
+    }
+    .notification-content {
+      margin-bottom: 5px;
+    }
+    .notification-time {
+      font-size: 12px;
+      color: #909399;
+    }
+    .notification-unread {
+      background-color: #f0f9ff;
+    }
+    .notification-unread::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background-color: #409EFF;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">医疗知识学习平台</div>
+    <div class="nav-links">
+      <a href="home.html" class="nav-link">首页</a>
+      <a href="article-list.html" class="nav-link">知识文章</a>
+      <a href="experience-list.html" class="nav-link">学习心得</a>
+      <a href="categories.html" class="nav-link">分类浏览</a>
+    </div>
+    <div class="user-menu">
+      <a href="user-profile.html" style="display: flex; align-items: center; gap: 10px; color: white; text-decoration: none;">
+        <img src="https://placeholder.pics/svg/64/DEDEDE/555555/头像" alt="用户头像" class="user-avatar">
+        <span>张先生</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="page-container">
+    <aside class="sidebar">
+      <div class="panel">
+        <div class="panel-header">个人中心</div>
+        <ul class="menu-list">
+          <li class="menu-item active">
+            <div class="menu-item-icon">👤</div>
+            <span>个人资料</span>
+          </li>
+          <li class="menu-item">
+            <div class="menu-item-icon">🔖</div>
+            <span>我的收藏</span>
+          </li>
+          <li class="menu-item">
+            <div class="menu-item-icon">📝</div>
+            <span>我的心得</span>
+          </li>
+          <li class="menu-item">
+            <div class="menu-item-icon">💬</div>
+            <span>我的评论</span>
+          </li>
+          <li class="menu-item">
+            <div class="menu-item-icon">🔔</div>
+            <span>通知中心</span>
+            <div class="badge badge-primary">3</div>
+          </li>
+          <li class="menu-item">
+            <div class="menu-item-icon">⚙️</div>
+            <span>账户设置</span>
+          </li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <!-- 个人资料 -->
+      <div class="panel">
+        <div class="panel-header">个人资料</div>
+        <div class="panel-body">
+          <div class="avatar-uploader">
+            <div class="avatar-preview">
+              <img src="https://placeholder.pics/svg/100/DEDEDE/555555/头像" alt="用户头像">
+            </div>
+            <div class="avatar-upload-btn">更换头像</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">用户名</label>
+            <input type="text" class="form-input" value="zhang_medical" disabled>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">姓名</label>
+            <input type="text" class="form-input" value="张先生">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">电子邮箱</label>
+            <input type="email" class="form-input" value="zhang@example.com">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">手机号码</label>
+            <input type="tel" class="form-input" value="138****6666">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">职业/背景</label>
+            <select class="form-input">
+              <option value="patient" selected>患者</option>
+              <option value="medical">医生/医护人员</option>
+              <option value="student">医学生</option>
+              <option value="family">患者家属</option>
+              <option value="other">其他</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">个人简介</label>
+            <textarea class="form-input" rows="3">关注健康管理与慢性病预防，希望分享个人经验帮助他人。</textarea>
+          </div>
+
+          <div class="form-group">
+            <button class="btn btn-primary">保存修改</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 我的收藏 -->
+      <div class="panel" style="display: none;">
+        <div class="panel-header">我的收藏</div>
+        <div class="panel-body">
+          <div class="tab-nav">
+            <div class="tab-item active">知识文章</div>
+            <div class="tab-item">学习心得</div>
+          </div>
+          
+          <div class="tab-content">
+            <div class="card-list">
+              <div class="card">
+                <div class="card-image">
+                  <img src="https://placeholder.pics/svg/300/DEDEDE/555555/医学图片" alt="文章封面">
+                </div>
+                <div class="card-body">
+                  <h3 class="card-title">2型糖尿病的饮食管理最新指南</h3>
+                  <div class="card-meta">
+                    <span>收藏于: 2023-10-15</span>
+                    <span>内科学</span>
+                  </div>
+                  <div class="card-actions">
+                    <a href="article-detail.html" style="color: #409EFF; text-decoration: none;">查看详情</a>
+                    <span style="color: #F56C6C; cursor: pointer;">取消收藏</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="card">
+                <div class="card-image">
+                  <img src="https://placeholder.pics/svg/300/DEDEDE/555555/医学图片" alt="文章封面">
+                </div>
+                <div class="card-body">
+                  <h3 class="card-title">高血压患者的日常监测要点</h3>
+                  <div class="card-meta">
+                    <span>收藏于: 2023-09-28</span>
+                    <span>心血管</span>
+                  </div>
+                  <div class="card-actions">
+                    <a href="article-detail.html" style="color: #409EFF; text-decoration: none;">查看详情</a>
+                    <span style="color: #F56C6C; cursor: pointer;">取消收藏</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="card">
+                <div class="card-image">
+                  <img src="https://placeholder.pics/svg/300/DEDEDE/555555/医学图片" alt="文章封面">
+                </div>
+                <div class="card-body">
+                  <h3 class="card-title">慢性疼痛管理的新方法</h3>
+                  <div class="card-meta">
+                    <span>收藏于: 2023-08-15</span>
+                    <span>疼痛科</span>
+                  </div>
+                  <div class="card-actions">
+                    <a href="article-detail.html" style="color: #409EFF; text-decoration: none;">查看详情</a>
+                    <span style="color: #F56C6C; cursor: pointer;">取消收藏</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 我的心得 -->
+      <div class="panel" style="display: none;">
+        <div class="panel-header">我的学习心得</div>
+        <div class="panel-body">
+          <div class="card-list">
+            <div class="card">
+              <div class="card-body">
+                <h3 class="card-title">我的糖尿病管理经验分享</h3>
+                <div class="card-meta">
+                  <span>发布于: 2023-10-10</span>
+                  <div>
+                    <span class="badge badge-success">已发布</span>
+                  </div>
+                </div>
+                <p>分享了自己在糖尿病饮食控制和运动管理方面的经验，并附上了一些实用的建议...</p>
+                <div class="card-actions">
+                  <a href="experience-detail.html" style="color: #409EFF; text-decoration: none;">查看详情</a>
+                  <span style="color: #F56C6C; cursor: pointer;">删除</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-body">
+                <h3 class="card-title">高血压药物治疗的个人体会</h3>
+                <div class="card-meta">
+                  <span>创建于: 2023-11-05</span>
+                  <div>
+                    <span class="badge badge-warning">审核中</span>
+                  </div>
+                </div>
+                <p>记录了自己使用不同降压药的体验和效果，以及配合健康生活方式的一些心得...</p>
+                <div class="card-actions">
+                  <span style="color: #409EFF; cursor: pointer;">编辑</span>
+                  <span style="color: #F56C6C; cursor: pointer;">撤回</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-body">
+                <h3 class="card-title">颈椎病康复训练记录</h3>
+                <div class="card-meta">
+                  <span>创建于: 2023-10-28</span>
+                  <div>
+                    <span class="badge badge-danger">未通过</span>
+                  </div>
+                </div>
+                <p>记录了颈椎病康复过程中的一些训练方法和注意事项，希望能帮助到有相同问题的朋友...</p>
+                <div class="card-actions">
+                  <span style="color: #409EFF; cursor: pointer;">查看原因</span>
+                  <span style="color: #409EFF; cursor: pointer;">重新编辑</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div style="margin-top: 20px; text-align: center;">
+            <a href="experience-create.html" class="btn btn-primary">创建新心得</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 我的评论 -->
+      <div class="panel" style="display: none;">
+        <div class="panel-header">我的评论</div>
+        <div class="panel-body">
+          <div class="notification-list">
+            <div class="notification-item">
+              <div class="notification-content">
+                <strong>在《2型糖尿病的饮食管理最新指南》中评论：</strong> 这篇文章内容非常实用，特别是关于碳水摄入控制的建议给我很大启发。我个人在实践中也发现...
+              </div>
+              <div class="notification-time">2023-10-25 14:23</div>
+              <div style="margin-top: 10px;">
+                <a href="article-detail.html" style="color: #409EFF; text-decoration: none; margin-right: 15px;">查看原文</a>
+                <span style="color: #F56C6C; cursor: pointer;">删除评论</span>
+              </div>
+            </div>
+
+            <div class="notification-item">
+              <div class="notification-content">
+                <strong>在《慢性疼痛的中医治疗方法》中评论：</strong> 结合个人经验，我认为文章中提到的针灸疗法确实对某些类型的慢性疼痛有明显效果，但可能需要更多临床研究来支持...
+              </div>
+              <div class="notification-time">2023-10-18 09:45</div>
+              <div style="margin-top: 10px;">
+                <a href="article-detail.html" style="color: #409EFF; text-decoration: none; margin-right: 15px;">查看原文</a>
+                <span style="color: #F56C6C; cursor: pointer;">删除评论</span>
+              </div>
+            </div>
+
+            <div class="notification-item">
+              <div class="notification-content">
+                <strong>回复了李医生的学习心得《高血压的最新研究进展》：</strong> 非常感谢分享这些前沿研究信息，对于我们这些患者来说，了解新的治疗方向很重要...
+              </div>
+              <div class="notification-time">2023-10-05 16:32</div>
+              <div style="margin-top: 10px;">
+                <a href="experience-detail.html" style="color: #409EFF; text-decoration: none; margin-right: 15px;">查看原文</a>
+                <span style="color: #F56C6C; cursor: pointer;">删除评论</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 通知中心 -->
+      <div class="panel" style="display: none;">
+        <div class="panel-header">通知中心</div>
+        <div class="panel-body">
+          <div class="notification-list">
+            <div class="notification-item notification-unread">
+              <div class="notification-content">
+                <strong>心得审核通过</strong>：您的学习心得《我的糖尿病管理经验分享》已通过审核，现已发布。
+              </div>
+              <div class="notification-time">2023-11-12 09:15</div>
+            </div>
+
+            <div class="notification-item notification-unread">
+              <div class="notification-content">
+                <strong>收到新评论</strong>：用户"王医生"评论了您的学习心得《我的糖尿病管理经验分享》："分享的经验很有价值，特别是关于血糖监测的部分..."
+              </div>
+              <div class="notification-time">2023-11-11 14:23</div>
+            </div>
+
+            <div class="notification-item notification-unread">
+              <div class="notification-content">
+                <strong>收到点赞</strong>：您的学习心得《我的糖尿病管理经验分享》收到了5个新的点赞。
+              </div>
+              <div class="notification-time">2023-11-10 18:45</div>
+            </div>
+
+            <div class="notification-item">
+              <div class="notification-content">
+                <strong>心得审核未通过</strong>：您的学习心得《颈椎病康复训练记录》未通过审核，原因："内容中包含未经验证的医疗建议，请修改后重新提交"。
+              </div>
+              <div class="notification-time">2023-10-30 11:20</div>
+            </div>
+
+            <div class="notification-item">
+              <div class="notification-content">
+                <strong>系统公告</strong>：平台已更新隐私政策，请查看并确认同意最新条款。
+              </div>
+              <div class="notification-time">2023-10-25 10:00</div>
+            </div>
+          </div>
+          
+          <div style="margin-top: 20px; text-align: center;">
+            <button class="btn btn-primary">全部标为已读</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 账户设置 -->
+      <div class="panel" style="display: none;">
+        <div class="panel-header">账户设置</div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label class="form-label">修改密码</label>
+            <input type="password" class="form-input" placeholder="当前密码">
+          </div>
+
+          <div class="form-group">
+            <input type="password" class="form-input" placeholder="新密码">
+            <div class="form-hint">密码长度不少于8位，必须包含字母和数字</div>
+          </div>
+
+          <div class="form-group">
+            <input type="password" class="form-input" placeholder="确认新密码">
+          </div>
+
+          <div class="form-group">
+            <button class="btn btn-primary">更新密码</button>
+          </div>
+
+          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+
+          <h3 style="margin-top: 0;">通知设置</h3>
+          
+          <div style="margin-bottom: 15px;">
+            <label style="display: flex; align-items: center; cursor: pointer; margin-bottom: 10px;">
+              <input type="checkbox" checked style="margin-right: 10px;">
+              心得评论和点赞通知
+            </label>
+
+            <label style="display: flex; align-items: center; cursor: pointer; margin-bottom: 10px;">
+              <input type="checkbox" checked style="margin-right: 10px;">
+              心得审核结果通知
+            </label>
+
+            <label style="display: flex; align-items: center; cursor: pointer; margin-bottom: 10px;">
+              <input type="checkbox" checked style="margin-right: 10px;">
+              系统公告
+            </label>
+
+            <label style="display: flex; align-items: center; cursor: pointer;">
+              <input type="checkbox" style="margin-right: 10px;">
+              推荐内容通知
+            </label>
+          </div>
+
+          <div class="form-group">
+            <button class="btn btn-primary">保存设置</button>
+          </div>
+          
+          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+
+          <div style="margin-top: 30px;">
+            <h3 style="color: #F56C6C;">危险操作</h3>
+            <p style="color: #909399;">注销账户后，您的所有数据将被删除且无法恢复。</p>
+            <button class="btn" style="background-color: #F56C6C; border: 1px solid #F56C6C; color: white;">注销账户</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <footer class="footer">
+    <p>© 2023 医疗知识学习平台 版权所有</p>
+    <p>联系我们 | 关于我们 | 使用条款 | 隐私政策</p>
+  </footer>
+
+  <script>
+    // 简单的选项卡切换功能
+    document.addEventListener('DOMContentLoaded', function() {
+      const menuItems = document.querySelectorAll('.menu-item');
+      const panels = document.querySelectorAll('.main-content > .panel');
+      
+      menuItems.forEach((item, index) => {
+        item.addEventListener('click', () => {
+          // 更新菜单激活状态
+          menuItems.forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+          
+          // 显示对应的面板
+          panels.forEach(p => p.style.display = 'none');
+          panels[index].style.display = 'block';
+        });
+      });
+    });
+  </script>
+</body>
+</html> 

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>注册 - 医疗知识学习平台</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background-color: #f5f7fa;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      background-color: #409EFF;
+      color: white;
+      padding: 0 20px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+    .nav-link {
+      color: white;
+      text-decoration: none;
+    }
+    .register-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+    }
+    .register-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      width: 450px;
+      max-width: 100%;
+      padding: 30px;
+    }
+    .register-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .register-title {
+      font-size: 24px;
+      color: #333;
+      margin: 0 0 10px;
+    }
+    .register-subtitle {
+      font-size: 14px;
+      color: #666;
+      margin: 0;
+    }
+    .register-form {
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-label {
+      display: block;
+      font-size: 14px;
+      color: #606266;
+      margin-bottom: 8px;
+    }
+    .form-input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: #409EFF;
+    }
+    .form-row {
+      display: flex;
+      gap: 15px;
+    }
+    .form-row .form-group {
+      flex: 1;
+    }
+    .form-hint {
+      font-size: 12px;
+      color: #909399;
+      margin-top: 5px;
+    }
+    .form-terms {
+      font-size: 14px;
+      color: #606266;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: flex-start;
+    }
+    .form-terms input {
+      margin-right: 8px;
+      margin-top: 3px;
+    }
+    .form-terms a {
+      color: #409EFF;
+      text-decoration: none;
+    }
+    .register-button {
+      width: 100%;
+      padding: 12px;
+      background-color: #409EFF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .register-button:hover {
+      background-color: #66b1ff;
+    }
+    .divider {
+      display: flex;
+      align-items: center;
+      margin: 20px 0;
+      color: #909399;
+      font-size: 14px;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background-color: #e4e7ed;
+    }
+    .divider::before {
+      margin-right: 10px;
+    }
+    .divider::after {
+      margin-left: 10px;
+    }
+    .social-login {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .social-button {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .social-button:hover {
+      opacity: 0.8;
+    }
+    .wechat {
+      background-color: #07C160;
+    }
+    .qq {
+      background-color: #12B7F5;
+    }
+    .weibo {
+      background-color: #E6162D;
+    }
+    .login-link {
+      text-align: center;
+      font-size: 14px;
+      color: #606266;
+    }
+    .login-link a {
+      color: #409EFF;
+      text-decoration: none;
+    }
+    .footer {
+      background-color: #f5f7fa;
+      padding: 20px;
+      text-align: center;
+      color: #606266;
+      font-size: 14px;
+      border-top: 1px solid #e4e7ed;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">医疗知识学习平台</div>
+    <div class="nav-links">
+      <a href="home.html" class="nav-link">首页</a>
+      <a href="article-list.html" class="nav-link">知识文章</a>
+      <a href="experience-list.html" class="nav-link">学习心得</a>
+      <a href="categories.html" class="nav-link">分类浏览</a>
+    </div>
+  </header>
+
+  <div class="register-container">
+    <div class="register-card">
+      <div class="register-header">
+        <h1 class="register-title">创建账号</h1>
+        <p class="register-subtitle">加入我们的医疗知识学习社区</p>
+      </div>
+      
+      <form class="register-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstname" class="form-label">姓</label>
+            <input type="text" id="firstname" class="form-input" placeholder="请输入姓氏">
+          </div>
+          <div class="form-group">
+            <label for="lastname" class="form-label">名</label>
+            <input type="text" id="lastname" class="form-input" placeholder="请输入名字">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="username" class="form-label">用户名</label>
+          <input type="text" id="username" class="form-input" placeholder="请设置用户名">
+          <div class="form-hint">用户名将公开显示在您的个人资料和发布的内容中</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="email" class="form-label">邮箱</label>
+          <input type="email" id="email" class="form-input" placeholder="请输入邮箱地址">
+        </div>
+        
+        <div class="form-group">
+          <label for="password" class="form-label">密码</label>
+          <input type="password" id="password" class="form-input" placeholder="请设置密码">
+          <div class="form-hint">密码长度应不少于8位，包含字母和数字</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="confirm-password" class="form-label">确认密码</label>
+          <input type="password" id="confirm-password" class="form-input" placeholder="请再次输入密码">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">您的身份（可选）</label>
+          <select class="form-input">
+            <option value="">请选择您的身份</option>
+            <option value="doctor">医生/医护人员</option>
+            <option value="student">医学生</option>
+            <option value="patient">患者</option>
+            <option value="family">患者家属</option>
+            <option value="other">其他</option>
+          </select>
+        </div>
+        
+        <label class="form-terms">
+          <input type="checkbox">
+          <span>我已阅读并同意<a href="#">用户协议</a>和<a href="#">隐私政策</a></span>
+        </label>
+        
+        <a href="login.html" style="text-decoration: none;">
+          <button type="button" class="register-button">注册</button>
+        </a>
+      </form>
+      
+      <div class="divider">其他方式注册</div>
+      
+      <div class="social-login">
+        <a href="#" class="social-button wechat" title="微信注册">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"></path></svg>
+        </a>
+        <a href="#" class="social-button qq" title="QQ注册">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        </a>
+        <a href="#" class="social-button weibo" title="微博注册">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+        </a>
+      </div>
+      
+      <div class="login-link">
+        已有账号？<a href="login.html">立即登录</a>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>© 2023 医疗知识学习平台 版权所有</p>
+    <p>联系我们 | 关于我们 | 使用条款 | 隐私政策</p>
+  </footer>
+</body>
+</html> 

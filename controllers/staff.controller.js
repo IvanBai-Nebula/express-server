@@ -1,149 +1,149 @@
 const db = require("../models");
 const Staff = db.staff;
+const {
+  asyncHandler,
+  createError,
+} = require("../middleware/errorHandler.middleware");
 const authUtils = require("../utils/auth.utils");
 
 /**
  * 获取当前工作人员信息
  */
-exports.getCurrentStaff = async (req, res) => {
-  try {
-    const staff = await Staff.findByPk(req.userId, {
-      attributes: { exclude: ["passwordHash"] },
-    });
+exports.getCurrentStaff = asyncHandler(async (req, res) => {
+  const staffId = req.userId;
 
-    if (!staff) {
-      return res.status(404).json({ message: "工作人员不存在!" });
-    }
+  const staff = await Staff.findByPk(staffId, {
+    attributes: { exclude: ["passwordHash"] }, // 排除敏感信息
+  });
 
-    res.status(200).json(staff);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "获取工作人员信息时发生错误!", error: error.message });
+  if (!staff) {
+    throw createError("工作人员不存在!", 404);
   }
-};
+
+  res.status(200).json(staff);
+});
 
 /**
  * 更新当前工作人员个人资料
  */
-exports.updateProfile = async (req, res) => {
-  try {
-    const staff = await Staff.findByPk(req.userId);
+exports.updateProfile = asyncHandler(async (req, res) => {
+  const staffId = req.userId;
+  const {
+    username,
+    email,
+    avatarURL,
+    preferredLanguage,
+    notificationPreferences,
+  } = req.body;
 
-    if (!staff) {
-      return res.status(404).json({ message: "工作人员不存在!" });
-    }
+  const staff = await Staff.findByPk(staffId);
 
-    // 可更新的字段
-    const updatableFields = ["username", "email", "avatarURL"];
-
-    const updates = {};
-
-    // 只更新提供的字段
-    for (const field of updatableFields) {
-      if (req.body[field] !== undefined) {
-        // 对于用户名和邮箱，需要检查唯一性
-        if (field === "username" && req.body.username !== staff.username) {
-          const existingUsername = await Staff.findOne({
-            where: { username: req.body.username },
-          });
-
-          if (existingUsername) {
-            return res.status(400).json({ message: "用户名已被使用!" });
-          }
-        }
-
-        if (field === "email" && req.body.email !== staff.email) {
-          const existingEmail = await Staff.findOne({
-            where: { email: req.body.email },
-          });
-
-          if (existingEmail) {
-            return res.status(400).json({ message: "电子邮件已被使用!" });
-          }
-
-          // 如果邮箱变更，需要重新验证
-          updates.emailVerified = false;
-        }
-
-        updates[field] = req.body[field];
-      }
-    }
-
-    await staff.update(updates);
-
-    // 返回更新后的工作人员信息（不包含密码）
-    const updatedStaff = await Staff.findByPk(req.userId, {
-      attributes: { exclude: ["passwordHash"] },
-    });
-
-    res.status(200).json({
-      message: "个人资料已更新!",
-      staff: updatedStaff,
-    });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "更新个人资料时发生错误!", error: error.message });
+  if (!staff) {
+    throw createError("工作人员不存在!", 404);
   }
-};
+
+  // 如果更改用户名，检查新用户名是否已存在
+  if (username && username !== staff.username) {
+    const existingUsername = await Staff.findOne({
+      where: { username },
+    });
+
+    if (existingUsername) {
+      throw createError("用户名已被使用!", 400);
+    }
+  }
+
+  // 如果更改邮箱，检查新邮箱是否已存在，并将邮箱验证状态设为false
+  if (email && email !== staff.email) {
+    const existingEmail = await Staff.findOne({
+      where: { email },
+    });
+
+    if (existingEmail) {
+      throw createError("邮箱已被使用!", 400);
+    }
+  }
+
+  // 更新信息
+  const updates = {};
+
+  if (username) updates.username = username;
+
+  if (email && email !== staff.email) {
+    updates.email = email;
+    updates.emailVerified = false;
+
+    // 生成新的验证令牌并发送验证邮件
+    // 这部分代码根据邮件验证系统实现可能有所不同
+  }
+
+  if (avatarURL !== undefined) updates.avatarURL = avatarURL;
+  if (preferredLanguage) updates.preferredLanguage = preferredLanguage;
+
+  if (notificationPreferences) {
+    updates.notificationPreferences = {
+      ...staff.notificationPreferences,
+      ...notificationPreferences,
+    };
+  }
+
+  await staff.update(updates);
+
+  // 获取更新后的信息（排除敏感字段）
+  const updatedStaff = await Staff.findByPk(staffId, {
+    attributes: { exclude: ["passwordHash"] },
+  });
+
+  res.status(200).json({
+    message: "个人资料已更新!",
+    staff: updatedStaff,
+  });
+});
 
 /**
  * 更新当前工作人员密码
  */
-exports.updatePassword = async (req, res) => {
-  try {
-    const { currentPassword, newPassword } = req.body;
+exports.updatePassword = asyncHandler(async (req, res) => {
+  const staffId = req.userId;
+  const { currentPassword, newPassword } = req.body;
 
-    if (!currentPassword || !newPassword) {
-      return res.status(400).json({ message: "请提供当前密码和新密码!" });
-    }
-
-    // 验证新密码格式
-    if (newPassword.length < 8) {
-      return res.status(400).json({ message: "新密码长度必须至少为8位!" });
-    }
-
-    if (
-      !/[A-Z]/.test(newPassword) ||
-      !/[a-z]/.test(newPassword) ||
-      !/[0-9]/.test(newPassword)
-    ) {
-      return res
-        .status(400)
-        .json({ message: "新密码必须包含大写字母、小写字母和数字!" });
-    }
-
-    const staff = await Staff.findByPk(req.userId);
-
-    if (!staff) {
-      return res.status(404).json({ message: "工作人员不存在!" });
-    }
-
-    // 验证当前密码
-    const isPasswordValid = await authUtils.comparePassword(
-      currentPassword,
-      staff.passwordHash
-    );
-
-    if (!isPasswordValid) {
-      return res.status(401).json({ message: "当前密码不正确!" });
-    }
-
-    // 对新密码进行散列处理
-    const hashedPassword = await authUtils.hashPassword(newPassword);
-
-    // 更新密码并递增令牌版本，使当前所有有效的令牌失效
-    const currentTokenVersion = staff.tokenVersion || 0;
-    await staff.update({
-      passwordHash: hashedPassword,
-      tokenVersion: currentTokenVersion + 1,
-    });
-
-    res.status(200).json({ message: "密码已成功更新，请重新登录!" });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "更新密码时发生错误!", error: error.message });
+  if (!currentPassword || !newPassword) {
+    throw createError("请提供当前密码和新密码!", 400);
   }
-};
+
+  const staff = await Staff.findByPk(staffId);
+
+  if (!staff) {
+    throw createError("工作人员不存在!", 404);
+  }
+
+  // 验证当前密码
+  const isPasswordValid = await authUtils.comparePassword(
+    currentPassword,
+    staff.passwordHash
+  );
+
+  if (!isPasswordValid) {
+    throw createError("当前密码不正确!", 401);
+  }
+
+  // 验证新密码强度
+  const passwordValidation = authUtils.validatePasswordStrength(newPassword);
+  if (!passwordValidation.valid) {
+    throw createError(passwordValidation.message, 400);
+  }
+
+  // 更新密码
+  const hashedPassword = await authUtils.hashPassword(newPassword);
+  await staff.update({ passwordHash: hashedPassword });
+
+  // 可选：撤销现有的刷新令牌
+  if (staff.tokenVersion !== undefined) {
+    staff.tokenVersion = staff.tokenVersion + 1;
+    await staff.save();
+  }
+
+  res.status(200).json({
+    message: "密码已成功更新!",
+  });
+});

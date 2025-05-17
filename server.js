@@ -9,13 +9,29 @@ const db = require("./models");
 const setupSwagger = require("./swagger-api.js");
 const authUtils = require("./utils/auth.utils");
 const path = require("path");
-const { errorHandler } = require("./middleware/errorHandler.middleware");
+const {
+  errorHandler,
+  requestIdMiddleware,
+} = require("./middleware/errorHandler.middleware");
 const {
   globalLimiter,
   loginLimiter,
   registerLimiter,
   passwordResetLimiter,
+  userLimiter,
+  staffLimiter,
+  medicalCategoryLimiter,
+  knowledgeArticleLimiter,
+  learningExperienceLimiter,
+  tagCreateLimiter,
+  notificationLimiter,
+  adminLimiter,
 } = require("./middleware/rateLimit.middleware");
+const {
+  handleXSSAttempt,
+  handleCSRFError,
+  handleAuthError,
+} = require("./middleware/securityHandler.middleware");
 
 // 首先尝试加载特定环境的配置文件
 if (fs.existsSync(envFile)) {
@@ -74,6 +90,9 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json({ limit: "5mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "5mb" }));
 
+// 添加请求ID中间件 - 为每个请求生成唯一ID
+app.use(requestIdMiddleware);
+
 // 添加基本安全头
 app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
@@ -82,12 +101,10 @@ app.use((req, res, next) => {
   next();
 });
 
-// 请求ID中间件 - 用于日志跟踪
-app.use((req, res, next) => {
-  req.requestId =
-    Date.now() + "-" + Math.random().toString(36).substring(2, 15);
-  next();
-});
+// 应用安全中间件
+app.use(handleAuthError); // 处理认证错误
+app.use(handleCSRFError); // 处理CSRF错误
+app.use(handleXSSAttempt); // 检测和阻止XSS尝试
 
 // 应用全局API速率限制
 app.use(globalLimiter);
@@ -113,9 +130,20 @@ app.get("/health", (req, res) => {
 });
 
 // 为特定API路径应用特定的速率限制
-app.use("/api/auth/login", loginLimiter);
-app.use("/api/auth/register", registerLimiter);
-app.use("/api/auth/request-password-reset", passwordResetLimiter);
+// 认证相关路由速率限制
+app.use("/api/v1/auth/login", loginLimiter);
+app.use("/api/v1/auth/register", registerLimiter);
+app.use("/api/v1/auth/forgot-password", passwordResetLimiter);
+
+// 为所有API路由应用路由特定的速率限制
+app.use("/api/v1/users", userLimiter);
+app.use("/api/v1/staff", staffLimiter);
+app.use("/api/v1/categories", medicalCategoryLimiter);
+app.use("/api/v1/articles", knowledgeArticleLimiter);
+app.use("/api/v1/experiences", learningExperienceLimiter);
+app.use("/api/v1/tags", tagCreateLimiter);
+app.use("/api/v1/notifications", notificationLimiter);
+app.use("/api/admin", adminLimiter);
 
 // 加载路由
 require("./routes/auth.routes")(app);
@@ -133,7 +161,12 @@ app.use(errorHandler);
 
 // 404处理
 app.use((req, res) => {
-  res.status(404).json({ error: "未找到请求的资源" });
+  res.status(404).json({
+    status: "error",
+    type: "not_found_error",
+    message: "未找到请求的资源",
+    requestId: req.requestId,
+  });
 });
 
 // 在所有路由之后设置 Swagger（仅当环境变量允许时）

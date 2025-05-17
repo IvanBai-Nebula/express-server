@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>学习心得列表 - 医疗知识学习平台</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      color: #333;
+      background-color: #f5f7fa;
+    }
+    .header {
+      background-color: #409EFF;
+      color: white;
+      padding: 0 20px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+    .nav-link {
+      color: white;
+      text-decoration: none;
+    }
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .page-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .page-title {
+      font-size: 24px;
+      margin: 0;
+    }
+    .write-btn {
+      padding: 10px 20px;
+      background-color: #409EFF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+    .write-btn svg {
+      margin-right: 5px;
+    }
+    .filter-container {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .filter-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin: 0 0 15px;
+    }
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+    .filter-row:last-child {
+      margin-bottom: 0;
+    }
+    .filter-label {
+      font-weight: bold;
+      width: 80px;
+      padding-top: 8px;
+    }
+    .filter-options {
+      flex: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .filter-option {
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 14px;
+    }
+    .filter-option:hover {
+      background-color: #f0f2f5;
+    }
+    .filter-option.active {
+      background-color: #e6f7ff;
+      color: #1890ff;
+    }
+    .filter-search {
+      display: flex;
+      margin-top: 15px;
+      border-top: 1px solid #eee;
+      padding-top: 15px;
+    }
+    .filter-search input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      margin-right: 10px;
+    }
+    .filter-search button {
+      padding: 8px 16px;
+      background-color: #409EFF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .list-header {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .list-info {
+      font-size: 14px;
+      color: #666;
+    }
+    .list-sort {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sort-label {
+      font-size: 14px;
+      color: #666;
+    }
+    .sort-option {
+      font-size: 14px;
+      color: #333;
+      cursor: pointer;
+      padding: 5px 8px;
+      border-radius: 4px;
+    }
+    .sort-option.active {
+      background-color: #f0f2f5;
+      color: #1890ff;
+    }
+    .experience-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 20px;
+    }
+    .experience-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+    .experience-card:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      transform: translateY(-4px);
+    }
+    .experience-content {
+      padding: 20px;
+    }
+    .experience-title {
+      font-size: 18px;
+      margin: 0 0 10px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .experience-title a {
+      color: #333;
+      text-decoration: none;
+    }
+    .experience-title a:hover {
+      color: #409EFF;
+    }
+    .experience-desc {
+      color: #666;
+      font-size: 14px;
+      margin: 0 0 15px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.6;
+    }
+    .experience-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .experience-author {
+      display: flex;
+      align-items: center;
+    }
+    .author-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .author-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .author-name {
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .publish-date {
+      color: #999;
+      font-size: 12px;
+    }
+    .experience-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 15px;
+    }
+    .experience-tag {
+      padding: 2px 8px;
+      background-color: #f0f2f5;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #666;
+    }
+    .experience-stats {
+      display: flex;
+      border-top: 1px solid #f0f0f0;
+      padding-top: 15px;
+      color: #999;
+      font-size: 12px;
+    }
+    .stat-item {
+      display: flex;
+      align-items: center;
+      margin-right: 15px;
+    }
+    .stat-item svg {
+      margin-right: 4px;
+    }
+    .pagination {
+      display: flex;
+      justify-content: center;
+      margin-top: 40px;
+    }
+    .page-button {
+      width: 32px;
+      height: 32px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      margin: 0 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .page-button:hover {
+      border-color: #409EFF;
+      color: #409EFF;
+    }
+    .page-button.active {
+      background-color: #409EFF;
+      border-color: #409EFF;
+      color: white;
+    }
+    .page-ellipsis {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+    }
+    .footer {
+      background-color: #f0f2f5;
+      padding: 30px 20px;
+      text-align: center;
+      color: #666;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">医疗知识学习平台</div>
+    <div class="nav-links">
+      <a href="home.html" class="nav-link">首页</a>
+      <a href="article-list.html" class="nav-link">知识文章</a>
+      <a href="experience-list.html" class="nav-link">学习心得</a>
+      <a href="categories.html" class="nav-link">分类浏览</a>
+    </div>
+    <div class="user-menu">
+      <a href="login.html" class="nav-link">登录</a>
+      <a href="register.html" class="nav-link">注册</a>
+    </div>
+  </header>
+
+  <div class="page-container">
+    <div class="page-header">
+      <h1 class="page-title">学习心得</h1>
+      <a href="experience-create.html" class="write-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>
+        写心得
+      </a>
+    </div>
+
+    <div class="filter-container">
+      <h2 class="filter-title">心得筛选</h2>
+      <div class="filter-row">
+        <div class="filter-label">分类：</div>
+        <div class="filter-options">
+          <div class="filter-option active">全部</div>
+          <div class="filter-option">疾病经验</div>
+          <div class="filter-option">康复历程</div>
+          <div class="filter-option">健康管理</div>
+          <div class="filter-option">医疗体验</div>
+          <div class="filter-option">学习总结</div>
+        </div>
+      </div>
+      <div class="filter-row">
+        <div class="filter-label">身份：</div>
+        <div class="filter-options">
+          <div class="filter-option active">全部</div>
+          <div class="filter-option">患者</div>
+          <div class="filter-option">医护人员</div>
+          <div class="filter-option">医学生</div>
+          <div class="filter-option">患者家属</div>
+        </div>
+      </div>
+      <div class="filter-search">
+        <input type="text" placeholder="搜索心得标题、关键词、作者">
+        <button>搜索</button>
+      </div>
+    </div>
+
+    <div class="list-header">
+      <div class="list-info">共找到 <strong>168</strong> 篇学习心得</div>
+      <div class="list-sort">
+        <span class="sort-label">排序：</span>
+        <span class="sort-option active">最新发布</span>
+        <span class="sort-option">最多点赞</span>
+        <span class="sort-option">最多评论</span>
+      </div>
+    </div>
+
+    <div class="experience-cards">
+      <div class="experience-card">
+        <div class="experience-content">
+          <div class="experience-meta">
+            <div class="experience-author">
+              <img src="https://placeholder.pics/svg/60/DEDEDE/555555/头像" alt="用户头像" class="author-avatar">
+              <div class="author-info">
+                <div class="author-name">张先生</div>
+                <div class="publish-date">2023-08-10</div>
+              </div>
+            </div>
+          </div>
+          <h3 class="experience-title">
+            <a href="experience-detail.html">我的糖尿病管理之路</a>
+          </h3>
+          <p class="experience-desc">作为一名2型糖尿病患者，我在过去5年中学习了很多关于疾病管理的知识和技巧。在这篇心得中，我想分享我的经验以及我最有效的血糖控制方法。</p>
+          <div class="experience-tags">
+            <span class="experience-tag">糖尿病</span>
+            <span class="experience-tag">慢性病管理</span>
+            <span class="experience-tag">健康生活</span>
+          </div>
+          <div class="experience-stats">
+            <div class="stat-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"></path><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+              128
+            </div>
+            <div class="stat-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              23
+            </div>
+            <div class="stat-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              728
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="experience-card">
+        <div class="experience-content">
+          <div class="experience-meta">
+            <div class="experience-author">
+              <img src="https://placeholder.pics/svg/60/DEDEDE/555555/头像" alt="用户头像" class="author-avatar">
+              <div class="author-info">
+                <div class="author-name">李医生</div>
+                <div class="publish-date">2023-08-08</div>
+              </div>
+            </div>
+          </div>
+          <h3 class="experience-title">
+            <a href="#">作为医学生，我从临床实习中学到的五件事</a>
+          </h3>
+          <p class="experience-desc">刚刚完成第一年临床实习的我，想分享这段时间的所见所闻和心得体会。医学教育不仅仅是关于知识，更是关于人文关怀。</p>
+          <div class="experience-tags">
+            <span class="experience-tag">临床实习</span>
+            <span class="experience-tag">医学教育</span>
+            <span class="experience-tag">职业发展</span>
+          </div>
+          <div class="experience-stats">
+            <div class="stat-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"></path><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+              96
+            </div>
+            <div class="stat-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              17
+            </div>
+            <div class="stat-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              562
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="experience-card">
+        <div class="experience-content">
+          <div class="experience-meta">
+            <div class="experience-author">
+              <img src="https://placeholder.pics/svg/60/DEDEDE/555555/头像" alt="用户头像" class="author-avatar">
+              <div class="author-info">
+                <div class="author-name">王女士</div>
+                <div class="publish-date">2023-08-07</div>
+              </div>
+            </div>
+          </div>
+          <h3 class="experience-title">
+            <a href="#">我如何帮助家人战胜抑郁症</a>
+          </h3>
+          <p class="experience-desc">当家人被诊断出抑郁症时，整个家庭都面临着挑战。这篇心得分享了我们家庭的经历，以及我们如何一起学习、理解和应对这一疾病。</p>
+          <div class="experience-tags">
+            <span class="experience-tag">抑郁症</span>
+            <span class="experience-tag">精神健康</span>
+            <span class="experience-tag">家庭支持</span>
+          </div>
+          <div class="experience-stats">
+            <div class="stat-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"></path><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+              215
+            </div>
+            <div class="stat-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              31
+            </div>
+            <div class="stat-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              892
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="experience-card">
+        <div class="experience-content">
+          <div class="experience-meta">
+            <div class="experience-author">
+              <img src="https://placeholder.pics/svg/60/DEDEDE/555555/头像" alt="用户头像" class="author-avatar">
+              <div class="author-info">
+                <div class="author-name">陈先生</div>
+                <div class="publish-date">2023-07-25</div>
+              </div>
+            </div>
+          </div>
+          <h3 class="experience-title">
+            <a href="#">血糖监测技术的进步对我生活的改变</a>
+          </h3>
+          <p class="experience-desc">现代血糖监测技术的发展让糖尿病管理变得更加简便高效。本文分享我使用连续血糖监测系统的经验，以及它如何改善了我的生活质量。</p>
+          <div class="experience-tags">
+            <span class="experience-tag">糖尿病</span>
+            <span class="experience-tag">医疗技术</span>
+            <span class="experience-tag">健康管理</span>
+          </div>
+          <div class="experience-stats">
+            <div class="stat-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"></path><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+              89
+            </div>
+            <div class="stat-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              12
+            </div>
+            <div class="stat-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              429
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="experience-card">
+        <div class="experience-content">
+          <div class="experience-meta">
+            <div class="experience-author">
+              <img src="https://placeholder.pics/svg/60/DEDEDE/555555/头像" alt="用户头像" class="author-avatar">
+              <div class="author-info">
+                <div class="author-name">赵女士</div>
+                <div class="publish-date">2023-08-05</div>
+              </div>
+            </div>
+          </div>
+          <h3 class="experience-title">
+            <a href="#">饮食管理：我的低碳生活实践</a>
+          </h3>
+          <p class="experience-desc">低碳饮食不仅可以控制血糖，还能带来更多健康益处。这篇心得分享了我如何将低碳饮食理念融入日常生活，并克服其中的各种挑战。</p>
+          <div class="experience-tags">
+            <span class="experience-tag">低碳饮食</span>
+            <span class="experience-tag">健康生活</span>
+            <span class="experience-tag">饮食管理</span>
+          </div>
+          <div class="experience-stats">
+            <div class="stat-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"></path><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+              112
+            </div>
+            <div class="stat-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              19
+            </div>
+            <div class="stat-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              534
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="experience-card">
+        <div class="experience-content">
+          <div class="experience-meta">
+            <div class="experience-author">
+              <img src="https://placeholder.pics/svg/60/DEDEDE/555555/头像" alt="用户头像" class="author-avatar">
+              <div class="author-info">
+                <div class="author-name">周医生</div>
+                <div class="publish-date">2023-07-18</div>
+              </div>
+            </div>
+          </div>
+          <h3 class="experience-title">
+            <a href="#">从抗拒到接受：慢性病患者的心路历程</a>
+          </h3>
+          <p class="experience-desc">作为一名医生，我见证了许多慢性病患者从抗拒到接受疾病的心理过程。这篇文章分享了一些临床案例和心理调适的方法。</p>
+          <div class="experience-tags">
+            <span class="experience-tag">慢性病</span>
+            <span class="experience-tag">心理健康</span>
+            <span class="experience-tag">医患关系</span>
+          </div>
+          <div class="experience-stats">
+            <div class="stat-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"></path><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+              201
+            </div>
+            <div class="stat-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              28
+            </div>
+            <div class="stat-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              718
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pagination">
+      <div class="page-button">&lt;</div>
+      <div class="page-button active">1</div>
+      <div class="page-button">2</div>
+      <div class="page-button">3</div>
+      <div class="page-button">4</div>
+      <div class="page-button">5</div>
+      <div class="page-ellipsis">...</div>
+      <div class="page-button">28</div>
+      <div class="page-button">&gt;</div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>© 2023 医疗知识学习平台 版权所有</p>
+    <p>联系我们 | 关于我们 | 使用条款 | 隐私政策</p>
+  </footer>
+</body>
+</html> 

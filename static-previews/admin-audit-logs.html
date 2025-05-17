@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>审计日志 - 管理员控制台</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background-color: #f5f7fa;
+      height: 100%;
+    }
+    .admin-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 240px;
+      background-color: #001529;
+      color: white;
+      padding: 20px 0;
+      flex-shrink: 0;
+    }
+    .logo {
+      padding: 0 20px 20px;
+      font-size: 18px;
+      font-weight: bold;
+      border-bottom: 1px solid #002140;
+      margin-bottom: 20px;
+    }
+    .menu {
+      list-style: none;
+      padding: 0;
+    }
+    .menu-item {
+      padding: 14px 20px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .menu-item:hover {
+      background-color: #002140;
+    }
+    .menu-item.active {
+      background-color: #1890ff;
+    }
+    .main {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: white;
+      padding: 16px 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    .page-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 0;
+    }
+    .user-dropdown {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: #1890ff;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    .card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+    }
+    .card-body {
+      padding: 20px;
+    }
+    .filter-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .filter-item {
+      flex: 1;
+      min-width: 200px;
+    }
+    .filter-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #606266;
+      font-size: 14px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: #409EFF;
+    }
+    .form-select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 14px;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23606266' d='M6 8.825L1.175 4 2.238 2.938 6 6.7l3.762-3.762L10.825 4z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 12px;
+    }
+    .filter-actions {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+    }
+    .btn {
+      padding: 8px 15px;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background-color: #409EFF;
+      color: white;
+    }
+    .btn-primary:hover {
+      background-color: #66b1ff;
+    }
+    .btn-default {
+      background-color: #f4f4f5;
+      color: #606266;
+      border: 1px solid #dcdfe6;
+    }
+    .btn-default:hover {
+      color: #409EFF;
+      border-color: #c6e2ff;
+      background-color: #ecf5ff;
+    }
+    .pagination {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-top: 20px;
+    }
+    .page-info {
+      margin-right: 15px;
+      font-size: 14px;
+      color: #606266;
+    }
+    .page-btn {
+      width: 32px;
+      height: 32px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 5px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 14px;
+      color: #606266;
+    }
+    .page-btn:hover {
+      color: #409EFF;
+      border-color: #c6e2ff;
+    }
+    .page-btn.active {
+      background-color: #409EFF;
+      color: white;
+      border-color: #409EFF;
+    }
+    .page-btn.disabled {
+      color: #c0c4cc;
+      cursor: not-allowed;
+    }
+    .audit-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .audit-table th, .audit-table td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #ebeef5;
+      font-size: 14px;
+    }
+    .audit-table th {
+      font-weight: 500;
+      color: #606266;
+      background-color: #f5f7fa;
+    }
+    .audit-table tr:hover {
+      background-color: #f5f7fa;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: normal;
+      line-height: 1;
+    }
+    .badge-info {
+      background-color: #e6f7ff;
+      color: #1890ff;
+      border: 1px solid #91d5ff;
+    }
+    .badge-success {
+      background-color: #f0f9eb;
+      color: #67c23a;
+      border: 1px solid #c2e7b0;
+    }
+    .badge-warning {
+      background-color: #fff7e6;
+      color: #e6a23c;
+      border: 1px solid #f5dab1;
+    }
+    .badge-danger {
+      background-color: #fef0f0;
+      color: #f56c6c;
+      border: 1px solid #fbc4c4;
+    }
+    .log-details {
+      margin-top: 8px;
+      padding: 8px;
+      background-color: #f8f8f8;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      display: none;
+    }
+    .expand-btn {
+      color: #409EFF;
+      cursor: pointer;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      margin-left: 5px;
+    }
+    .date-range-picker {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .date-range-picker input {
+      flex: 1;
+    }
+    .export-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .icon {
+      display: inline-flex;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    <div class="sidebar">
+      <div class="logo">医疗知识学习平台</div>
+      <div class="menu">
+        <div class="menu-item">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          <a href="admin-dashboard.html" style="color: inherit; text-decoration: none;">控制台</a>
+        </div>
+        <div class="menu-item">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          用户管理
+        </div>
+        <div class="menu-item">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          工作人员管理
+        </div>
+        <div class="menu-item">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          内容审核
+        </div>
+        <div class="menu-item">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+          分类管理
+        </div>
+        <div class="menu-item">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          <a href="admin-settings.html" style="color: inherit; text-decoration: none;">系统设置</a>
+        </div>
+        <div class="menu-item active">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          审计日志
+        </div>
+      </div>
+    </div>
+    
+    <div class="main">
+      <div class="header">
+        <h1 class="page-title">审计日志</h1>
+        <div class="user-dropdown">
+          <div class="avatar">A</div>
+          <span style="margin-right: 10px;">管理员</span>
+          <a href="login.html" style="color: #606266; text-decoration: none; font-size: 14px;">退出登录</a>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <span>筛选条件</span>
+          <button class="btn btn-default export-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            导出日志
+          </button>
+        </div>
+        <div class="card-body">
+          <div class="filter-row">
+            <div class="filter-item">
+              <label class="filter-label">日期范围</label>
+              <div class="date-range-picker">
+                <input type="date" class="form-control" value="2023-08-01">
+                <span>至</span>
+                <input type="date" class="form-control" value="2023-08-31">
+              </div>
+            </div>
+            <div class="filter-item">
+              <label class="filter-label">操作类型</label>
+              <select class="form-select">
+                <option value="">全部操作</option>
+                <option value="login">登录</option>
+                <option value="logout">登出</option>
+                <option value="create">创建</option>
+                <option value="update">更新</option>
+                <option value="delete">删除</option>
+                <option value="review">审核</option>
+                <option value="settings">设置变更</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <label class="filter-label">操作人角色</label>
+              <select class="form-select">
+                <option value="">全部角色</option>
+                <option value="admin">管理员</option>
+                <option value="staff">工作人员</option>
+                <option value="user">普通用户</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <label class="filter-label">操作结果</label>
+              <select class="form-select">
+                <option value="">全部结果</option>
+                <option value="success">成功</option>
+                <option value="failure">失败</option>
+              </select>
+            </div>
+            <div class="filter-actions">
+              <button class="btn btn-primary">查询</button>
+              <button class="btn btn-default">重置</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <span>操作日志记录</span>
+          <span style="font-weight: normal; font-size: 14px; color: #606266;">共 125 条记录</span>
+        </div>
+        <div class="card-body" style="padding: 0;">
+          <table class="audit-table">
+            <thead>
+              <tr>
+                <th style="width: 180px;">时间</th>
+                <th style="width: 120px;">操作类型</th>
+                <th style="width: 120px;">操作人</th>
+                <th style="width: 100px;">角色</th>
+                <th>操作描述</th>
+                <th style="width: 150px;">IP地址</th>
+                <th style="width: 100px;">结果</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>2023-08-31 15:42:16</td>
+                <td>
+                  <span class="badge badge-info">设置变更</span>
+                </td>
+                <td>admin001</td>
+                <td>管理员</td>
+                <td>
+                  修改系统安全设置
+                  <span class="expand-btn" onclick="toggleDetails(this)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    详情
+                  </span>
+                  <div class="log-details">
+修改内容:
+- 账号锁定: 由"否"改为"是"
+- 登录失败次数: 由"3"改为"5"
+- 密码强度: 由"低"改为"中"
+                  </div>
+                </td>
+                <td>192.168.1.100</td>
+                <td><span class="badge badge-success">成功</span></td>
+              </tr>
+              <tr>
+                <td>2023-08-31 14:35:21</td>
+                <td>
+                  <span class="badge badge-info">审核</span>
+                </td>
+                <td>staff007</td>
+                <td>工作人员</td>
+                <td>
+                  审核用户心得 ID:2458 "糖尿病饮食控制经验分享"
+                  <span class="expand-btn" onclick="toggleDetails(this)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    详情
+                  </span>
+                  <div class="log-details">
+审核结果: 通过
+审核备注: "内容质量较高，饮食建议有参考价值"
+操作: 发布心得内容
+                  </div>
+                </td>
+                <td>192.168.1.135</td>
+                <td><span class="badge badge-success">成功</span></td>
+              </tr>
+              <tr>
+                <td>2023-08-31 11:27:53</td>
+                <td>
+                  <span class="badge badge-info">创建</span>
+                </td>
+                <td>staff012</td>
+                <td>工作人员</td>
+                <td>
+                  创建新文章 "新冠病毒最新研究进展"
+                  <span class="expand-btn" onclick="toggleDetails(this)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    详情
+                  </span>
+                  <div class="log-details">
+文章ID: 8762
+分类: 传染病学
+标签: ["新冠病毒", "临床研究", "预防措施"]
+状态: 已发布
+                  </div>
+                </td>
+                <td>192.168.1.142</td>
+                <td><span class="badge badge-success">成功</span></td>
+              </tr>
+              <tr>
+                <td>2023-08-31 10:15:07</td>
+                <td>
+                  <span class="badge badge-info">登录</span>
+                </td>
+                <td>admin001</td>
+                <td>管理员</td>
+                <td>管理员登录系统</td>
+                <td>192.168.1.100</td>
+                <td><span class="badge badge-success">成功</span></td>
+              </tr>
+              <tr>
+                <td>2023-08-30 16:42:35</td>
+                <td>
+                  <span class="badge badge-info">更新</span>
+                </td>
+                <td>staff005</td>
+                <td>工作人员</td>
+                <td>
+                  更新文章内容 ID:8743 "心脏病早期症状识别指南"
+                  <span class="expand-btn" onclick="toggleDetails(this)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    详情
+                  </span>
+                  <div class="log-details">
+修改内容:
+- 更新文章摘要
+- 增加两个症状描述段落
+- 添加新参考文献
+- 更新封面图片
+                  </div>
+                </td>
+                <td>192.168.1.121</td>
+                <td><span class="badge badge-success">成功</span></td>
+              </tr>
+              <tr>
+                <td>2023-08-30 14:27:19</td>
+                <td>
+                  <span class="badge badge-info">删除</span>
+                </td>
+                <td>user8563</td>
+                <td>普通用户</td>
+                <td>
+                  删除评论 ID:45632
+                  <span class="expand-btn" onclick="toggleDetails(this)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    详情
+                  </span>
+                  <div class="log-details">
+评论内容: "这篇文章对我帮助很大，特别是关于饮食控制的部分，谢谢分享！"
+删除原因: 用户自行删除
+                  </div>
+                </td>
+                <td>114.88.252.63</td>
+                <td><span class="badge badge-success">成功</span></td>
+              </tr>
+              <tr>
+                <td>2023-08-30 10:05:42</td>
+                <td>
+                  <span class="badge badge-info">登录</span>
+                </td>
+                <td>staff007</td>
+                <td>工作人员</td>
+                <td>工作人员尝试登录系统</td>
+                <td>192.168.1.135</td>
+                <td><span class="badge badge-danger">失败</span></td>
+              </tr>
+              <tr>
+                <td>2023-08-30 10:06:15</td>
+                <td>
+                  <span class="badge badge-info">登录</span>
+                </td>
+                <td>staff007</td>
+                <td>工作人员</td>
+                <td>工作人员登录系统</td>
+                <td>192.168.1.135</td>
+                <td><span class="badge badge-success">成功</span></td>
+              </tr>
+              <tr>
+                <td>2023-08-29 17:22:56</td>
+                <td>
+                  <span class="badge badge-info">创建</span>
+                </td>
+                <td>admin002</td>
+                <td>管理员</td>
+                <td>
+                  创建新工作人员账号
+                  <span class="expand-btn" onclick="toggleDetails(this)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    详情
+                  </span>
+                  <div class="log-details">
+用户名: staff015
+姓名: 赵明
+部门: 内容编辑
+权限: 内容发布、审核
+                  </div>
+                </td>
+                <td>192.168.1.101</td>
+                <td><span class="badge badge-success">成功</span></td>
+              </tr>
+              <tr>
+                <td>2023-08-29 16:38:12</td>
+                <td>
+                  <span class="badge badge-info">审核</span>
+                </td>
+                <td>staff009</td>
+                <td>工作人员</td>
+                <td>
+                  审核用户心得 ID:2457 "如何缓解颈椎病症状"
+                  <span class="expand-btn" onclick="toggleDetails(this)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    详情
+                  </span>
+                  <div class="log-details">
+审核结果: 退回修改
+审核备注: "文中有未经验证的医疗建议，需要声明这些建议仅代表个人经验"
+操作: 发送修改通知给用户
+                  </div>
+                </td>
+                <td>192.168.1.137</td>
+                <td><span class="badge badge-warning">退回</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="pagination" style="padding: 15px 20px;">
+            <div class="page-info">第 1-10 条/共 125 条</div>
+            <div class="page-btn disabled">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </div>
+            <div class="page-btn active">1</div>
+            <div class="page-btn">2</div>
+            <div class="page-btn">3</div>
+            <div class="page-btn">4</div>
+            <div class="page-btn">5</div>
+            <div class="page-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    function toggleDetails(element) {
+      const detailsElement = element.nextElementSibling;
+      const expandIcon = element.querySelector('svg');
+      
+      if (detailsElement.style.display === 'block') {
+        detailsElement.style.display = 'none';
+        expandIcon.innerHTML = '<polyline points="6 9 12 15 18 9"></polyline>';
+      } else {
+        detailsElement.style.display = 'block';
+        expandIcon.innerHTML = '<polyline points="18 15 12 9 6 15"></polyline>';
+      }
+    }
+  </script>
+</body>
+</html>
+</rewritten_file>

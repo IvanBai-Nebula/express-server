@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>通知中心 - 医疗知识学习平台</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      color: #333;
+      background-color: #f5f7fa;
+    }
+    .header {
+      background-color: #409EFF;
+      color: white;
+      padding: 0 20px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+    .nav-link {
+      color: white;
+      text-decoration: none;
+    }
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: #fff;
+    }
+    .page-container {
+      display: flex;
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 0 20px;
+      gap: 20px;
+    }
+    .sidebar {
+      width: 240px;
+      flex-shrink: 0;
+    }
+    .main-content {
+      flex-grow: 1;
+    }
+    .panel {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 16px;
+      font-weight: bold;
+      background-color: #fafafa;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .panel-body {
+      padding: 0;
+    }
+    .menu-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .menu-item {
+      padding: 15px 20px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .menu-item.active {
+      background-color: #ecf5ff;
+      color: #409EFF;
+      border-right: 3px solid #409EFF;
+    }
+    .menu-item:hover:not(.active) {
+      background-color: #f5f7fa;
+    }
+    .menu-item-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 12px;
+      color: white;
+      margin-left: 5px;
+    }
+    .badge-primary {
+      background-color: #409EFF;
+    }
+    .badge-success {
+      background-color: #67C23A;
+    }
+    .badge-warning {
+      background-color: #E6A23C;
+    }
+    .badge-danger {
+      background-color: #F56C6C;
+    }
+    .notification-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .notification-item {
+      padding: 15px 20px;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: flex-start;
+      transition: background-color 0.3s;
+    }
+    .notification-item:hover {
+      background-color: #f5f7fa;
+    }
+    .notification-item.unread {
+      background-color: #f0f9ff;
+    }
+    .notification-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #ecf5ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+      flex-shrink: 0;
+      color: #409EFF;
+    }
+    .notification-content {
+      flex-grow: 1;
+    }
+    .notification-title {
+      font-weight: 500;
+      margin: 0 0 5px;
+      color: #303133;
+    }
+    .notification-message {
+      color: #606266;
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .notification-time {
+      color: #909399;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+    .notification-actions {
+      margin-left: 15px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+    }
+    .notification-read {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #409EFF;
+    }
+    .tab-nav {
+      display: flex;
+      border-bottom: 1px solid #e4e7ed;
+    }
+    .tab-item {
+      padding: 15px 20px;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .tab-item.active {
+      color: #409EFF;
+      border-bottom-color: #409EFF;
+    }
+    .btn {
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.3s;
+      border: none;
+      outline: none;
+    }
+    .btn-text {
+      background: none;
+      color: #909399;
+      padding: 0;
+    }
+    .btn-text:hover {
+      color: #409EFF;
+    }
+    .btn-primary {
+      background-color: #409EFF;
+      color: white;
+    }
+    .btn-primary:hover {
+      background-color: #66b1ff;
+    }
+    .footer {
+      background-color: #f0f2f5;
+      padding: 20px;
+      text-align: center;
+      color: #606266;
+      font-size: 14px;
+      border-top: 1px solid #e4e7ed;
+      margin-top: 50px;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #909399;
+    }
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 20px;
+      color: #dcdfe6;
+    }
+    .notifications-actions {
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">医疗知识学习平台</div>
+    <div class="nav-links">
+      <a href="home.html" class="nav-link">首页</a>
+      <a href="article-list.html" class="nav-link">知识文章</a>
+      <a href="experience-list.html" class="nav-link">学习心得</a>
+      <a href="categories.html" class="nav-link">分类浏览</a>
+    </div>
+    <div class="user-menu">
+      <a href="user-profile.html" style="display: flex; align-items: center; gap: 10px; color: white; text-decoration: none;">
+        <img src="https://placeholder.pics/svg/64/DEDEDE/555555/头像" alt="用户头像" class="user-avatar">
+        <span>张先生</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="page-container">
+    <aside class="sidebar">
+      <div class="panel">
+        <div class="panel-header">个人中心</div>
+        <ul class="menu-list">
+          <li class="menu-item">
+            <div class="menu-item-icon">👤</div>
+            <a href="user-profile.html" style="text-decoration: none; color: inherit;">个人资料</a>
+          </li>
+          <li class="menu-item">
+            <div class="menu-item-icon">🔖</div>
+            <a href="user-bookmarks.html" style="text-decoration: none; color: inherit;">我的收藏</a>
+          </li>
+          <li class="menu-item">
+            <div class="menu-item-icon">📝</div>
+            <a href="user-experiences.html" style="text-decoration: none; color: inherit;">我的心得</a>
+          </li>
+          <li class="menu-item">
+            <div class="menu-item-icon">💬</div>
+            <span>我的评论</span>
+          </li>
+          <li class="menu-item active">
+            <div class="menu-item-icon">🔔</div>
+            <span>通知中心</span>
+            <div class="badge badge-primary">3</div>
+          </li>
+          <li class="menu-item">
+            <div class="menu-item-icon">⚙️</div>
+            <span>账户设置</span>
+          </li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="panel">
+        <div class="panel-header">
+          <span>通知中心</span>
+          <span>3条未读通知</span>
+        </div>
+        
+        <div class="tab-nav">
+          <div class="tab-item active">全部通知</div>
+          <div class="tab-item">系统通知</div>
+          <div class="tab-item">互动通知</div>
+          <div class="tab-item">内容通知</div>
+        </div>
+        
+        <div class="notifications-actions">
+          <div>
+            <button class="btn btn-primary">全部标为已读</button>
+          </div>
+          <div>
+            <button class="btn btn-text">删除全部已读通知</button>
+          </div>
+        </div>
+        
+        <ul class="notification-list">
+          <li class="notification-item unread">
+            <div class="notification-icon">📝</div>
+            <div class="notification-content">
+              <h3 class="notification-title">心得审核通过</h3>
+              <p class="notification-message">您的学习心得《我的糖尿病管理经验分享》已通过审核，现已发布。</p>
+              <div class="notification-time">2023-11-12 09:15</div>
+            </div>
+            <div class="notification-actions">
+              <div class="notification-read"></div>
+              <button class="btn btn-text">查看</button>
+            </div>
+          </li>
+          
+          <li class="notification-item unread">
+            <div class="notification-icon">💬</div>
+            <div class="notification-content">
+              <h3 class="notification-title">收到新评论</h3>
+              <p class="notification-message">用户"王医生"评论了您的学习心得《我的糖尿病管理经验分享》："分享的经验很有价值，特别是关于血糖监测的部分..."</p>
+              <div class="notification-time">2023-11-11 14:23</div>
+            </div>
+            <div class="notification-actions">
+              <div class="notification-read"></div>
+              <button class="btn btn-text">查看</button>
+            </div>
+          </li>
+          
+          <li class="notification-item unread">
+            <div class="notification-icon">👍</div>
+            <div class="notification-content">
+              <h3 class="notification-title">收到点赞</h3>
+              <p class="notification-message">您的学习心得《我的糖尿病管理经验分享》收到了5个新的点赞。</p>
+              <div class="notification-time">2023-11-10 18:45</div>
+            </div>
+            <div class="notification-actions">
+              <div class="notification-read"></div>
+              <button class="btn btn-text">查看</button>
+            </div>
+          </li>
+          
+          <li class="notification-item">
+            <div class="notification-icon">❌</div>
+            <div class="notification-content">
+              <h3 class="notification-title">心得审核未通过</h3>
+              <p class="notification-message">您的学习心得《颈椎病康复训练记录》未通过审核，原因："内容中包含未经验证的医疗建议，请修改后重新提交"。</p>
+              <div class="notification-time">2023-10-30 11:20</div>
+            </div>
+            <div class="notification-actions">
+              <button class="btn btn-text">查看</button>
+            </div>
+          </li>
+          
+          <li class="notification-item">
+            <div class="notification-icon">📢</div>
+            <div class="notification-content">
+              <h3 class="notification-title">系统公告</h3>
+              <p class="notification-message">平台已更新隐私政策，请查看并确认同意最新条款。</p>
+              <div class="notification-time">2023-10-25 10:00</div>
+            </div>
+            <div class="notification-actions">
+              <button class="btn btn-text">查看</button>
+            </div>
+          </li>
+          
+          <li class="notification-item">
+            <div class="notification-icon">🎁</div>
+            <div class="notification-content">
+              <h3 class="notification-title">活动通知</h3>
+              <p class="notification-message">您已成功报名参加"秋季健康知识讲座"线上活动，活动将于11月15日19:00开始，请准时参加。</p>
+              <div class="notification-time">2023-10-20 15:30</div>
+            </div>
+            <div class="notification-actions">
+              <button class="btn btn-text">查看</button>
+            </div>
+          </li>
+          
+          <li class="notification-item">
+            <div class="notification-icon">📚</div>
+            <div class="notification-content">
+              <h3 class="notification-title">推荐阅读</h3>
+              <p class="notification-message">根据您的阅读兴趣，为您推荐文章《慢性病管理的最新研究进展》。</p>
+              <div class="notification-time">2023-10-18 09:12</div>
+            </div>
+            <div class="notification-actions">
+              <button class="btn btn-text">查看</button>
+            </div>
+          </li>
+        </ul>
+        
+        <!-- 空状态（当没有通知时显示） -->
+        <div class="empty-state" style="display: none;">
+          <div class="empty-icon">🔔</div>
+          <h3>暂无通知</h3>
+          <p>您目前没有任何通知消息</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <footer class="footer">
+    <p>© 2023 医疗知识学习平台 版权所有</p>
+    <p>联系我们 | 关于我们 | 使用条款 | 隐私政策</p>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 选项卡切换功能
+      const tabItems = document.querySelectorAll('.tab-nav .tab-item');
+      const notificationItems = document.querySelectorAll('.notification-item');
+      const emptyState = document.querySelector('.empty-state');
+      
+      tabItems.forEach((item, index) => {
+        item.addEventListener('click', () => {
+          // 更新选项卡激活状态
+          tabItems.forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+          
+          // 根据选项卡筛选通知
+          const tabText = item.textContent.trim();
+          
+          let hasVisibleNotifications = false;
+          
+          notificationItems.forEach(notification => {
+            const notificationType = getNotificationType(notification);
+            
+            if (tabText === '全部通知' || notificationType === tabText) {
+              notification.style.display = 'flex';
+              hasVisibleNotifications = true;
+            } else {
+              notification.style.display = 'none';
+            }
+          });
+          
+          // 如果没有匹配的通知，显示空状态
+          emptyState.style.display = hasVisibleNotifications ? 'none' : 'block';
+        });
+      });
+      
+      // 标记为已读功能
+      const notificationReadButtons = document.querySelectorAll('.notification-actions .btn');
+      notificationReadButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const notification = this.closest('.notification-item');
+          const readIndicator = notification.querySelector('.notification-read');
+          
+          if (readIndicator) {
+            notification.classList.remove('unread');
+            readIndicator.remove();
+            
+            // 更新未读通知计数
+            updateUnreadCount();
+          }
+        });
+      });
+      
+      // 全部标为已读功能
+      const markAllReadButton = document.querySelector('.notifications-actions .btn-primary');
+      markAllReadButton.addEventListener('click', function() {
+        const unreadNotifications = document.querySelectorAll('.notification-item.unread');
+        
+        unreadNotifications.forEach(notification => {
+          notification.classList.remove('unread');
+          const readIndicator = notification.querySelector('.notification-read');
+          if (readIndicator) {
+            readIndicator.remove();
+          }
+        });
+        
+        // 更新未读通知计数
+        updateUnreadCount();
+      });
+      
+      // 删除全部已读通知
+      const deleteAllReadButton = document.querySelector('.notifications-actions .btn-text');
+      deleteAllReadButton.addEventListener('click', function() {
+        const readNotifications = document.querySelectorAll('.notification-item:not(.unread)');
+        
+        readNotifications.forEach(notification => {
+          notification.style.opacity = '0.5';
+          setTimeout(() => {
+            notification.remove();
+            
+            // 如果没有通知了，显示空状态
+            if (document.querySelectorAll('.notification-item').length === 0) {
+              emptyState.style.display = 'block';
+            }
+          }, 300);
+        });
+      });
+      
+      // 辅助函数：获取通知类型
+      function getNotificationType(notification) {
+        const title = notification.querySelector('.notification-title').textContent.trim();
+        
+        if (title.includes('系统公告') || title.includes('活动通知')) {
+          return '系统通知';
+        } else if (title.includes('评论') || title.includes('点赞')) {
+          return '互动通知';
+        } else {
+          return '内容通知';
+        }
+      }
+      
+      // 辅助函数：更新未读通知计数
+      function updateUnreadCount() {
+        const unreadCount = document.querySelectorAll('.notification-item.unread').length;
+        const countDisplay = document.querySelector('.panel-header span:last-child');
+        const badgeCount = document.querySelector('.menu-item.active .badge');
+        
+        if (unreadCount > 0) {
+          countDisplay.textContent = `${unreadCount}条未读通知`;
+          badgeCount.textContent = unreadCount;
+          badgeCount.style.display = 'inline-block';
+        } else {
+          countDisplay.textContent = '暂无未读通知';
+          badgeCount.style.display = 'none';
+        }
+      }
+    });
+  </script>
+</body>
+</html> 

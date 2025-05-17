@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的心得 - 医疗知识学习平台</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      color: #333;
+      background-color: #f5f7fa;
+    }
+    .header {
+      background-color: #409EFF;
+      color: white;
+      padding: 0 20px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+    .nav-link {
+      color: white;
+      text-decoration: none;
+    }
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: #fff;
+    }
+    .page-container {
+      display: flex;
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 0 20px;
+      gap: 20px;
+    }
+    .sidebar {
+      width: 240px;
+      flex-shrink: 0;
+    }
+    .main-content {
+      flex-grow: 1;
+    }
+    .panel {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 16px;
+      font-weight: bold;
+      background-color: #fafafa;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .panel-body {
+      padding: 20px;
+    }
+    .menu-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .menu-item {
+      padding: 15px 20px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .menu-item.active {
+      background-color: #ecf5ff;
+      color: #409EFF;
+      border-right: 3px solid #409EFF;
+    }
+    .menu-item:hover:not(.active) {
+      background-color: #f5f7fa;
+    }
+    .menu-item-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 12px;
+      color: white;
+      margin-left: 5px;
+    }
+    .badge-primary {
+      background-color: #409EFF;
+    }
+    .badge-success {
+      background-color: #67C23A;
+    }
+    .badge-warning {
+      background-color: #E6A23C;
+    }
+    .badge-danger {
+      background-color: #F56C6C;
+    }
+    .badge-info {
+      background-color: #909399;
+    }
+    .card-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background-color: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    }
+    .card-body {
+      padding: 15px;
+    }
+    .card-title {
+      margin: 0 0 10px;
+      font-size: 18px;
+      font-weight: 500;
+      color: #303133;
+    }
+    .card-meta {
+      font-size: 12px;
+      color: #909399;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .card-content {
+      margin-bottom: 15px;
+      color: #606266;
+      font-size: 14px;
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-actions {
+      margin-top: 15px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .btn {
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background-color: #409EFF;
+      color: white;
+      border: 1px solid #409EFF;
+    }
+    .btn-primary:hover {
+      background-color: #66b1ff;
+    }
+    .btn-default {
+      background-color: #fff;
+      color: #606266;
+      border: 1px solid #dcdfe6;
+    }
+    .btn-default:hover {
+      color: #409EFF;
+      border-color: #c6e2ff;
+      background-color: #ecf5ff;
+    }
+    .btn-danger {
+      background-color: #fff;
+      color: #F56C6C;
+      border: 1px solid #f9d0d0;
+    }
+    .btn-danger:hover {
+      color: #fff;
+      background-color: #F56C6C;
+      border-color: #F56C6C;
+    }
+    .tab-nav {
+      display: flex;
+      border-bottom: 1px solid #e4e7ed;
+      margin-bottom: 20px;
+    }
+    .tab-item {
+      padding: 10px 20px;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .tab-item.active {
+      color: #409EFF;
+      border-bottom-color: #409EFF;
+    }
+    .tab-content {
+      padding-top: 10px;
+    }
+    .search-bar {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    .search-input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+    }
+    .search-button {
+      padding: 10px 20px;
+      background-color: #409EFF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .footer {
+      background-color: #f0f2f5;
+      padding: 20px;
+      text-align: center;
+      color: #606266;
+      font-size: 14px;
+      border-top: 1px solid #e4e7ed;
+      margin-top: 50px;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #909399;
+    }
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 20px;
+      color: #dcdfe6;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 400px;
+      max-width: 90%;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .modal-title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .modal-close {
+      font-size: 20px;
+      cursor: pointer;
+      color: #909399;
+    }
+    .modal-body {
+      margin-bottom: 20px;
+    }
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">医疗知识学习平台</div>
+    <div class="nav-links">
+      <a href="home.html" class="nav-link">首页</a>
+      <a href="article-list.html" class="nav-link">知识文章</a>
+      <a href="experience-list.html" class="nav-link">学习心得</a>
+      <a href="categories.html" class="nav-link">分类浏览</a>
+    </div>
+    <div class="user-menu">
+      <a href="user-profile.html" style="display: flex; align-items: center; gap: 10px; color: white; text-decoration: none;">
+        <img src="https://placeholder.pics/svg/64/DEDEDE/555555/头像" alt="用户头像" class="user-avatar">
+        <span>张先生</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="page-container">
+    <aside class="sidebar">
+      <div class="panel">
+        <div class="panel-header">个人中心</div>
+        <ul class="menu-list">
+          <li class="menu-item">
+            <div class="menu-item-icon">👤</div>
+            <a href="user-profile.html" style="text-decoration: none; color: inherit;">个人资料</a>
+          </li>
+          <li class="menu-item">
+            <div class="menu-item-icon">🔖</div>
+            <a href="user-bookmarks.html" style="text-decoration: none; color: inherit;">我的收藏</a>
+          </li>
+          <li class="menu-item active">
+            <div class="menu-item-icon">📝</div>
+            <span>我的心得</span>
+          </li>
+          <li class="menu-item">
+            <div class="menu-item-icon">💬</div>
+            <span>我的评论</span>
+          </li>
+          <li class="menu-item">
+            <div class="menu-item-icon">🔔</div>
+            <a href="user-notifications.html" style="text-decoration: none; color: inherit;">通知中心</a>
+            <div class="badge badge-primary">3</div>
+          </li>
+          <li class="menu-item">
+            <div class="menu-item-icon">⚙️</div>
+            <span>账户设置</span>
+          </li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="panel">
+        <div class="panel-header">
+          <span>我的学习心得</span>
+          <a href="experience-create.html" class="btn btn-primary">创建新心得</a>
+        </div>
+        <div class="panel-body">
+          <div class="search-bar">
+            <input type="text" class="search-input" placeholder="搜索我的心得...">
+            <button class="search-button">搜索</button>
+          </div>
+          
+          <div class="tab-nav">
+            <div class="tab-item active">全部</div>
+            <div class="tab-item">已发布</div>
+            <div class="tab-item">审核中</div>
+            <div class="tab-item">草稿箱</div>
+            <div class="tab-item">未通过</div>
+          </div>
+          
+          <div class="tab-content">
+            <div class="card-list">
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="card-title">我的糖尿病管理经验分享</h3>
+                  <div class="card-meta">
+                    <span>发布于: 2023-10-10</span>
+                    <span><span class="badge badge-success">已发布</span></span>
+                  </div>
+                  <div class="card-content">
+                    分享了自己在糖尿病饮食控制和运动管理方面的经验，并附上了一些实用的建议。作为一名糖尿病患者，我希望我的经验能帮助到其他的患者朋友，特别是刚刚确诊的患者。
+                  </div>
+                  <div class="card-meta">
+                    <span>阅读: 128</span>
+                    <span>点赞: 32</span>
+                    <span>评论: 15</span>
+                  </div>
+                  <div class="card-actions">
+                    <a href="experience-detail.html" class="btn btn-default">查看详情</a>
+                    <div>
+                      <a href="experience-edit.html?id=1" class="btn btn-default">编辑</a>
+                      <button class="btn btn-danger delete-btn" data-id="1">删除</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="card-title">高血压药物治疗的个人体会</h3>
+                  <div class="card-meta">
+                    <span>创建于: 2023-11-05</span>
+                    <span><span class="badge badge-warning">审核中</span></span>
+                  </div>
+                  <div class="card-content">
+                    记录了自己使用不同降压药的体验和效果，以及配合健康生活方式的一些心得。对比了不同药物的副作用，分享了如何减轻副作用的一些个人方法。
+                  </div>
+                  <div class="card-meta">
+                    <span>预计审核完成时间: 2023-11-12</span>
+                  </div>
+                  <div class="card-actions">
+                    <a href="experience-edit.html?id=2" class="btn btn-default">预览</a>
+                    <div>
+                      <button class="btn btn-default withdraw-btn" data-id="2">撤回</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="card-title">颈椎病康复训练记录</h3>
+                  <div class="card-meta">
+                    <span>创建于: 2023-10-28</span>
+                    <span><span class="badge badge-danger">未通过</span></span>
+                  </div>
+                  <div class="card-content">
+                    记录了颈椎病康复过程中的一些训练方法和注意事项，希望能帮助到有相同问题的朋友。包含了每日训练记录和效果追踪。
+                  </div>
+                  <div class="card-meta">
+                    <span>未通过原因: 内容中包含未经验证的医疗建议</span>
+                  </div>
+                  <div class="card-actions">
+                    <a href="experience-edit.html?id=3" class="btn btn-default">查看原因</a>
+                    <div>
+                      <a href="experience-edit.html?id=3" class="btn btn-primary">重新编辑</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="card-title">如何保持良好的睡眠质量</h3>
+                  <div class="card-meta">
+                    <span>最近更新: 2023-11-08</span>
+                    <span><span class="badge badge-info">草稿</span></span>
+                  </div>
+                  <div class="card-content">
+                    整理了一些提高睡眠质量的科学建议，以及我个人尝试过的有效方法。这是一个正在编写的草稿，计划加入更多关于睡眠周期管理的内容。
+                  </div>
+                  <div class="card-actions">
+                    <div>
+                      <a href="experience-edit.html?id=4" class="btn btn-primary">继续编辑</a>
+                      <button class="btn btn-danger delete-btn" data-id="4">删除</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 删除确认弹窗 -->
+  <div class="modal" id="deleteModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">删除确认</div>
+        <div class="modal-close">&times;</div>
+      </div>
+      <div class="modal-body">
+        <p>您确定要删除这篇学习心得吗？删除后将无法恢复。</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default modal-cancel">取消</button>
+        <button class="btn btn-danger modal-confirm">确认删除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 撤回确认弹窗 -->
+  <div class="modal" id="withdrawModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">撤回确认</div>
+        <div class="modal-close">&times;</div>
+      </div>
+      <div class="modal-body">
+        <p>您确定要撤回这篇正在审核中的学习心得吗？</p>
+        <p>撤回后，该心得将变为草稿状态。</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default modal-cancel">取消</button>
+        <button class="btn btn-primary modal-confirm">确认撤回</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>© 2023 医疗知识学习平台 版权所有</p>
+    <p>联系我们 | 关于我们 | 使用条款 | 隐私政策</p>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 选项卡切换功能
+      const tabItems = document.querySelectorAll('.tab-nav .tab-item');
+      const cards = document.querySelectorAll('.card');
+      
+      tabItems.forEach((item, index) => {
+        item.addEventListener('click', () => {
+          // 更新选项卡激活状态
+          tabItems.forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+          
+          // 根据选项卡筛选卡片
+          const tabText = item.textContent.trim();
+          
+          cards.forEach(card => {
+            const statusBadge = card.querySelector('.badge');
+            const status = statusBadge ? statusBadge.textContent.trim() : '';
+            
+            if (tabText === '全部' || status === tabText) {
+              card.style.display = 'block';
+            } else {
+              card.style.display = 'none';
+            }
+          });
+        });
+      });
+      
+      // 删除按钮功能
+      const deleteButtons = document.querySelectorAll('.delete-btn');
+      const deleteModal = document.getElementById('deleteModal');
+      const withdrawButtons = document.querySelectorAll('.withdraw-btn');
+      const withdrawModal = document.getElementById('withdrawModal');
+      const modalCloseButtons = document.querySelectorAll('.modal-close, .modal-cancel');
+      
+      let currentCardId = null;
+      
+      deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          currentCardId = this.getAttribute('data-id');
+          deleteModal.style.display = 'flex';
+        });
+      });
+      
+      withdrawButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          currentCardId = this.getAttribute('data-id');
+          withdrawModal.style.display = 'flex';
+        });
+      });
+      
+      modalCloseButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          deleteModal.style.display = 'none';
+          withdrawModal.style.display = 'none';
+        });
+      });
+      
+      // 确认删除
+      const deleteConfirmButton = deleteModal.querySelector('.modal-confirm');
+      deleteConfirmButton.addEventListener('click', function() {
+        if (currentCardId) {
+          const cardToDelete = document.querySelector(`.delete-btn[data-id="${currentCardId}"]`).closest('.card');
+          cardToDelete.style.opacity = '0.5';
+          setTimeout(() => {
+            cardToDelete.remove();
+            deleteModal.style.display = 'none';
+          }, 300);
+        }
+      });
+      
+      // 确认撤回
+      const withdrawConfirmButton = withdrawModal.querySelector('.modal-confirm');
+      withdrawConfirmButton.addEventListener('click', function() {
+        if (currentCardId) {
+          const cardToWithdraw = document.querySelector(`.withdraw-btn[data-id="${currentCardId}"]`).closest('.card');
+          const statusBadge = cardToWithdraw.querySelector('.badge');
+          statusBadge.textContent = '草稿';
+          statusBadge.className = 'badge badge-info';
+          
+          // 更新按钮
+          const actionsDiv = cardToWithdraw.querySelector('.card-actions div');
+          actionsDiv.innerHTML = `
+            <a href="experience-edit.html?id=${currentCardId}" class="btn btn-primary">继续编辑</a>
+            <button class="btn btn-danger delete-btn" data-id="${currentCardId}">删除</button>
+          `;
+          
+          withdrawModal.style.display = 'none';
+          
+          // 刷新删除按钮事件
+          const newDeleteBtn = actionsDiv.querySelector('.delete-btn');
+          newDeleteBtn.addEventListener('click', function() {
+            currentCardId = this.getAttribute('data-id');
+            deleteModal.style.display = 'flex';
+          });
+        }
+      });
+      
+      // 点击模态框外部关闭
+      window.addEventListener('click', function(event) {
+        if (event.target === deleteModal) {
+          deleteModal.style.display = 'none';
+        }
+        if (event.target === withdrawModal) {
+          withdrawModal.style.display = 'none';
+        }
+      });
+    });
+  </script>
+</body>
+</html> 

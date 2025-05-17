@@ -40,6 +40,30 @@ const db = require("./models");
 const setupSwagger = require("./swagger-api.js");
 const seedData = require("./utils/seedData"); // 在开发环境中启用种子数据
 const authUtils = require("./utils/auth.utils");
+const {
+  errorHandler,
+  requestIdMiddleware,
+  performanceMonitor,
+} = require("./middleware/errorHandler.middleware");
+const {
+  globalLimiter,
+  loginLimiter,
+  registerLimiter,
+  passwordResetLimiter,
+  userLimiter,
+  staffLimiter,
+  medicalCategoryLimiter,
+  knowledgeArticleLimiter,
+  learningExperienceLimiter,
+  tagCreateLimiter,
+  notificationLimiter,
+  adminLimiter,
+} = require("./middleware/rateLimit.middleware");
+const {
+  handleXSSAttempt,
+  handleCSRFError,
+  handleAuthError,
+} = require("./middleware/securityHandler.middleware");
 
 // 尝试加载开发环境专用工具
 let devTools = { enabled: false };
@@ -81,24 +105,24 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json({ limit: "10mb" })); // 增加限制以支持更大的请求
 app.use(bodyParser.urlencoded({ extended: true, limit: "10mb" }));
 
-// 为每个请求添加唯一ID和时间戳
-app.use((req, res, next) => {
-  req.requestId =
-    Date.now() + "-" + Math.random().toString(36).substring(2, 15);
-  req.requestTime = new Date();
-  res.setHeader("X-Request-ID", req.requestId);
-  next();
-});
+// 为每个请求添加唯一ID - 使用标准的requestIdMiddleware
+app.use(requestIdMiddleware);
 
-// 为所有请求添加响应时间头和日志记录
+// 添加性能监控 - 开发环境默认500ms阈值
+app.use(performanceMonitor(500));
+
+// 添加安全中间件
+app.use(handleAuthError); // 处理认证错误
+app.use(handleCSRFError); // 处理CSRF错误
+app.use(handleXSSAttempt); // 检测和阻止XSS尝试
+
+// 修改响应的end方法以添加响应时间
 app.use((req, res, next) => {
   const start = Date.now();
-  // 修改响应的end方法以添加响应时间
   const originalEnd = res.end;
 
   res.end = function () {
     const duration = Date.now() - start;
-    res.setHeader("X-Response-Time", `${duration}ms`);
 
     // 记录请求完成情况，带颜色区分状态码
     let statusColor = "\x1b[32m"; // 绿色 - 200系列
@@ -131,17 +155,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// 性能跟踪中间件
-app.use((req, res, next) => {
-  if (process.env.PERFORMANCE_DEBUG === "true") {
-    console.time(`性能 - ${req.method} ${req.path} [${req.requestId}]`);
-    res.on("finish", () => {
-      console.timeEnd(`性能 - ${req.method} ${req.path} [${req.requestId}]`);
-    });
-  }
-  next();
-});
-
 // 开发环境允许模拟慢速网络
 if (process.env.SIMULATE_LATENCY === "true") {
   const minLatency = parseInt(process.env.MIN_LATENCY || 100);
@@ -154,6 +167,9 @@ if (process.env.SIMULATE_LATENCY === "true") {
     setTimeout(next, delay);
   });
 }
+
+// 应用全局API速率限制
+app.use(globalLimiter);
 
 // 同步数据库模型 - 开发环境可选择重新创建表
 const forceSync = process.env.FORCE_SYNC === "true";
@@ -192,6 +208,22 @@ app.get("/api/status", (req, res) => {
     },
   });
 });
+
+// 为特定API路径应用特定的速率限制
+// 认证相关路由速率限制
+app.use("/api/v1/auth/login", loginLimiter);
+app.use("/api/v1/auth/register", registerLimiter);
+app.use("/api/v1/auth/forgot-password", passwordResetLimiter);
+
+// 为所有API路由应用路由特定的速率限制
+app.use("/api/v1/users", userLimiter);
+app.use("/api/v1/staff", staffLimiter);
+app.use("/api/v1/categories", medicalCategoryLimiter);
+app.use("/api/v1/articles", knowledgeArticleLimiter);
+app.use("/api/v1/experiences", learningExperienceLimiter);
+app.use("/api/v1/tags", tagCreateLimiter);
+app.use("/api/v1/notifications", notificationLimiter);
+app.use("/api/admin", adminLimiter);
 
 // 开发环境实用接口
 app.get("/dev/routes", (req, res) => {
@@ -258,36 +290,17 @@ require("./routes/admin.routes")(app);
 // 设置 Swagger
 setupSwagger(app);
 
-// 错误处理中间件 - 确保在所有路由之后添加
-app.use((err, req, res, next) => {
-  console.error("错误:", err.stack);
-
-  // 记录到错误日志
-  fs.appendFileSync(
-    path.join(logsDir, "errors.log"),
-    `[${new Date().toISOString()}] ${req.method} ${req.originalUrl} [${
-      req.requestId
-    }]\n${err.stack}\n\n`
-  );
-
-  // 返回友好的错误信息
-  res.status(err.status || 500).json({
-    error: {
-      message: err.message,
-      requestId: req.requestId,
-      stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
-    },
-  });
-});
+// 使用统一的错误处理中间件 - 确保在所有路由之后添加
+app.use(errorHandler);
 
 // 处理 404 - 确保这是最后一个路由
 app.use((req, res) => {
   console.log(`404 Not Found: ${req.method} ${req.originalUrl}`);
   res.status(404).json({
-    error: {
-      message: `找不到路由: ${req.method} ${req.originalUrl}`,
-      requestId: req.requestId,
-    },
+    status: "error",
+    type: "not_found_error",
+    message: `找不到路由: ${req.method} ${req.originalUrl}`,
+    requestId: req.requestId,
   });
 });
 

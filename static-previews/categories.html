@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>分类浏览 - 医疗知识学习平台</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      color: #333;
+      background-color: #f5f7fa;
+    }
+    .header {
+      background-color: #409EFF;
+      color: white;
+      padding: 0 20px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+    .nav-link {
+      color: white;
+      text-decoration: none;
+    }
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+    .page-header {
+      margin-bottom: 30px;
+    }
+    .page-title {
+      font-size: 28px;
+      margin: 0 0 15px;
+    }
+    .page-desc {
+      color: #666;
+      font-size: 16px;
+      max-width: 800px;
+    }
+    .categories-section {
+      margin-bottom: 50px;
+    }
+    .section-title {
+      font-size: 20px;
+      margin: 0 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .category-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      transition: all 0.3s;
+      text-decoration: none;
+      color: inherit;
+    }
+    .category-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    }
+    .category-header {
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .category-body {
+      padding: 15px;
+    }
+    .category-title {
+      margin: 0 0 10px;
+      font-size: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .category-count {
+      font-size: 14px;
+      color: #999;
+      font-weight: normal;
+    }
+    .category-desc {
+      margin: 0 0 15px;
+      color: #666;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .subcategory-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .subcategory-item {
+      font-size: 12px;
+      color: #666;
+      padding: 4px 10px;
+      background-color: #f5f7fa;
+      border-radius: 12px;
+    }
+    .popular-tags {
+      margin-top: 15px;
+    }
+    .tag-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .tag {
+      padding: 6px 12px;
+      background-color: #f5f7fa;
+      border-radius: 4px;
+      font-size: 14px;
+      color: #666;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tag:hover {
+      background-color: #e6f7ff;
+      color: #1890ff;
+    }
+    .footer {
+      background-color: #f0f2f5;
+      padding: 30px 20px;
+      text-align: center;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">医疗知识学习平台</div>
+    <div class="nav-links">
+      <a href="home.html" class="nav-link">首页</a>
+      <a href="article-list.html" class="nav-link">知识文章</a>
+      <a href="experience-list.html" class="nav-link">学习心得</a>
+      <a href="categories.html" class="nav-link">分类浏览</a>
+    </div>
+    <div class="user-menu">
+      <a href="login.html" class="nav-link">登录</a>
+      <a href="register.html" class="nav-link">注册</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="page-header">
+      <h1 class="page-title">分类浏览</h1>
+      <p class="page-desc">浏览不同医疗领域的知识文章和学习心得，探索感兴趣的医疗健康主题。</p>
+    </div>
+
+    <div class="categories-section">
+      <h2 class="section-title">专科分类</h2>
+      <div class="category-grid">
+        <a href="#" class="category-card">
+          <div class="category-header" style="background-color: #1890ff;">心脏健康</div>
+          <div class="category-body">
+            <h3 class="category-title">
+              心脏健康
+              <span class="category-count">38篇</span>
+            </h3>
+            <p class="category-desc">心血管疾病的预防、诊断和治疗，以及心脏健康管理相关知识。</p>
+            <ul class="subcategory-list">
+              <li class="subcategory-item">高血压</li>
+              <li class="subcategory-item">冠心病</li>
+              <li class="subcategory-item">心律失常</li>
+              <li class="subcategory-item">心肌梗死</li>
+            </ul>
+          </div>
+        </a>
+
+        <a href="#" class="category-card">
+          <div class="category-header" style="background-color: #52c41a;">儿科护理</div>
+          <div class="category-body">
+            <h3 class="category-title">
+              儿科护理
+              <span class="category-count">42篇</span>
+            </h3>
+            <p class="category-desc">儿童常见疾病的预防和治疗，儿童生长发育相关知识和护理指导。</p>
+            <ul class="subcategory-list">
+              <li class="subcategory-item">儿童疫苗</li>
+              <li class="subcategory-item">小儿常见病</li>
+              <li class="subcategory-item">生长发育</li>
+              <li class="subcategory-item">儿童营养</li>
+            </ul>
+          </div>
+        </a>
+
+        <a href="#" class="category-card">
+          <div class="category-header" style="background-color: #722ed1;">精神健康</div>
+          <div class="category-body">
+            <h3 class="category-title">
+              精神健康
+              <span class="category-count">29篇</span>
+            </h3>
+            <p class="category-desc">心理健康相关知识，常见精神疾病的识别、干预和治疗方法。</p>
+            <ul class="subcategory-list">
+              <li class="subcategory-item">抑郁症</li>
+              <li class="subcategory-item">焦虑障碍</li>
+              <li class="subcategory-item">压力管理</li>
+              <li class="subcategory-item">心理干预</li>
+            </ul>
+          </div>
+        </a>
+
+        <a href="#" class="category-card">
+          <div class="category-header" style="background-color: #fa8c16;">慢性病管理</div>
+          <div class="category-body">
+            <h3 class="category-title">
+              慢性病管理
+              <span class="category-count">51篇</span>
+            </h3>
+            <p class="category-desc">常见慢性疾病的自我管理、药物治疗、康复和生活方式调整。</p>
+            <ul class="subcategory-list">
+              <li class="subcategory-item">糖尿病</li>
+              <li class="subcategory-item">高血压</li>
+              <li class="subcategory-item">高脂血症</li>
+              <li class="subcategory-item">慢阻肺</li>
+            </ul>
+          </div>
+        </a>
+
+        <a href="#" class="category-card">
+          <div class="category-header" style="background-color: #13c2c2;">外科知识</div>
+          <div class="category-body">
+            <h3 class="category-title">
+              外科知识
+              <span class="category-count">25篇</span>
+            </h3>
+            <p class="category-desc">常见外科疾病的诊断、治疗和手术前后的护理知识。</p>
+            <ul class="subcategory-list">
+              <li class="subcategory-item">普外科</li>
+              <li class="subcategory-item">骨科</li>
+              <li class="subcategory-item">神经外科</li>
+              <li class="subcategory-item">手术康复</li>
+            </ul>
+          </div>
+        </a>
+
+        <a href="#" class="category-card">
+          <div class="category-header" style="background-color: #eb2f96;">妇幼保健</div>
+          <div class="category-body">
+            <h3 class="category-title">
+              妇幼保健
+              <span class="category-count">27篇</span>
+            </h3>
+            <p class="category-desc">女性健康、孕产期保健和婴幼儿护理相关知识。</p>
+            <ul class="subcategory-list">
+              <li class="subcategory-item">孕前准备</li>
+              <li class="subcategory-item">产前检查</li>
+              <li class="subcategory-item">产后恢复</li>
+              <li class="subcategory-item">母乳喂养</li>
+            </ul>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <div class="categories-section">
+      <h2 class="section-title">健康生活</h2>
+      <div class="category-grid">
+        <a href="#" class="category-card">
+          <div class="category-header" style="background-color: #52c41a;">健康饮食</div>
+          <div class="category-body">
+            <h3 class="category-title">
+              健康饮食
+              <span class="category-count">33篇</span>
+            </h3>
+            <p class="category-desc">科学合理的饮食指导，营养学知识和特殊人群的饮食建议。</p>
+            <ul class="subcategory-list">
+              <li class="subcategory-item">膳食平衡</li>
+              <li class="subcategory-item">营养摄入</li>
+              <li class="subcategory-item">疾病饮食</li>
+              <li class="subcategory-item">食品安全</li>
+            </ul>
+          </div>
+        </a>
+
+        <a href="#" class="category-card">
+          <div class="category-header" style="background-color: #1890ff;">科学运动</div>
+          <div class="category-body">
+            <h3 class="category-title">
+              科学运动
+              <span class="category-count">28篇</span>
+            </h3>
+            <p class="category-desc">科学的运动方式，不同人群的运动建议和运动康复知识。</p>
+            <ul class="subcategory-list">
+              <li class="subcategory-item">有氧运动</li>
+              <li class="subcategory-item">力量训练</li>
+              <li class="subcategory-item">运动损伤</li>
+              <li class="subcategory-item">健身计划</li>
+            </ul>
+          </div>
+        </a>
+
+        <a href="#" class="category-card">
+          <div class="category-header" style="background-color: #722ed1;">睡眠健康</div>
+          <div class="category-body">
+            <h3 class="category-title">
+              睡眠健康
+              <span class="category-count">18篇</span>
+            </h3>
+            <p class="category-desc">睡眠相关疾病的预防和治疗，睡眠质量提升的方法和建议。</p>
+            <ul class="subcategory-list">
+              <li class="subcategory-item">失眠</li>
+              <li class="subcategory-item">打鼾</li>
+              <li class="subcategory-item">睡眠呼吸暂停</li>
+              <li class="subcategory-item">睡眠习惯</li>
+            </ul>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <div class="popular-tags">
+      <h2 class="section-title">热门标签</h2>
+      <div class="tag-cloud">
+        <div class="tag">高血压</div>
+        <div class="tag">糖尿病</div>
+        <div class="tag">心脏病预防</div>
+        <div class="tag">儿童健康</div>
+        <div class="tag">心理健康</div>
+        <div class="tag">饮食指南</div>
+        <div class="tag">运动康复</div>
+        <div class="tag">睡眠障碍</div>
+        <div class="tag">中医养生</div>
+        <div class="tag">慢性疼痛</div>
+        <div class="tag">健康饮食</div>
+        <div class="tag">疫苗接种</div>
+        <div class="tag">孕期保健</div>
+        <div class="tag">抑郁症</div>
+        <div class="tag">肿瘤治疗</div>
+        <div class="tag">急救知识</div>
+        <div class="tag">康复训练</div>
+        <div class="tag">心血管健康</div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>© 2023 医疗知识学习平台 版权所有</p>
+    <p>联系我们 | 关于我们 | 使用条款 | 隐私政策</p>
+  </footer>
+</body>
+</html> 

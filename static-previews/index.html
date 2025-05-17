@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>医疗知识学习平台 - 静态预览页面索引</title>
+  <style>
+    body {
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      color: #409EFF;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+    h2 {
+      margin-top: 30px;
+      color: #606266;
+    }
+    .page-list {
+      list-style: none;
+      padding: 0;
+    }
+    .page-item {
+      margin-bottom: 20px;
+      padding: 15px;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      transition: all 0.3s;
+    }
+    .page-item:hover {
+      background-color: #f0f7ff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .page-title {
+      font-size: 18px;
+      margin: 0 0 10px;
+    }
+    .page-link {
+      color: #409EFF;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .page-link:hover {
+      text-decoration: underline;
+    }
+    .page-desc {
+      margin: 0;
+      color: #606266;
+      font-size: 14px;
+    }
+    .section {
+      margin-bottom: 40px;
+    }
+    .footer {
+      margin-top: 50px;
+      text-align: center;
+      font-size: 14px;
+      color: #909399;
+      border-top: 1px solid #eee;
+      padding-top: 20px;
+    }
+    .summary {
+      background-color: #f0f7ff;
+      border-left: 4px solid #409EFF;
+      padding: 15px;
+      margin-bottom: 30px;
+      border-radius: 0 4px 4px 0;
+    }
+    .progress {
+      margin-top: 15px;
+    }
+    .progress-bar {
+      background-color: #eee;
+      height: 20px;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 5px;
+    }
+    .progress-fill {
+      height: 100%;
+      background-color: #67C23A;
+      width: 100%;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>医疗知识学习平台 - 静态预览页面索引</h1>
+  
+  <div class="summary">
+    <h2>项目完成情况</h2>
+    <p>基于设计文档，我们已经完成了所有页面的静态HTML预览实现。这些页面涵盖了公共页面、用户功能页面和管理后台三个主要部分。</p>
+    
+    <div class="progress">
+      <div><strong>已完成的页面总数:</strong> 19个页面</div>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <p>这是医疗知识学习平台的静态HTML预览页面集合，用于展示不同功能页面的UI设计和布局。</p>
+
+  <div class="section">
+    <h2>公共页面</h2>
+    <ul class="page-list">
+      <li class="page-item">
+        <h3 class="page-title"><a href="home.html" class="page-link">首页</a></h3>
+        <p class="page-desc">平台主页，展示最新知识文章、热门学习心得和医疗分类导航。</p>
+      </li>
+      <li class="page-item">
+        <h3 class="page-title"><a href="article-list.html" class="page-link">文章列表页</a></h3>
+        <p class="page-desc">浏览所有知识文章，支持分类筛选和搜索功能。</p>
+      </li>
+      <li class="page-item">
+        <h3 class="page-title"><a href="article-detail.html" class="page-link">文章详情页</a></h3>
+        <p class="page-desc">查看医疗知识文章的详细内容，包括评论和相关推荐。</p>
+      </li>
+      <li class="page-item">
+        <h3 class="page-title"><a href="experience-list.html" class="page-link">学习心得列表页</a></h3>
+        <p class="page-desc">浏览用户分享的学习心得，支持分类筛选和搜索功能。</p>
+      </li>
+      <li class="page-item">
+        <h3 class="page-title"><a href="experience-detail.html" class="page-link">学习心得详情页</a></h3>
+        <p class="page-desc">查看用户分享的学习心得详情，支持点赞和评论功能。</p>
+      </li>
+      <li class="page-item">
+        <h3 class="page-title"><a href="categories.html" class="page-link">分类浏览页</a></h3>
+        <p class="page-desc">按医疗分类浏览内容，包含专科分类和健康生活分类。</p>
+      </li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>用户功能页面</h2>
+    <ul class="page-list">
+      <li class="page-item">
+        <h3 class="page-title"><a href="login.html" class="page-link">登录页面</a></h3>
+        <p class="page-desc">用户登录界面，支持账号密码登录和第三方登录。</p>
+      </li>
+      <li class="page-item">
+        <h3 class="page-title"><a href="register.html" class="page-link">注册页面</a></h3>
+        <p class="page-desc">新用户注册界面，收集用户基本信息。</p>
+      </li>
+      <li class="page-item">
+        <h3 class="page-title"><a href="forgot-password.html" class="page-link">找回密码</a></h3>
+        <p class="page-desc">用户找回密码功能，支持邮箱和手机号验证。</p>
+      </li>
+      <li class="page-item">
+        <h3 class="page-title"><a href="user-profile.html" class="page-link">个人中心</a></h3>
+        <p class="page-desc">用户个人中心，管理个人资料、收藏和学习心得。</p>
+      </li>
+      <li class="page-item">
+        <h3 class="page-title"><a href="user-bookmarks.html" class="page-link">我的收藏</a></h3>
+        <p class="page-desc">用户收藏的文章和学习心得管理页面。</p>
+      </li>
+      <li class="page-item">
+        <h3 class="page-title"><a href="user-experiences.html" class="page-link">我的心得</a></h3>
+        <p class="page-desc">用户发布的学习心得管理页面，包含不同状态的心得。</p>
+      </li>
+      <li class="page-item">
+        <h3 class="page-title"><a href="user-notifications.html" class="page-link">通知中心</a></h3>
+        <p class="page-desc">用户系统通知和互动消息管理页面。</p>
+      </li>
+      <li class="page-item">
+        <h3 class="page-title"><a href="experience-create.html" class="page-link">发布学习心得</a></h3>
+        <p class="page-desc">用户创建和提交学习心得的编辑界面。</p>
+      </li>
+      <li class="page-item">
+        <h3 class="page-title"><a href="experience-edit.html?id=3" class="page-link">编辑学习心得</a></h3>
+        <p class="page-desc">用户编辑已有学习心得的界面，包含审核反馈。</p>
+      </li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>管理后台</h2>
+    <ul class="page-list">
+      <li class="page-item">
+        <h3 class="page-title"><a href="staff-dashboard.html" class="page-link">工作人员工作台</a></h3>
+        <p class="page-desc">工作人员管理内容和审核的界面。</p>
+      </li>
+      <li class="page-item">
+        <h3 class="page-title"><a href="staff-articles-create.html" class="page-link">创建文章</a></h3>
+        <p class="page-desc">工作人员创建新医疗知识文章的界面。</p>
+      </li>
+      <li class="page-item">
+        <h3 class="page-title"><a href="admin-dashboard.html" class="page-link">管理员控制台</a></h3>
+        <p class="page-desc">系统管理员页面，包含数据统计和系统监控。</p>
+      </li>
+      <li class="page-item">
+        <h3 class="page-title"><a href="admin-settings.html" class="page-link">系统设置</a></h3>
+        <p class="page-desc">管理员配置系统参数和功能选项的界面。</p>
+      </li>
+      <li class="page-item">
+        <h3 class="page-title"><a href="admin-audit-logs.html" class="page-link">审计日志</a></h3>
+        <p class="page-desc">管理员查看系统操作日志和用户行为记录。</p>
+      </li>
+    </ul>
+  </div>
+
+  <div class="footer">
+    © 2023 医疗知识学习平台 - 静态预览版本
+  </div>
+</body>
+</html> 

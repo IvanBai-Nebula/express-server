@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的收藏 - 医疗知识学习平台</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      color: #333;
+      background-color: #f5f7fa;
+    }
+    .header {
+      background-color: #409EFF;
+      color: white;
+      padding: 0 20px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+    .nav-link {
+      color: white;
+      text-decoration: none;
+    }
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: #fff;
+    }
+    .page-container {
+      display: flex;
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 0 20px;
+      gap: 20px;
+    }
+    .sidebar {
+      width: 240px;
+      flex-shrink: 0;
+    }
+    .main-content {
+      flex-grow: 1;
+    }
+    .panel {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 16px;
+      font-weight: bold;
+      background-color: #fafafa;
+    }
+    .panel-body {
+      padding: 20px;
+    }
+    .menu-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .menu-item {
+      padding: 15px 20px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .menu-item.active {
+      background-color: #ecf5ff;
+      color: #409EFF;
+      border-right: 3px solid #409EFF;
+    }
+    .menu-item:hover:not(.active) {
+      background-color: #f5f7fa;
+    }
+    .menu-item-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .tab-nav {
+      display: flex;
+      border-bottom: 1px solid #e4e7ed;
+      margin-bottom: 20px;
+    }
+    .tab-item {
+      padding: 10px 20px;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .tab-item.active {
+      color: #409EFF;
+      border-bottom-color: #409EFF;
+    }
+    .tab-content {
+      padding-top: 10px;
+    }
+    .card-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background-color: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    }
+    .card-image {
+      height: 150px;
+      overflow: hidden;
+    }
+    .card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .card-body {
+      padding: 15px;
+    }
+    .card-title {
+      margin: 0 0 10px;
+      font-size: 16px;
+      font-weight: 500;
+      color: #303133;
+    }
+    .card-meta {
+      font-size: 12px;
+      color: #909399;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .card-actions {
+      margin-top: 15px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .search-bar {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    .search-input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+    }
+    .search-button {
+      padding: 10px 20px;
+      background-color: #409EFF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .footer {
+      background-color: #f0f2f5;
+      padding: 20px;
+      text-align: center;
+      color: #606266;
+      font-size: 14px;
+      border-top: 1px solid #e4e7ed;
+      margin-top: 50px;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #909399;
+    }
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 20px;
+      color: #dcdfe6;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">医疗知识学习平台</div>
+    <div class="nav-links">
+      <a href="home.html" class="nav-link">首页</a>
+      <a href="article-list.html" class="nav-link">知识文章</a>
+      <a href="experience-list.html" class="nav-link">学习心得</a>
+      <a href="categories.html" class="nav-link">分类浏览</a>
+    </div>
+    <div class="user-menu">
+      <a href="user-profile.html" style="display: flex; align-items: center; gap: 10px; color: white; text-decoration: none;">
+        <img src="https://placeholder.pics/svg/64/DEDEDE/555555/头像" alt="用户头像" class="user-avatar">
+        <span>张先生</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="page-container">
+    <aside class="sidebar">
+      <div class="panel">
+        <div class="panel-header">个人中心</div>
+        <ul class="menu-list">
+          <li class="menu-item">
+            <div class="menu-item-icon">👤</div>
+            <a href="user-profile.html" style="text-decoration: none; color: inherit;">个人资料</a>
+          </li>
+          <li class="menu-item active">
+            <div class="menu-item-icon">🔖</div>
+            <span>我的收藏</span>
+          </li>
+          <li class="menu-item">
+            <div class="menu-item-icon">📝</div>
+            <a href="user-experiences.html" style="text-decoration: none; color: inherit;">我的心得</a>
+          </li>
+          <li class="menu-item">
+            <div class="menu-item-icon">💬</div>
+            <span>我的评论</span>
+          </li>
+          <li class="menu-item">
+            <div class="menu-item-icon">🔔</div>
+            <a href="user-notifications.html" style="text-decoration: none; color: inherit;">通知中心</a>
+            <div class="badge badge-primary">3</div>
+          </li>
+          <li class="menu-item">
+            <div class="menu-item-icon">⚙️</div>
+            <span>账户设置</span>
+          </li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="panel">
+        <div class="panel-header">我的收藏</div>
+        <div class="panel-body">
+          <div class="search-bar">
+            <input type="text" class="search-input" placeholder="搜索我的收藏...">
+            <button class="search-button">搜索</button>
+          </div>
+          
+          <div class="tab-nav">
+            <div class="tab-item active">知识文章</div>
+            <div class="tab-item">学习心得</div>
+          </div>
+          
+          <div class="tab-content">
+            <!-- 文章收藏列表 -->
+            <div class="card-list">
+              <div class="card">
+                <div class="card-image">
+                  <img src="https://placeholder.pics/svg/300/DEDEDE/555555/医学图片" alt="文章封面">
+                </div>
+                <div class="card-body">
+                  <h3 class="card-title">2型糖尿病的饮食管理最新指南</h3>
+                  <div class="card-meta">
+                    <span>收藏于: 2023-10-15</span>
+                    <span>内科学</span>
+                  </div>
+                  <div class="card-actions">
+                    <a href="article-detail.html" style="color: #409EFF; text-decoration: none;">查看详情</a>
+                    <span style="color: #F56C6C; cursor: pointer;">取消收藏</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="card">
+                <div class="card-image">
+                  <img src="https://placeholder.pics/svg/300/DEDEDE/555555/医学图片" alt="文章封面">
+                </div>
+                <div class="card-body">
+                  <h3 class="card-title">高血压患者的日常监测要点</h3>
+                  <div class="card-meta">
+                    <span>收藏于: 2023-09-28</span>
+                    <span>心血管</span>
+                  </div>
+                  <div class="card-actions">
+                    <a href="article-detail.html" style="color: #409EFF; text-decoration: none;">查看详情</a>
+                    <span style="color: #F56C6C; cursor: pointer;">取消收藏</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="card">
+                <div class="card-image">
+                  <img src="https://placeholder.pics/svg/300/DEDEDE/555555/医学图片" alt="文章封面">
+                </div>
+                <div class="card-body">
+                  <h3 class="card-title">慢性疼痛管理的新方法</h3>
+                  <div class="card-meta">
+                    <span>收藏于: 2023-08-15</span>
+                    <span>疼痛科</span>
+                  </div>
+                  <div class="card-actions">
+                    <a href="article-detail.html" style="color: #409EFF; text-decoration: none;">查看详情</a>
+                    <span style="color: #F56C6C; cursor: pointer;">取消收藏</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="card">
+                <div class="card-image">
+                  <img src="https://placeholder.pics/svg/300/DEDEDE/555555/医学图片" alt="文章封面">
+                </div>
+                <div class="card-body">
+                  <h3 class="card-title">儿童常见传染病的预防措施</h3>
+                  <div class="card-meta">
+                    <span>收藏于: 2023-07-30</span>
+                    <span>儿科学</span>
+                  </div>
+                  <div class="card-actions">
+                    <a href="article-detail.html" style="color: #409EFF; text-decoration: none;">查看详情</a>
+                    <span style="color: #F56C6C; cursor: pointer;">取消收藏</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 心得收藏列表（默认隐藏） -->
+            <div class="card-list" style="display: none;">
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="card-title">我如何战胜焦虑症</h3>
+                  <div class="card-meta">
+                    <span>收藏于: 2023-10-20</span>
+                    <span>作者: 王女士</span>
+                  </div>
+                  <p>作为一名曾经的焦虑症患者，我想分享我的康复历程和心得体会。希望能给正在经历类似问题的朋友一些帮助和鼓励...</p>
+                  <div class="card-actions">
+                    <a href="experience-detail.html" style="color: #409EFF; text-decoration: none;">查看详情</a>
+                    <span style="color: #F56C6C; cursor: pointer;">取消收藏</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="card-title">手术后康复经验分享</h3>
+                  <div class="card-meta">
+                    <span>收藏于: 2023-09-18</span>
+                    <span>作者: 李先生</span>
+                  </div>
+                  <p>在髋关节置换手术后，我总结了一些加速康复的方法和注意事项，包括正确的锻炼方式、饮食调整和心理调适...</p>
+                  <div class="card-actions">
+                    <a href="experience-detail.html" style="color: #409EFF; text-decoration: none;">查看详情</a>
+                    <span style="color: #F56C6C; cursor: pointer;">取消收藏</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="card-title">作为医学生，我从临床实习中学到的五件事</h3>
+                  <div class="card-meta">
+                    <span>收藏于: 2023-08-05</span>
+                    <span>作者: 赵医生</span>
+                  </div>
+                  <p>刚刚完成第一年临床实习的我，想分享这段时间的所见所闻和心得体会。医学教育不仅仅是关于知识，更是关于人文关怀...</p>
+                  <div class="card-actions">
+                    <a href="experience-detail.html" style="color: #409EFF; text-decoration: none;">查看详情</a>
+                    <span style="color: #F56C6C; cursor: pointer;">取消收藏</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 空状态显示（默认隐藏） -->
+            <div class="empty-state" style="display: none;">
+              <div class="empty-icon">📚</div>
+              <h3>暂无收藏内容</h3>
+              <p>您还没有收藏任何内容，可以浏览文章和心得并点击收藏按钮添加到这里。</p>
+              <div style="margin-top: 20px;">
+                <a href="article-list.html" style="display: inline-block; padding: 10px 20px; background-color: #409EFF; color: white; border-radius: 4px; text-decoration: none; margin-right: 10px;">浏览文章</a>
+                <a href="experience-list.html" style="display: inline-block; padding: 10px 20px; background-color: #409EFF; color: white; border-radius: 4px; text-decoration: none;">浏览心得</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <footer class="footer">
+    <p>© 2023 医疗知识学习平台 版权所有</p>
+    <p>联系我们 | 关于我们 | 使用条款 | 隐私政策</p>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 选项卡切换功能
+      const tabItems = document.querySelectorAll('.tab-item');
+      const cardLists = document.querySelectorAll('.card-list');
+      const emptyState = document.querySelector('.empty-state');
+      
+      tabItems.forEach((item, index) => {
+        item.addEventListener('click', () => {
+          // 更新选项卡激活状态
+          tabItems.forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+          
+          // 显示对应的内容
+          cardLists.forEach(list => list.style.display = 'none');
+          emptyState.style.display = 'none';
+          
+          if (cardLists[index]) {
+            cardLists[index].style.display = 'grid';
+          }
+        });
+      });
+      
+      // 取消收藏功能
+      const removeButtons = document.querySelectorAll('.card-actions span');
+      removeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const card = this.closest('.card');
+          card.style.opacity = '0.5';
+          setTimeout(() => {
+            card.remove();
+            
+            // 检查当前选项卡是否还有卡片
+            const activeIndex = Array.from(tabItems).findIndex(item => item.classList.contains('active'));
+            const currentList = cardLists[activeIndex];
+            
+            if (currentList && currentList.children.length === 0) {
+              currentList.style.display = 'none';
+              emptyState.style.display = 'block';
+            }
+          }, 300);
+        });
+      });
+    });
+  </script>
+</body>
+</html> 

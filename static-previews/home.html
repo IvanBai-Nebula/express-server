@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>医疗知识学习平台 - 首页</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    }
+    .header {
+      background-color: #409EFF;
+      color: white;
+      padding: 0 20px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+    .nav-link {
+      color: white;
+      text-decoration: none;
+    }
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .banner {
+      height: 400px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+    }
+    .banner h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    .banner p {
+      font-size: 1.2rem;
+      max-width: 800px;
+    }
+    .search-box {
+      margin-top: 20px;
+      width: 600px;
+      max-width: 90%;
+    }
+    .section {
+      padding: 40px 20px;
+    }
+    .section-title {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 1.8rem;
+      color: #333;
+    }
+    .card-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .card {
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    .card-image {
+      height: 180px;
+      background-color: #f5f7fa;
+      background-size: cover;
+      background-position: center;
+    }
+    .card-content {
+      padding: 15px;
+    }
+    .card-title {
+      font-size: 18px;
+      margin: 0 0 10px;
+    }
+    .card-desc {
+      color: #666;
+      font-size: 14px;
+      margin: 0 0 15px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 15px 15px;
+      color: #999;
+      font-size: 12px;
+    }
+    .footer {
+      background-color: #f5f7fa;
+      padding: 30px 20px;
+      text-align: center;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">医疗知识学习平台</div>
+    <div class="nav-links">
+      <a href="home.html" class="nav-link">首页</a>
+      <a href="article-list.html" class="nav-link">知识文章</a>
+      <a href="experience-list.html" class="nav-link">学习心得</a>
+      <a href="categories.html" class="nav-link">分类浏览</a>
+    </div>
+    <div class="user-menu">
+      <a href="login.html" class="nav-link">登录</a>
+      <a href="register.html" class="nav-link">注册</a>
+      
+      <div class="user-menu-logged-in" style="display: none; align-items: center; gap: 10px;">
+        <img src="https://placeholder.pics/svg/64/DEDEDE/555555/头像" alt="用户头像" style="width: 32px; height: 32px; border-radius: 50%;">
+        <a href="user-profile.html" class="nav-link">张先生</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="banner">
+    <h1>探索医疗知识，分享学习心得</h1>
+    <p>我们致力于提供权威、专业的医疗知识，并鼓励用户分享学习经验，共同成长</p>
+    <div class="search-box">
+      <input type="text" placeholder="搜索知识文章、学习心得..." style="width: 100%; padding: 10px; border-radius: 20px; border: none;">
+    </div>
+  </div>
+
+  <section class="section">
+    <h2 class="section-title">最新知识文章</h2>
+    <div class="card-container">
+      <div class="card">
+        <div class="card-image" style="background-image: url('https://placeholder.pics/svg/300x180/DEDEDE/555555/医疗文章')"></div>
+        <div class="card-content">
+          <h3 class="card-title">心脏病预防指南：生活方式的重要性</h3>
+          <p class="card-desc">本文探讨了如何通过日常生活习惯的调整来降低心脏病风险，包括饮食建议、运动方案和压力管理技巧。</p>
+        </div>
+        <div class="card-footer">
+          <span>发布于：2023-08-15</span>
+          <span>阅读：1,245</span>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-image" style="background-image: url('https://placeholder.pics/svg/300x180/DEDEDE/555555/医疗文章')"></div>
+        <div class="card-content">
+          <h3 class="card-title">常见皮肤病的诊断与家庭护理</h3>
+          <p class="card-desc">皮肤是人体最大的器官，也是最容易受到外界影响的器官。本文介绍了几种常见皮肤病的症状、诊断方法和家庭护理措施。</p>
+        </div>
+        <div class="card-footer">
+          <span>发布于：2023-08-12</span>
+          <span>阅读：987</span>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-image" style="background-image: url('https://placeholder.pics/svg/300x180/DEDEDE/555555/医疗文章')"></div>
+        <div class="card-content">
+          <h3 class="card-title">儿童疫苗接种：父母必读指南</h3>
+          <p class="card-desc">疫苗接种是预防疾病的最有效方法之一。本文解答了父母关于儿童疫苗接种的常见疑问，并提供了详细的接种时间表。</p>
+        </div>
+        <div class="card-footer">
+          <span>发布于：2023-08-10</span>
+          <span>阅读：1,560</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background-color: #f9f9f9;">
+    <h2 class="section-title">热门学习心得</h2>
+    <div class="card-container">
+      <div class="card">
+        <div class="card-content">
+          <h3 class="card-title">我的糖尿病管理之路</h3>
+          <p class="card-desc">作为一名2型糖尿病患者，我在过去5年中学习了很多关于疾病管理的知识和技巧。在这篇心得中，我想分享我的经验以及我最有效的血糖控制方法。</p>
+        </div>
+        <div class="card-footer">
+          <span>作者：张先生</span>
+          <span>点赞：128</span>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-content">
+          <h3 class="card-title">作为医学生，我从临床实习中学到的五件事</h3>
+          <p class="card-desc">刚刚完成第一年临床实习的我，想分享这段时间的所见所闻和心得体会。医学教育不仅仅是关于知识，更是关于人文关怀。</p>
+        </div>
+        <div class="card-footer">
+          <span>作者：李医生</span>
+          <span>点赞：96</span>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-content">
+          <h3 class="card-title">我如何帮助家人战胜抑郁症</h3>
+          <p class="card-desc">当家人被诊断出抑郁症时，整个家庭都面临着挑战。这篇心得分享了我们家庭的经历，以及我们如何一起学习、理解和应对这一疾病。</p>
+        </div>
+        <div class="card-footer">
+          <span>作者：王女士</span>
+          <span>点赞：215</span>
+        </div>
+      </div>
+    </div>
+    <div style="text-align: center; margin-top: 30px;">
+      <a href="experience-create.html" style="display: inline-block; padding: 10px 20px; background-color: #409EFF; color: white; border-radius: 4px; text-decoration: none;">分享我的学习心得</a>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">热门分类</h2>
+    <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; max-width: 1200px; margin: 0 auto;">
+      <div style="padding: 30px; background-color: #e6f7ff; border-radius: 8px; width: 200px; text-align: center;">
+        <h3>心脏健康</h3>
+        <p>38篇文章</p>
+      </div>
+      <div style="padding: 30px; background-color: #f6ffed; border-radius: 8px; width: 200px; text-align: center;">
+        <h3>儿科护理</h3>
+        <p>42篇文章</p>
+      </div>
+      <div style="padding: 30px; background-color: #fff7e6; border-radius: 8px; width: 200px; text-align: center;">
+        <h3>精神健康</h3>
+        <p>29篇文章</p>
+      </div>
+      <div style="padding: 30px; background-color: #f9f0ff; border-radius: 8px; width: 200px; text-align: center;">
+        <h3>慢性病管理</h3>
+        <p>51篇文章</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>© 2023 医疗知识学习平台 版权所有</p>
+    <p>联系我们 | 关于我们 | 使用条款 | 隐私政策</p>
+  </footer>
+</body>
+</html> 

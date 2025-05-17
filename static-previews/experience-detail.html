@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的糖尿病管理之路 - 医疗知识学习平台</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      color: #333;
+      line-height: 1.6;
+      background-color: #f9f9f9;
+    }
+    .header {
+      background-color: #409EFF;
+      color: white;
+      padding: 0 20px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+    .nav-link {
+      color: white;
+      text-decoration: none;
+    }
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .experience-container {
+      max-width: 800px;
+      margin: 40px auto;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    .experience-header {
+      padding: 24px;
+      border-bottom: 1px solid #eee;
+    }
+    .experience-title {
+      font-size: 1.8rem;
+      margin: 0 0 16px;
+    }
+    .experience-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      font-size: 14px;
+      color: #666;
+    }
+    .meta-item {
+      margin-right: 20px;
+      display: flex;
+      align-items: center;
+    }
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 8px;
+    }
+    .user-name {
+      font-weight: bold;
+      color: #333;
+    }
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .tag {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      background-color: #f0f0f0;
+      color: #666;
+    }
+    .experience-content {
+      padding: 24px;
+      font-size: 16px;
+      line-height: 1.8;
+    }
+    .experience-content p {
+      margin-bottom: 20px;
+    }
+    .experience-content h3 {
+      font-size: 1.4rem;
+      margin: 24px 0 16px;
+    }
+    .experience-content img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin: 12px 0;
+    }
+    .reactions {
+      padding: 16px 24px;
+      border-top: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .reaction-buttons {
+      display: flex;
+      gap: 16px;
+    }
+    .reaction-button {
+      display: flex;
+      align-items: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #666;
+      font-size: 14px;
+    }
+    .reaction-button svg {
+      margin-right: 6px;
+    }
+    .reaction-button.active {
+      color: #409EFF;
+    }
+    .reaction-button:hover {
+      opacity: 0.8;
+    }
+    .report-button {
+      color: #ff4d4f;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+    }
+    .report-button svg {
+      margin-right: 6px;
+    }
+    .comments-section {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      max-width: 800px;
+      margin: 24px auto 40px;
+      padding: 24px;
+    }
+    .comments-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .comments-title {
+      font-size: 1.4rem;
+      margin: 0;
+    }
+    .comment-form {
+      margin-bottom: 24px;
+    }
+    .comment-input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      min-height: 100px;
+      resize: vertical;
+    }
+    .comment-submit {
+      margin-top: 12px;
+      padding: 8px 16px;
+      background-color: #409EFF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .comment {
+      border-bottom: 1px solid #eee;
+      padding: 16px 0;
+    }
+    .comment-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .comment-author {
+      display: flex;
+      align-items: center;
+    }
+    .comment-author-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 8px;
+    }
+    .comment-author-name {
+      font-weight: bold;
+    }
+    .comment-date {
+      color: #999;
+      font-size: 12px;
+    }
+    .comment-content {
+      margin-bottom: 12px;
+    }
+    .comment-actions {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: #666;
+    }
+    .comment-action {
+      cursor: pointer;
+    }
+    .comment-action:hover {
+      color: #409EFF;
+    }
+    .similar-experiences {
+      max-width: 800px;
+      margin: 0 auto 40px;
+    }
+    .similar-title {
+      font-size: 1.4rem;
+      margin-bottom: 16px;
+    }
+    .similar-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 16px;
+    }
+    .similar-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      padding: 16px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .similar-card:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+    .similar-card-title {
+      font-size: 1.1rem;
+      margin: 0 0 10px;
+      color: #333;
+    }
+    .similar-card-author {
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+      color: #666;
+    }
+    .similar-card-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .similar-card-stats {
+      margin-top: 12px;
+      font-size: 12px;
+      color: #999;
+      display: flex;
+      justify-content: space-between;
+    }
+    .footer {
+      background-color: #f0f2f5;
+      padding: 30px 20px;
+      text-align: center;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">医疗知识学习平台</div>
+    <div class="nav-links">
+      <a href="home.html" class="nav-link">首页</a>
+      <a href="article-list.html" class="nav-link">知识文章</a>
+      <a href="experience-list.html" class="nav-link">学习心得</a>
+      <a href="categories.html" class="nav-link">分类浏览</a>
+    </div>
+    <div class="user-menu">
+      <a href="login.html" class="nav-link">登录</a>
+      <a href="register.html" class="nav-link">注册</a>
+    </div>
+  </header>
+
+  <div class="experience-container">
+    <header class="experience-header">
+      <h1 class="experience-title">我的糖尿病管理之路</h1>
+      <div class="experience-meta">
+        <div class="meta-item">
+          <img src="https://placeholder.pics/svg/80/DEDEDE/555555/用户头像" alt="用户头像" class="user-avatar">
+          <div>
+            <div class="user-name">张先生</div>
+            <div>2023-08-10 发布</div>
+          </div>
+        </div>
+        <div class="meta-item">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          阅读：728
+        </div>
+      </div>
+      <div class="tag-list">
+        <span class="tag">糖尿病</span>
+        <span class="tag">慢性病管理</span>
+        <span class="tag">健康生活</span>
+      </div>
+    </header>
+
+    <div class="experience-content">
+      <p>作为一名2型糖尿病患者，我在过去5年中经历了从震惊、否认到接受和积极管理的全过程。今天，我想分享我的经验，希望能够帮助到其他正在与糖尿病共处的朋友们。</p>
+
+      <h3>诊断：那个改变一切的日子</h3>
+      <p>五年前，我因为长期感到疲惫、口渴和频繁排尿去医院检查，医生告诉我血糖值远高于正常范围，诊断为2型糖尿病。那一刻，我感到天崩地裂，似乎生活将永远不同。</p>
+      <p>最初几周，我否认这一现实，没有严格遵循医生的建议，认为只要吃几片药就能解决问题。但很快，我的血糖值开始波动，我意识到必须认真对待这个疾病。</p>
+
+      <h3>学习与适应：知识就是力量</h3>
+      <p>我开始积极学习关于糖尿病的知识，参加社区医院组织的糖尿病教育课程，结识了许多同样面临挑战的患者。我学会了监测血糖、理解血糖值的变化规律，以及这些变化与饮食、运动和药物之间的关系。</p>
+      
+      <img src="https://placeholder.pics/svg/600x300/DEDEDE/555555/血糖监测图表" alt="血糖监测图表">
+      
+      <p>我发现，知识确实是最有力的工具。了解自己的身体如何响应不同食物和活动，让我更能掌控自己的健康状况。</p>
+
+      <h3>饮食改变：我的最大挑战</h3>
+      <p>作为一个曾经的美食爱好者，调整饮食是我面临的最大挑战。我不得不告别那些高糖、高碳水化合物的食物，学习计算碳水摄入量，平衡每餐的营养。</p>
+      <p>经过反复尝试，我找到了既满足口味又不会导致血糖急剧上升的饮食方式：</p>
+      <ul>
+        <li>用低碳水蔬菜代替部分主食</li>
+        <li>选择全谷物而非精制碳水化合物</li>
+        <li>注重优质蛋白质和健康脂肪的摄入</li>
+        <li>少量多餐，避免大量进食</li>
+        <li>记录食物摄入与血糖反应的关系</li>
+      </ul>
+
+      <h3>运动习惯：找到适合自己的方式</h3>
+      <p>医生强调运动对控制血糖的重要性，但作为一个之前很少锻炼的人，开始规律运动并不容易。我从每天15分钟的散步开始，逐渐增加到30分钟，然后是45分钟。</p>
+      <p>两个月后，我开始尝试轻度的力量训练，这对提高胰岛素敏感性特别有效。现在，我每周进行5次有氧运动和2次力量训练，血糖控制明显改善。</p>
+
+      <h3>心理调适：接受与成长</h3>
+      <p>糖尿病不仅是身体上的挑战，也是心理上的考验。有段时间，我常常感到沮丧，甚至有些抑郁。每次看到他人无所顾忌地享用甜点时，都会感到一阵失落。</p>
+      <p>通过加入糖尿病互助小组，我找到了情感支持。听取他人的经历，分享自己的挫折与进步，让我意识到我并不孤单。渐渐地，我学会了接受糖尿病是我生活的一部分，但它不定义我是谁。</p>
+
+      <h3>我的日常管理工具</h3>
+      <p>经过几年的摸索，我总结出几个对我特别有效的血糖管理工具：</p>
+      <ol>
+        <li><strong>连续血糖监测系统</strong>：让我实时了解血糖变化，特别是了解不同食物对血糖的影响</li>
+        <li><strong>饮食日记应用</strong>：记录每日饮食，分析碳水摄入</li>
+        <li><strong>活动追踪器</strong>：监测每日步数和活动量</li>
+        <li><strong>冥想应用</strong>：帮助管理压力，因为我发现压力会显著影响血糖水平</li>
+      </ol>
+
+      <h3>与医疗团队合作</h3>
+      <p>我非常幸运有一个支持我的医疗团队，包括内分泌科医生、糖尿病教育护士和营养师。定期咨询和检查让我及时调整治疗计划，防止并发症发生。</p>
+      <p>我学会了提前准备问题清单，充分利用每次就诊时间。医患之间的良好沟通对疾病管理至关重要。</p>
+
+      <h3>今天的我：与糖尿病和平共处</h3>
+      <p>五年后的今天，我的糖尿病控制良好，糖化血红蛋白一直维持在6.2%以下。更重要的是，我的整体健康状况比确诊前更好——体重减轻了15公斤，血压恢复正常，精力充沛。</p>
+      <p>糖尿病教会了我倾听身体的声音，珍视健康，活在当下。它不再是我惧怕的敌人，而是促使我成为更好版本自己的动力。</p>
+
+      <h3>给新确诊患者的建议</h3>
+      <p>如果你刚刚被诊断出糖尿病，我想告诉你：</p>
+      <ul>
+        <li>给自己时间接受和适应</li>
+        <li>主动学习，成为自己健康的专家</li>
+        <li>寻找支持系统，不要独自面对</li>
+        <li>设定小目标，庆祝每一个进步</li>
+        <li>记住，糖尿病是可以管理的，你可以过上充实而健康的生活</li>
+      </ul>
+
+      <p>希望我的经验能够给同路人带来一些启发和希望。健康之路漫长，但我们并不孤单。</p>
+    </div>
+
+    <div class="reactions">
+      <div class="reaction-buttons">
+        <button class="reaction-button active">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"></path><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+          128人点赞
+        </button>
+        <button class="reaction-button">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          评论 (23)
+        </button>
+        <button class="reaction-button">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+          收藏
+        </button>
+        <button class="reaction-button">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+          分享
+        </button>
+      </div>
+      <div class="report-button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6"></path><path d="M20 10h-6V4"></path><path d="M14 10l7-7"></path><path d="M3 21l7-7"></path></svg>
+        举报
+      </div>
+    </div>
+  </div>
+
+  <div class="comments-section">
+    <div class="comments-header">
+      <h2 class="comments-title">评论 (23)</h2>
+      <div>
+        <button class="comment-submit" style="font-size: 14px; margin-left: 10px;">最新优先</button>
+      </div>
+    </div>
+    
+    <div class="comment-form">
+      <textarea class="comment-input" placeholder="分享您的想法..."></textarea>
+      <button class="comment-submit">发表评论</button>
+    </div>
+
+    <div class="comment">
+      <div class="comment-header">
+        <div class="comment-author">
+          <img src="https://placeholder.pics/svg/64/DEDEDE/555555/头像1" alt="评论用户头像" class="comment-author-avatar">
+          <span class="comment-author-name">王先生</span>
+        </div>
+        <span class="comment-date">2023-08-15 14:32</span>
+      </div>
+      <div class="comment-content">
+        <p>感谢分享您的经历！我父亲最近也被诊断出糖尿病，正在适应生活方式的改变。您提到的连续血糖监测系统听起来很有用，能详细介绍一下您使用的是哪种吗？有没有推荐的品牌？</p>
+      </div>
+      <div class="comment-actions">
+        <span class="comment-action">回复</span>
+        <span class="comment-action">点赞(3)</span>
+      </div>
+    </div>
+
+    <div class="comment" style="margin-left: 30px;">
+      <div class="comment-header">
+        <div class="comment-author">
+          <img src="https://placeholder.pics/svg/64/DEDEDE/555555/用户头像" alt="作者头像" class="comment-author-avatar">
+          <span class="comment-author-name">张先生</span>
+        </div>
+        <span class="comment-date">2023-08-15 15:10</span>
+      </div>
+      <div class="comment-content">
+        <p>@王先生 我使用的是FreeStyle Libre系统，不需要指尖采血，只需扫描传感器就能获取血糖数据，对我帮助很大。不过市场上还有Dexcom和Medtronic的产品，建议您父亲咨询医生，选择适合他的类型。刚开始使用时可能需要一段适应期，但熟悉后真的能改变管理方式。</p>
+      </div>
+      <div class="comment-actions">
+        <span class="comment-action">回复</span>
+        <span class="comment-action">点赞(2)</span>
+      </div>
+    </div>
+
+    <div class="comment">
+      <div class="comment-header">
+        <div class="comment-author">
+          <img src="https://placeholder.pics/svg/64/DEDEDE/555555/头像2" alt="评论用户头像" class="comment-author-avatar">
+          <span class="comment-author-name">李医生</span>
+        </div>
+        <span class="comment-date">2023-08-14 09:45</span>
+      </div>
+      <div class="comment-content">
+        <p>作为一名内分泌科医生，我要赞赏您对疾病管理的积极态度和全面方法。您的经历也会对我的患者有所启发。特别是您提到的心理调适部分，这在临床实践中常被忽视，但对长期管理至关重要。希望您继续保持良好状态！</p>
+      </div>
+      <div class="comment-actions">
+        <span class="comment-action">回复</span>
+        <span class="comment-action">点赞(12)</span>
+      </div>
+    </div>
+
+    <div class="comment">
+      <div class="comment-header">
+        <div class="comment-author">
+          <img src="https://placeholder.pics/svg/64/DEDEDE/555555/头像3" alt="评论用户头像" class="comment-author-avatar">
+          <span class="comment-author-name">刘女士</span>
+        </div>
+        <span class="comment-date">2023-08-13 16:20</span>
+      </div>
+      <div class="comment-content">
+        <p>我也是糖尿病患者，已有8年。最近血糖控制变得困难，尤其是清晨血糖偏高。您有遇到过"黎明现象"吗？如何应对的？</p>
+      </div>
+      <div class="comment-actions">
+        <span class="comment-action">回复</span>
+        <span class="comment-action">点赞(5)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="similar-experiences">
+    <h2 class="similar-title">相关学习心得</h2>
+    <div class="similar-list">
+      <a href="#" class="similar-card">
+        <h3 class="similar-card-title">血糖监测技术的进步对我生活的改变</h3>
+        <div class="similar-card-author">
+          <img src="https://placeholder.pics/svg/48/DEDEDE/555555/头像" alt="用户头像" class="similar-card-avatar">
+          <span>陈先生</span>
+        </div>
+        <div class="similar-card-stats">
+          <span>2023-07-25</span>
+          <span>89人点赞</span>
+        </div>
+      </a>
+      
+      <a href="#" class="similar-card">
+        <h3 class="similar-card-title">饮食管理：我的低碳生活实践</h3>
+        <div class="similar-card-author">
+          <img src="https://placeholder.pics/svg/48/DEDEDE/555555/头像" alt="用户头像" class="similar-card-avatar">
+          <span>赵女士</span>
+        </div>
+        <div class="similar-card-stats">
+          <span>2023-08-05</span>
+          <span>112人点赞</span>
+        </div>
+      </a>
+      
+      <a href="#" class="similar-card">
+        <h3 class="similar-card-title">从抗拒到接受：慢性病患者的心路历程</h3>
+        <div class="similar-card-author">
+          <img src="https://placeholder.pics/svg/48/DEDEDE/555555/头像" alt="用户头像" class="similar-card-avatar">
+          <span>周医生</span>
+        </div>
+        <div class="similar-card-stats">
+          <span>2023-07-18</span>
+          <span>201人点赞</span>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>© 2023 医疗知识学习平台 版权所有</p>
+    <p>联系我们 | 关于我们 | 使用条款 | 隐私政策</p>
+  </footer>
+</body>
+</html> 

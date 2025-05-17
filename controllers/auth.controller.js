@@ -4,20 +4,23 @@ const Staff = db.staff;
 const PasswordReset = db.passwordResets;
 const authUtils = require("../utils/auth.utils");
 const mailUtils = require("../utils/mail.utils");
+const {
+  asyncHandler,
+  createError,
+} = require("../middleware/errorHandler.middleware");
 
 /**
  * 用户注册
  */
-exports.registerUser = async (req, res) => {
-  try {
+exports.registerUser = asyncHandler(async (req, res) => {
     // 验证请求
     if (!req.body.username || !req.body.password || !req.body.email) {
-      return res.status(400).json({ message: "请提供用户名、密码和电子邮件!" });
+    throw createError("请提供用户名、密码和电子邮件!", 400);
     }
 
     // 检查密码确认是否匹配
     if (req.body.password !== req.body.confirmPassword) {
-      return res.status(400).json({ message: "密码和确认密码不匹配!" });
+    throw createError("密码和确认密码不匹配!", 400);
     }
 
     // 检查用户名是否已存在
@@ -26,7 +29,7 @@ exports.registerUser = async (req, res) => {
     });
 
     if (existingUsername) {
-      return res.status(400).json({ message: "用户名已被使用!" });
+    throw createError("用户名已被使用!", 400);
     }
 
     // 检查邮箱是否已存在
@@ -35,7 +38,7 @@ exports.registerUser = async (req, res) => {
     });
 
     if (existingEmail) {
-      return res.status(400).json({ message: "电子邮件已被使用!" });
+    throw createError("电子邮件已被使用!", 400);
     }
 
     // 创建新用户
@@ -91,26 +94,20 @@ exports.registerUser = async (req, res) => {
       message: "用户注册成功！请检查您的邮箱以激活账户。",
       user: userResponse,
     });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "注册过程中发生错误!", error: error.message });
-  }
-};
+});
 
 /**
  * 工作人员注册 (由管理员进行)
  */
-exports.registerStaff = async (req, res) => {
-  try {
+exports.registerStaff = asyncHandler(async (req, res) => {
     // 验证请求
     if (!req.body.username || !req.body.password || !req.body.email) {
-      return res.status(400).json({ message: "请提供用户名、密码和电子邮件!" });
+    throw createError("请提供用户名、密码和电子邮件!", 400);
     }
 
     // 检查密码确认是否匹配
     if (req.body.password !== req.body.confirmPassword) {
-      return res.status(400).json({ message: "密码和确认密码不匹配!" });
+    throw createError("密码和确认密码不匹配!", 400);
     }
 
     // 检查用户名是否已存在
@@ -119,7 +116,7 @@ exports.registerStaff = async (req, res) => {
     });
 
     if (existingUsername) {
-      return res.status(400).json({ message: "用户名已被使用!" });
+    throw createError("用户名已被使用!", 400);
     }
 
     // 检查邮箱是否已存在
@@ -128,7 +125,7 @@ exports.registerStaff = async (req, res) => {
     });
 
     if (existingEmail) {
-      return res.status(400).json({ message: "电子邮件已被使用!" });
+    throw createError("电子邮件已被使用!", 400);
     }
 
     // 创建新工作人员
@@ -186,21 +183,15 @@ exports.registerStaff = async (req, res) => {
       message: "工作人员注册成功!",
       staff: staffResponse,
     });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "注册过程中发生错误!", error: error.message });
-  }
-};
+});
 
 /**
  * 通用登录接口 - 同时支持用户和工作人员登录
  */
-exports.login = async (req, res) => {
-  try {
+exports.login = asyncHandler(async (req, res) => {
     // 验证请求
     if (!req.body.usernameOrEmail || !req.body.password) {
-      return res.status(400).json({ message: "请提供用户名/邮箱和密码!" });
+    throw createError("请提供用户名/邮箱和密码!", 400);
     }
 
     const { usernameOrEmail, password } = req.body;
@@ -231,7 +222,7 @@ exports.login = async (req, res) => {
       if (user) {
         isStaff = true;
       } else {
-        return res.status(401).json({ message: "用户名/邮箱或密码不正确!" });
+      throw createError("用户名/邮箱或密码不正确!", 401);
       }
     }
 
@@ -242,12 +233,12 @@ exports.login = async (req, res) => {
     );
 
     if (!isPasswordValid) {
-      return res.status(401).json({ message: "用户名/邮箱或密码不正确!" });
+    throw createError("用户名/邮箱或密码不正确!", 401);
     }
 
     // 检查账户是否激活
     if (!user.isActive) {
-      return res.status(403).json({ message: "账户已被停用，请联系管理员!" });
+    throw createError("账户已被停用，请联系管理员!", 403);
     }
 
     // 检查邮箱是否已验证（非工作人员必须验证邮箱）
@@ -283,13 +274,13 @@ exports.login = async (req, res) => {
         console.log(`验证邮件已发送至 ${user.email}`);
       } catch (emailError) {
         console.error("发送验证邮件失败:", emailError);
+      // 邮件发送失败不影响主流程
       }
 
-      return res.status(403).json({
-        message:
+    throw createError(
           "您的邮箱尚未验证，请检查邮箱并完成验证后再登录。新的验证邮件已发送至您的邮箱。",
-        emailVerificationRequired: true,
-      });
+      403
+    );
     }
 
     // 准备用户信息载荷
@@ -324,37 +315,24 @@ exports.login = async (req, res) => {
       refreshToken, // 刷新令牌
       user: userInfo,
     });
-  } catch (error) {
-    console.error("登录过程中出错:", error);
-    res
-      .status(500)
-      .json({ message: "登录过程中发生错误!", error: error.message });
-  }
-};
+});
 
 /**
  * 获取当前用户信息 (将逻辑委托给具体的控制器)
  */
-exports.getMe = async (req, res) => {
-  try {
+exports.getMe = asyncHandler(async (req, res) => {
     // 根据用户角色重定向到相应的控制器方法
     if (req.userRole === "user") {
       return require("./user.controller").getCurrentUser(req, res);
     } else {
       return require("./staff.controller").getCurrentStaff(req, res);
     }
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "获取用户信息时发生错误!", error: error.message });
-  }
-};
+});
 
 /**
  * 刷新访问令牌
  */
-exports.refreshToken = async (req, res) => {
-  try {
+exports.refreshToken = asyncHandler(async (req, res) => {
     // 用户信息已由 verifyRefreshToken 中间件添加到 req 对象
     const userId = req.userId;
     const userRole = req.userRole;
@@ -370,24 +348,24 @@ exports.refreshToken = async (req, res) => {
     }
 
     if (!user) {
-      return res.status(404).json({ message: "用户不存在" });
+    throw createError("用户不存在", 404);
     }
 
     // 检查用户状态
     if (!user.isActive) {
       // 撤销刷新令牌
       authUtils.blacklistToken(refreshToken);
-      return res.status(403).json({ message: "账户已停用，请联系管理员" });
+    throw createError("账户已停用，请联系管理员", 403);
     }
 
     // 如果用户更改了密码，需要比较 tokenVersion
-    // 此处假设用户模型中有 tokenVersion 字段，实际实现可能需要调整
     if (user.tokenVersion && user.tokenVersion !== tokenVersion) {
+    // 撤销刷新令牌
       authUtils.blacklistToken(refreshToken);
-      return res.status(401).json({ message: "刷新令牌已失效，请重新登录" });
+    throw createError("凭证已失效，请重新登录", 401);
     }
 
-    // 生成新的访问令牌
+  // 准备新的载荷
     const payload = {
       id: userId,
       role: userRole,
@@ -395,30 +373,20 @@ exports.refreshToken = async (req, res) => {
       tokenVersion: user.tokenVersion || 0,
     };
 
-    // 生成新的访问令牌，继续使用相同的刷新令牌
-    const accessToken = authUtils.generateAccessToken(payload);
+  // 生成新的令牌
+  const { accessToken, refreshToken: newRefreshToken } =
+    authUtils.generateTokens(payload);
 
-    // 记录用户活动
-    user.lastLoginAt = new Date();
-    await user.save();
-
-    return res.status(200).json({
+  res.status(200).json({
       accessToken,
-      refreshToken, // 返回相同的刷新令牌
-    });
-  } catch (error) {
-    console.error("刷新令牌过程中出错:", error);
-    return res
-      .status(500)
-      .json({ message: "服务器错误", error: error.message });
-  }
-};
+    refreshToken: newRefreshToken,
+  });
+});
 
 /**
  * 用户或工作人员退出登录
  */
-exports.logout = async (req, res) => {
-  try {
+exports.logout = asyncHandler(async (req, res) => {
     // 将当前访问令牌添加到黑名单
     const token = req.token;
     if (token) {
@@ -426,29 +394,20 @@ exports.logout = async (req, res) => {
     }
 
     return res.status(200).json({ message: "已成功退出登录!" });
-  } catch (error) {
-    console.error("退出登录过程中出错:", error);
-    return res
-      .status(500)
-      .json({ message: "服务器错误", error: error.message });
-  }
-};
+});
 
 /**
  * 请求重置密码
  */
-exports.forgotPassword = async (req, res) => {
-  try {
+exports.forgotPassword = asyncHandler(async (req, res) => {
     const { email, userType } = req.body;
 
     if (!email) {
-      return res.status(400).json({ message: "请提供电子邮件!" });
+    throw createError("请提供电子邮件!", 400);
     }
 
     if (!userType || !["user", "staff"].includes(userType)) {
-      return res
-        .status(400)
-        .json({ message: "请提供有效的用户类型 (user 或 staff)!" });
+    throw createError("请提供有效的用户类型 (user 或 staff)!", 400);
     }
 
     // 根据用户类型查找用户
@@ -490,34 +449,26 @@ exports.forgotPassword = async (req, res) => {
     res.status(200).json({
       message: "如果该邮箱存在，我们已发送密码重置邮件。请查收您的邮箱。",
     });
-  } catch (error) {
-    console.error("请求重置密码过程中出错:", error);
-    // 出于安全考虑，即使发生错误也不暴露详细信息
-    res.status(200).json({
-      message: "如果该邮箱存在，我们已发送密码重置邮件。请查收您的邮箱。",
     });
-  }
-};
 
 /**
  * 重置密码
  */
-exports.resetPassword = async (req, res) => {
-  try {
+exports.resetPassword = asyncHandler(async (req, res) => {
     const { token, newPassword, confirmNewPassword } = req.body;
 
     if (!token || !newPassword || !confirmNewPassword) {
-      return res.status(400).json({ message: "请提供所有必需的字段!" });
+    throw createError("请提供所有必需的字段!", 400);
     }
 
     if (newPassword !== confirmNewPassword) {
-      return res.status(400).json({ message: "两次输入的密码不匹配!" });
+    throw createError("两次输入的密码不匹配!", 400);
     }
 
     // 验证密码强度
     const passwordValidation = authUtils.validatePasswordStrength(newPassword);
     if (!passwordValidation.valid) {
-      return res.status(400).json({ message: passwordValidation.message });
+    throw createError(passwordValidation.message, 400);
     }
 
     // 根据令牌查找密码重置记录
@@ -530,7 +481,7 @@ exports.resetPassword = async (req, res) => {
     });
 
     if (!resetRecord) {
-      return res.status(400).json({ message: "无效或已过期的令牌!" });
+    throw createError("无效或已过期的令牌!", 400);
     }
 
     // 根据重置记录找到用户或工作人员
@@ -545,7 +496,7 @@ exports.resetPassword = async (req, res) => {
     }
 
     if (!user) {
-      return res.status(404).json({ message: "用户不存在!" });
+    throw createError("用户不存在!", 404);
     }
 
     // 更新密码
@@ -560,22 +511,16 @@ exports.resetPassword = async (req, res) => {
     await resetRecord.update({ isUsed: true });
 
     res.status(200).json({ message: "密码已成功重置!" });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "密码重置过程中发生错误!", error: error.message });
-  }
-};
+});
 
 /**
  * 验证邮箱
  */
-exports.verifyEmail = async (req, res) => {
-  try {
+exports.verifyEmail = asyncHandler(async (req, res) => {
     const { token } = req.body;
 
     if (!token) {
-      return res.status(400).json({ message: "请提供验证令牌!" });
+    throw createError("请提供验证令牌!", 400);
     }
 
     // 查找验证记录
@@ -588,7 +533,7 @@ exports.verifyEmail = async (req, res) => {
     });
 
     if (!verification) {
-      return res.status(400).json({ message: "无效或已过期的验证令牌!" });
+    throw createError("无效或已过期的验证令牌!", 400);
     }
 
     // 更新用户邮箱验证状态
@@ -603,7 +548,7 @@ exports.verifyEmail = async (req, res) => {
     }
 
     if (!user) {
-      return res.status(404).json({ message: "用户不存在!" });
+    throw createError("用户不存在!", 404);
     }
 
     // 更新用户邮箱验证状态和验证记录状态
@@ -614,9 +559,4 @@ exports.verifyEmail = async (req, res) => {
       message: "邮箱验证成功!",
       verified: true,
     });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "邮箱验证过程中发生错误!", error: error.message });
-  }
-};
+});

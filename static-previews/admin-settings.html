@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>系统设置 - 管理员控制台</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background-color: #f5f7fa;
+      height: 100%;
+    }
+    .admin-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 240px;
+      background-color: #001529;
+      color: white;
+      padding: 20px 0;
+      flex-shrink: 0;
+    }
+    .logo {
+      padding: 0 20px 20px;
+      font-size: 18px;
+      font-weight: bold;
+      border-bottom: 1px solid #002140;
+      margin-bottom: 20px;
+    }
+    .menu {
+      list-style: none;
+      padding: 0;
+    }
+    .menu-item {
+      padding: 14px 20px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .menu-item:hover {
+      background-color: #002140;
+    }
+    .menu-item.active {
+      background-color: #1890ff;
+    }
+    .main {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: white;
+      padding: 16px 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    .page-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 0;
+    }
+    .user-dropdown {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: #1890ff;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    .card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+    }
+    .card-body {
+      padding: 20px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #606266;
+    }
+    .form-control {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: #409EFF;
+    }
+    .form-select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 14px;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23606266' d='M6 8.825L1.175 4 2.238 2.938 6 6.7l3.762-3.762L10.825 4z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 12px;
+    }
+    .form-hint {
+      margin-top: 4px;
+      font-size: 12px;
+      color: #909399;
+    }
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 30px;
+    }
+    .btn {
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      transition: all 0.3s;
+    }
+    .btn-default {
+      background-color: #ffffff;
+      border: 1px solid #dcdfe6;
+      color: #606266;
+    }
+    .btn-default:hover {
+      border-color: #c6e2ff;
+      color: #409EFF;
+      background-color: #ecf5ff;
+    }
+    .btn-primary {
+      background-color: #409EFF;
+      color: white;
+    }
+    .btn-primary:hover {
+      background-color: #66b1ff;
+    }
+    .row {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .col {
+      flex: 1;
+    }
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #ebeef5;
+      margin-bottom: 20px;
+    }
+    .tab {
+      padding: 12px 16px;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.3s;
+    }
+    .tab:hover {
+      color: #409EFF;
+    }
+    .tab.active {
+      color: #409EFF;
+      font-weight: bold;
+    }
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background-color: #409EFF;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 30px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #dcdfe6;
+      transition: .4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #409EFF;
+    }
+    input:focus + .slider {
+      box-shadow: 0 0 1px #409EFF;
+    }
+    input:checked + .slider:before {
+      transform: translateX(30px);
+    }
+    .setting-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 0;
+      border-bottom: 1px solid #ebeef5;
+    }
+    .setting-item:last-child {
+      border-bottom: none;
+    }
+    .setting-label {
+      font-weight: 500;
+    }
+    .setting-description {
+      font-size: 12px;
+      color: #909399;
+      margin-top: 4px;
+    }
+    .setting-control {
+      display: flex;
+      align-items: center;
+    }
+    .color-picker {
+      width: 100px;
+      height: 30px;
+      padding: 0;
+      margin-right: 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-size: 12px;
+      color: white;
+      margin-left: 10px;
+    }
+    .badge-success {
+      background-color: #67C23A;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 500px;
+      max-width: 90%;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ebeef5;
+    }
+    .modal-title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .modal-close {
+      font-size: 20px;
+      cursor: pointer;
+      color: #909399;
+    }
+    .modal-footer {
+      margin-top: 20px;
+      padding-top: 10px;
+      border-top: 1px solid #ebeef5;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .alert-success {
+      padding: 10px 15px;
+      border-radius: 4px;
+      background-color: #f0f9eb;
+      color: #67C23A;
+      border: 1px solid #e1f3d8;
+      margin-bottom: 20px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    <div class="sidebar">
+      <div class="logo">医疗知识学习平台</div>
+      <div class="menu">
+        <div class="menu-item">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          <a href="admin-dashboard.html" style="color: inherit; text-decoration: none;">控制台</a>
+        </div>
+        <div class="menu-item">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          用户管理
+        </div>
+        <div class="menu-item">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          工作人员管理
+        </div>
+        <div class="menu-item">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          内容审核
+        </div>
+        <div class="menu-item">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+          分类管理
+        </div>
+        <div class="menu-item active">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          系统设置
+        </div>
+        <div class="menu-item">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          审计日志
+        </div>
+      </div>
+    </div>
+    
+    <div class="main">
+      <div class="header">
+        <h1 class="page-title">系统设置</h1>
+        <div class="user-dropdown">
+          <div class="avatar">A</div>
+          <span style="margin-right: 10px;">管理员</span>
+          <a href="login.html" style="color: #606266; text-decoration: none; font-size: 14px;">退出登录</a>
+        </div>
+      </div>
+      
+      <div class="alert-success" id="saveSuccess">
+        设置已成功保存！
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <div class="tabs">
+            <div class="tab active" data-tab="general">基础设置</div>
+            <div class="tab" data-tab="content">内容设置</div>
+            <div class="tab" data-tab="users">用户设置</div>
+            <div class="tab" data-tab="notification">通知设置</div>
+            <div class="tab" data-tab="security">安全设置</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- 基础设置 -->
+          <div class="tab-content active" id="general-content">
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">网站名称</div>
+                <div class="setting-description">显示在浏览器标题栏和登录页面</div>
+              </div>
+              <div class="setting-control">
+                <input type="text" class="form-control" style="width: 250px;" value="医疗知识学习平台">
+              </div>
+            </div>
+            
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">平台Logo</div>
+                <div class="setting-description">建议尺寸 200x60 像素</div>
+              </div>
+              <div class="setting-control">
+                <button class="btn btn-default">上传Logo</button>
+              </div>
+            </div>
+            
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">主题颜色</div>
+                <div class="setting-description">平台主色调和按钮颜色</div>
+              </div>
+              <div class="setting-control">
+                <input type="color" class="color-picker" value="#409EFF">
+                <span>#409EFF</span>
+              </div>
+            </div>
+            
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">联系邮箱</div>
+                <div class="setting-description">用于接收平台通知和用户反馈</div>
+              </div>
+              <div class="setting-control">
+                <input type="email" class="form-control" style="width: 250px;" value="contact@medicalplatform.com">
+              </div>
+            </div>
+            
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">系统维护模式</div>
+                <div class="setting-description">启用后，除管理员外的所有用户将无法访问平台</div>
+              </div>
+              <div class="setting-control">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 内容设置 -->
+          <div class="tab-content" id="content-content">
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">文章审核</div>
+                <div class="setting-description">是否对所有新文章进行审核</div>
+              </div>
+              <div class="setting-control">
+                <label class="switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">评论审核</div>
+                <div class="setting-description">是否对所有评论进行审核后再显示</div>
+              </div>
+              <div class="setting-control">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">文章缩略图</div>
+                <div class="setting-description">没有上传缩略图的文章是否使用默认图片</div>
+              </div>
+              <div class="setting-control">
+                <label class="switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">心得字数限制</div>
+                <div class="setting-description">用户发布心得的最大字数限制</div>
+              </div>
+              <div class="setting-control">
+                <input type="number" class="form-control" style="width: 100px;" value="5000">
+              </div>
+            </div>
+            
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">默认文章来源</div>
+                <div class="setting-description">文章未填写来源时显示的默认来源</div>
+              </div>
+              <div class="setting-control">
+                <input type="text" class="form-control" style="width: 250px;" value="医疗知识学习平台原创">
+              </div>
+            </div>
+          </div>
+          
+          <!-- 用户设置 -->
+          <div class="tab-content" id="users-content">
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">用户注册</div>
+                <div class="setting-description">是否允许新用户注册</div>
+              </div>
+              <div class="setting-control">
+                <label class="switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">邮箱验证</div>
+                <div class="setting-description">新用户注册时是否需要验证邮箱</div>
+              </div>
+              <div class="setting-control">
+                <label class="switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">默认用户头像</div>
+                <div class="setting-description">用户未上传头像时显示的默认头像</div>
+              </div>
+              <div class="setting-control">
+                <button class="btn btn-default">选择头像</button>
+              </div>
+            </div>
+            
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">用户昵称规则</div>
+                <div class="setting-description">用户昵称的长度限制和允许字符</div>
+              </div>
+              <div class="setting-control">
+                <select class="form-select" style="width: 250px;">
+                  <option value="1">允许中英文和数字，2-20个字符</option>
+                  <option value="2">仅允许中英文，2-15个字符</option>
+                  <option value="3">允许中英文、数字和符号，2-30个字符</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">用户心得权限</div>
+                <div class="setting-description">新用户注册后多久可以发布心得</div>
+              </div>
+              <div class="setting-control">
+                <select class="form-select" style="width: 250px;">
+                  <option value="0">立即可以发布</option>
+                  <option value="1" selected>注册满24小时后可发布</option>
+                  <option value="7">注册满7天后可发布</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 通知设置 -->
+          <div class="tab-content" id="notification-content">
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">系统通知</div>
+                <div class="setting-description">是否向用户发送系统更新和活动通知</div>
+              </div>
+              <div class="setting-control">
+                <label class="switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">评论通知</div>
+                <div class="setting-description">是否在用户收到新评论时发送通知</div>
+              </div>
+              <div class="setting-control">
+                <label class="switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">点赞通知</div>
+                <div class="setting-description">当用户内容收到点赞时是否通知</div>
+              </div>
+              <div class="setting-control">
+                <label class="switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">审核结果通知</div>
+                <div class="setting-description">内容审核完成后是否通知用户</div>
+              </div>
+              <div class="setting-control">
+                <label class="switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">邮件通知频率</div>
+                <div class="setting-description">控制发送邮件通知的频率</div>
+              </div>
+              <div class="setting-control">
+                <select class="form-select" style="width: 250px;">
+                  <option value="instant">实时发送</option>
+                  <option value="daily" selected>每日汇总</option>
+                  <option value="weekly">每周汇总</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 安全设置 -->
+          <div class="tab-content" id="security-content">
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">密码强度要求</div>
+                <div class="setting-description">用户密码必须满足的安全要求</div>
+              </div>
+              <div class="setting-control">
+                <select class="form-select" style="width: 250px;">
+                  <option value="low">低（仅字母和数字，至少6位）</option>
+                  <option value="medium" selected>中（大小写字母、数字，至少8位）</option>
+                  <option value="high">高（大小写字母、数字和特殊字符，至少10位）</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">账号锁定</div>
+                <div class="setting-description">连续登录失败后锁定账号</div>
+              </div>
+              <div class="setting-control">
+                <label class="switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">登录失败次数</div>
+                <div class="setting-description">连续几次登录失败后锁定账号</div>
+              </div>
+              <div class="setting-control">
+                <input type="number" class="form-control" style="width: 100px;" value="5">
+              </div>
+            </div>
+            
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">管理员IP限制</div>
+                <div class="setting-description">是否限制管理员登录IP范围</div>
+              </div>
+              <div class="setting-control">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="setting-item">
+              <div>
+                <div class="setting-label">数据备份</div>
+                <div class="setting-description">系统数据自动备份频率</div>
+              </div>
+              <div class="setting-control">
+                <select class="form-select" style="width: 250px;">
+                  <option value="daily" selected>每日备份</option>
+                  <option value="weekly">每周备份</option>
+                  <option value="monthly">每月备份</option>
+                </select>
+                <span class="badge badge-success">已启用</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button type="button" class="btn btn-default" id="resetBtn">重置默认</button>
+        <button type="button" class="btn btn-primary" id="saveBtn">保存设置</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 重置确认弹窗 -->
+  <div class="modal" id="resetModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">重置确认</div>
+        <div class="modal-close">&times;</div>
+      </div>
+      <div class="modal-body">
+        <p>您确定要将当前设置重置为系统默认值吗？</p>
+        <p>此操作不可恢复，请谨慎操作。</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" id="cancelResetBtn">取消</button>
+        <button class="btn btn-primary" id="confirmResetBtn">确认重置</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 标签切换功能
+      const tabs = document.querySelectorAll('.tab');
+      const tabContents = document.querySelectorAll('.tab-content');
+      
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          const tabId = this.getAttribute('data-tab');
+          
+          // 更新标签状态
+          tabs.forEach(t => t.classList.remove('active'));
+          this.classList.add('active');
+          
+          // 更新内容显示
+          tabContents.forEach(content => content.classList.remove('active'));
+          document.getElementById(`${tabId}-content`).classList.add('active');
+        });
+      });
+      
+      // 保存设置功能
+      const saveBtn = document.getElementById('saveBtn');
+      const saveSuccess = document.getElementById('saveSuccess');
+      
+      saveBtn.addEventListener('click', function() {
+        saveSuccess.style.display = 'block';
+        
+        // 3秒后隐藏成功消息
+        setTimeout(() => {
+          saveSuccess.style.display = 'none';
+        }, 3000);
+      });
+      
+      // 重置功能
+      const resetBtn = document.getElementById('resetBtn');
+      const resetModal = document.getElementById('resetModal');
+      const cancelResetBtn = document.getElementById('cancelResetBtn');
+      const confirmResetBtn = document.getElementById('confirmResetBtn');
+      const modalClose = document.querySelector('.modal-close');
+      
+      resetBtn.addEventListener('click', function() {
+        resetModal.style.display = 'flex';
+      });
+      
+      function closeResetModal() {
+        resetModal.style.display = 'none';
+      }
+      
+      cancelResetBtn.addEventListener('click', closeResetModal);
+      modalClose.addEventListener('click', closeResetModal);
+      
+      confirmResetBtn.addEventListener('click', function() {
+        alert('设置已重置为默认值');
+        closeResetModal();
+      });
+      
+      // 点击弹窗外部关闭弹窗
+      window.addEventListener('click', function(event) {
+        if (event.target === resetModal) {
+          closeResetModal();
+        }
+      });
+      
+      // 主题颜色变化实时显示十六进制值
+      const colorPicker = document.querySelector('.color-picker');
+      const colorValue = colorPicker.nextElementSibling;
+      
+      colorPicker.addEventListener('input', function() {
+        colorValue.textContent = this.value.toUpperCase();
+      });
+    });
+  </script>
+</body>
+</html> 

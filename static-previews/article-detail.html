@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>心脏病预防指南：生活方式的重要性 - 医疗知识学习平台</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      color: #333;
+      line-height: 1.6;
+    }
+    .header {
+      background-color: #409EFF;
+      color: white;
+      padding: 0 20px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+    .nav-link {
+      color: white;
+      text-decoration: none;
+    }
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .article-container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    .breadcrumb {
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: #666;
+    }
+    .breadcrumb a {
+      color: #409EFF;
+      text-decoration: none;
+    }
+    .article-header {
+      margin-bottom: 30px;
+    }
+    .article-title {
+      font-size: 2.2rem;
+      margin-bottom: 10px;
+    }
+    .article-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+    .meta-item {
+      margin-right: 20px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .tag {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .article-cover {
+      width: 100%;
+      height: 400px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 30px;
+    }
+    .article-content {
+      font-size: 16px;
+      line-height: 1.8;
+    }
+    .article-content p {
+      margin-bottom: 20px;
+    }
+    .article-content h2 {
+      font-size: 1.8rem;
+      margin: 30px 0 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .article-content h3 {
+      font-size: 1.4rem;
+      margin: 25px 0 15px;
+    }
+    .article-content ul, .article-content ol {
+      margin-bottom: 20px;
+      padding-left: 20px;
+    }
+    .article-content li {
+      margin-bottom: 10px;
+    }
+    .article-actions {
+      display: flex;
+      justify-content: space-between;
+      margin: 40px 0;
+      padding: 20px 0;
+      border-top: 1px solid #eee;
+      border-bottom: 1px solid #eee;
+    }
+    .action-button {
+      display: flex;
+      align-items: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #666;
+      font-size: 14px;
+      padding: 8px 12px;
+      border-radius: 4px;
+    }
+    .action-button:hover {
+      background-color: #f5f7fa;
+    }
+    .rating {
+      display: flex;
+      align-items: center;
+      margin-top: 30px;
+    }
+    .rating-text {
+      margin-right: 10px;
+      font-size: 14px;
+    }
+    .star {
+      color: #F7BA2A;
+      font-size: 20px;
+      margin-right: 3px;
+    }
+    .comments-section {
+      margin-top: 40px;
+    }
+    .comments-title {
+      font-size: 1.4rem;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .comment-form {
+      margin-bottom: 30px;
+    }
+    .comment-input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      min-height: 100px;
+      resize: vertical;
+    }
+    .comment-submit {
+      margin-top: 10px;
+      padding: 8px 16px;
+      background-color: #409EFF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .comment {
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+    }
+    .comment-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .comment-author {
+      font-weight: bold;
+    }
+    .comment-date {
+      color: #999;
+      font-size: 12px;
+    }
+    .related-articles {
+      margin-top: 60px;
+    }
+    .related-title {
+      font-size: 1.4rem;
+      margin-bottom: 20px;
+    }
+    .related-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    .related-item {
+      display: flex;
+      padding: 15px;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      text-decoration: none;
+      color: #333;
+    }
+    .related-item-image {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-right: 15px;
+    }
+    .related-item-content h4 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+    .related-item-content p {
+      margin: 0;
+      font-size: 12px;
+      color: #666;
+    }
+    .footer {
+      background-color: #f5f7fa;
+      padding: 30px 20px;
+      text-align: center;
+      color: #666;
+      margin-top: 60px;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">医疗知识学习平台</div>
+    <div class="nav-links">
+      <a href="home.html" class="nav-link">首页</a>
+      <a href="article-list.html" class="nav-link">知识文章</a>
+      <a href="experience-list.html" class="nav-link">学习心得</a>
+      <a href="categories.html" class="nav-link">分类浏览</a>
+    </div>
+    <div class="user-menu">
+      <a href="login.html" class="nav-link">登录</a>
+      <a href="register.html" class="nav-link">注册</a>
+    </div>
+  </header>
+
+  <main class="article-container">
+    <div class="breadcrumb">
+      <a href="home.html">首页</a> &gt; 
+      <a href="article-list.html">知识文章</a> &gt; 
+      <a href="categories.html">心脏健康</a> &gt; 
+      <span>心脏病预防指南</span>
+    </div>
+    
+    <article>
+      <header class="article-header">
+        <h1 class="article-title">心脏病预防指南：生活方式的重要性</h1>
+        <div class="article-meta">
+          <span class="meta-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            发布于：2023-08-15
+          </span>
+          <span class="meta-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            作者：张医生
+          </span>
+          <span class="meta-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px;"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+            分类：心脏健康
+          </span>
+          <span class="meta-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            阅读：1,245
+          </span>
+        </div>
+        <div class="tag-list">
+          <span class="tag" style="background-color: #e6f7ff; color: #1890ff;">心脏健康</span>
+          <span class="tag" style="background-color: #f6ffed; color: #52c41a;">预防医学</span>
+          <span class="tag" style="background-color: #fff7e6; color: #fa8c16;">生活方式</span>
+        </div>
+      </header>
+
+      <img src="https://placeholder.pics/svg/900x400/DEDEDE/555555/心脏病预防指南封面图" alt="心脏病预防指南封面图" class="article-cover">
+
+      <div class="article-content">
+        <p><strong>心脏病是全球范围内的主要死亡原因之一，但许多心脏病风险可以通过健康的生活方式得到有效控制。</strong>本文将深入探讨如何通过日常习惯的改变来降低心脏病风险，提供实用的预防建议。</p>
+
+        <h2>了解心脏病风险因素</h2>
+        <p>心脏病的风险因素可分为不可控制因素（如年龄、性别和家族史）和可控制因素（如生活方式相关的因素）。虽然我们无法改变不可控制的因素，但通过调整生活方式，我们可以显著降低患心脏病的风险。</p>
+
+        <h3>主要可控制风险因素包括：</h3>
+        <ul>
+          <li>高血压</li>
+          <li>高胆固醇</li>
+          <li>吸烟</li>
+          <li>缺乏身体活动</li>
+          <li>不健康的饮食</li>
+          <li>肥胖</li>
+          <li>糖尿病</li>
+          <li>过度压力</li>
+        </ul>
+
+        <h2>健康饮食的重要性</h2>
+        <p>饮食在心脏健康中扮演着关键角色。研究表明，地中海饮食等植物性食物为主的饮食模式可以降低心脏病风险。</p>
+
+        <h3>饮食建议：</h3>
+        <ul>
+          <li><strong>增加水果和蔬菜摄入</strong>：每天至少摄入5份水果和蔬菜。</li>
+          <li><strong>选择全谷物</strong>：如全麦面包、糙米和燕麦。</li>
+          <li><strong>健康脂肪</strong>：选择橄榄油、坚果和鱼类等富含不饱和脂肪的食物。</li>
+          <li><strong>限制盐分摄入</strong>：每天不超过5克，相当于一茶匙。</li>
+          <li><strong>减少红肉和加工肉类</strong>：选择鱼类、豆类和禽肉作为蛋白质来源。</li>
+        </ul>
+
+        <h2>规律运动的益处</h2>
+        <p>身体活动能够降低血压、改善胆固醇水平、控制体重并增强心肺功能。美国心脏协会建议每周至少进行150分钟的中等强度有氧运动或75分钟的高强度运动。</p>
+
+        <h3>运动建议：</h3>
+        <ul>
+          <li><strong>有氧运动</strong>：快走、游泳、骑自行车或跳舞。</li>
+          <li><strong>力量训练</strong>：每周至少进行两次，锻炼所有主要肌肉群。</li>
+          <li><strong>灵活性运动</strong>：伸展运动和瑜伽可以改善关节活动度。</li>
+          <li><strong>从小开始</strong>：如果您长期不活动，从短时间低强度的活动开始，逐渐增加。</li>
+        </ul>
+
+        <h2>压力管理</h2>
+        <p>慢性压力会增加心脏病风险。找到有效的压力管理技巧对于保持心脏健康至关重要。</p>
+
+        <h3>压力管理技巧：</h3>
+        <ul>
+          <li><strong>冥想与深呼吸</strong>：每天花10-15分钟进行冥想或深呼吸练习。</li>
+          <li><strong>充足睡眠</strong>：每晚保证7-8小时的优质睡眠。</li>
+          <li><strong>社交联系</strong>：维持健康的社交关系，与亲朋好友交流。</li>
+          <li><strong>放松活动</strong>：找到您喜欢的放松活动，如阅读、园艺或听音乐。</li>
+        </ul>
+
+        <h2>其他生活方式因素</h2>
+
+        <h3>戒烟</h3>
+        <p>吸烟是心脏病的主要风险因素之一。戒烟可以在一年内将心脏病风险降低50%，并在戒烟15年后达到非吸烟者的风险水平。</p>
+
+        <h3>限制酒精摄入</h3>
+        <p>过量饮酒会增加心脏病风险。如果您选择饮酒，男性每天不应超过两杯标准酒精饮料，女性不应超过一杯。</p>
+
+        <h3>定期体检</h3>
+        <p>定期检查血压、胆固醇水平和血糖对于早期发现潜在问题至关重要。与您的医生制定适合您的筛查计划。</p>
+
+        <h2>结论</h2>
+        <p>心脏病预防不需要激进的生活方式改变。通过采取小步骤、保持一致性，您可以显著降低患心脏病的风险。记住，预防总是比治疗更好，而现在正是开始关注心脏健康的最佳时机。</p>
+      </div>
+
+      <div class="rating">
+        <span class="rating-text">文章评分：</span>
+        <span class="star">★</span>
+        <span class="star">★</span>
+        <span class="star">★</span>
+        <span class="star">★</span>
+        <span class="star" style="color: #E8E8E8;">★</span>
+        <span style="margin-left: 10px; font-size: 14px; color: #666;">(4.2/5 基于37个评分)</span>
+      </div>
+
+      <div class="article-actions">
+        <div>
+          <button class="action-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            收藏
+          </button>
+          <button class="action-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px;"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+            评分
+          </button>
+        </div>
+        <div>
+          <button class="action-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px;"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+            分享
+          </button>
+        </div>
+      </div>
+
+      <section class="comments-section">
+        <h2 class="comments-title">
+          评论 (15)
+          <button class="comment-submit" style="font-size: 14px;">最新优先</button>
+        </h2>
+        
+        <div class="comment-form">
+          <textarea class="comment-input" placeholder="发表您的评论..."></textarea>
+          <button class="comment-submit">提交评论</button>
+        </div>
+        
+        <div class="comment">
+          <div class="comment-header">
+            <span class="comment-author">李先生</span>
+            <span class="comment-date">2023-08-18</span>
+          </div>
+          <p>这篇文章非常实用，尤其是饮食部分的建议对我很有帮助。我一直关注心脏健康问题，最近开始尝试地中海饮食，确实感觉很好。</p>
+        </div>
+        
+        <div class="comment">
+          <div class="comment-header">
+            <span class="comment-author">王女士</span>
+            <span class="comment-date">2023-08-17</span>
+          </div>
+          <p>文章内容很全面，但我想了解一下针对已经有轻度高血压的人，运动强度应该如何控制？有没有更具体的建议？</p>
+        </div>
+        
+        <div class="comment">
+          <div class="comment-header">
+            <span class="comment-author">张医生</span>
+            <span class="comment-date">2023-08-17</span>
+          </div>
+          <p>回复 @王女士：对于轻度高血压患者，建议从低强度有氧运动开始，如慢走，每周3-5次，每次30分钟。随着适应性增强，可以逐渐增加到中等强度。但建议在开始任何运动计划前咨询您的医生。</p>
+        </div>
+      </section>
+
+      <section class="related-articles">
+        <h2 class="related-title">相关文章</h2>
+        <div class="related-list">
+          <a href="#" class="related-item">
+            <img src="https://placeholder.pics/svg/80x80/DEDEDE/555555/相关文章1" alt="相关文章1" class="related-item-image">
+            <div class="related-item-content">
+              <h4>高血压管理的实用技巧</h4>
+              <p>发布于：2023-07-20 | 阅读：865</p>
+            </div>
+          </a>
+          
+          <a href="#" class="related-item">
+            <img src="https://placeholder.pics/svg/80x80/DEDEDE/555555/相关文章2" alt="相关文章2" class="related-item-image">
+            <div class="related-item-content">
+              <h4>心律不齐：症状识别与初步处理</h4>
+              <p>发布于：2023-08-05 | 阅读：720</p>
+            </div>
+          </a>
+          
+          <a href="#" class="related-item">
+            <img src="https://placeholder.pics/svg/80x80/DEDEDE/555555/相关文章3" alt="相关文章3" class="related-item-image">
+            <div class="related-item-content">
+              <h4>地中海饮食：对心脏健康的益处</h4>
+              <p>发布于：2023-07-10 | 阅读：1,103</p>
+            </div>
+          </a>
+          
+          <a href="#" class="related-item">
+            <img src="https://placeholder.pics/svg/80x80/DEDEDE/555555/相关文章4" alt="相关文章4" class="related-item-image">
+            <div class="related-item-content">
+              <h4>有效的压力管理方法</h4>
+              <p>发布于：2023-08-01 | 阅读：942</p>
+            </div>
+          </a>
+        </div>
+      </section>
+    </article>
+  </main>
+
+  <footer class="footer">
+    <p>© 2023 医疗知识学习平台 版权所有</p>
+    <p>联系我们 | 关于我们 | 使用条款 | 隐私政策</p>
+  </footer>
+</body>
+</html> 

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>工作台 - 医疗知识学习平台</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    }
+    .staff-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 220px;
+      background-color: #304156;
+      color: #fff;
+    }
+    .logo {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      border-bottom: 1px solid #3c4b5d;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .menu {
+      padding-top: 20px;
+    }
+    .menu-item {
+      padding: 12px 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+    }
+    .menu-item.active {
+      background-color: #409EFF;
+    }
+    .menu-item:hover:not(.active) {
+      background-color: #263445;
+    }
+    .menu-item svg {
+      margin-right: 10px;
+    }
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: #f0f2f5;
+    }
+    .header {
+      height: 60px;
+      background-color: #fff;
+      border-bottom: 1px solid #f0f0f0;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .page-content {
+      flex: 1;
+      padding: 20px;
+    }
+    .user-dropdown {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-right: 8px;
+      background-color: #409EFF;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    .card {
+      background-color: #fff;
+      border-radius: 4px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    .card-header {
+      border-bottom: 1px solid #f0f0f0;
+      padding: 16px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-body {
+      padding: 16px;
+    }
+    .info-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .info-card {
+      background-color: #fff;
+      border-radius: 4px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .info-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+    .info-data {
+      display: flex;
+      flex-direction: column;
+    }
+    .info-value {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    .info-label {
+      font-size: 14px;
+      color: #666;
+    }
+    .task-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .task-item {
+      padding: 16px;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+    }
+    .task-item:last-child {
+      border-bottom: none;
+    }
+    .task-checkbox {
+      margin-right: 12px;
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      border: 1px solid #d9d9d9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .task-checkbox.checked {
+      background-color: #409EFF;
+      border-color: #409EFF;
+      color: #fff;
+    }
+    .task-content {
+      flex: 1;
+    }
+    .task-title {
+      margin: 0 0 4px;
+      font-weight: 500;
+    }
+    .task-subtitle {
+      margin: 0;
+      font-size: 12px;
+      color: #999;
+    }
+    .task-actions {
+      margin-left: 12px;
+    }
+    .task-action-btn {
+      background: none;
+      border: none;
+      padding: 4px 8px;
+      cursor: pointer;
+      color: #409EFF;
+      font-size: 14px;
+    }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .table th, .table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #f0f0f0;
+      text-align: left;
+    }
+    .table th {
+      background-color: #fafafa;
+      font-weight: 500;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 12px;
+    }
+    .badge-success {
+      background-color: #f6ffed;
+      color: #52c41a;
+      border: 1px solid #b7eb8f;
+    }
+    .badge-warning {
+      background-color: #fffbe6;
+      color: #faad14;
+      border: 1px solid #ffe58f;
+    }
+    .badge-danger {
+      background-color: #fff2f0;
+      color: #ff4d4f;
+      border: 1px solid #ffccc7;
+    }
+    .badge-info {
+      background-color: #e6f7ff;
+      color: #1890ff;
+      border: 1px solid #91d5ff;
+    }
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .tab {
+      padding: 12px 16px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-right: 16px;
+    }
+    .tab.active {
+      border-bottom-color: #409EFF;
+      color: #409EFF;
+    }
+    .article-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .article-item {
+      padding: 16px;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+    }
+    .article-item:last-child {
+      border-bottom: none;
+    }
+    .article-icon {
+      margin-right: 12px;
+    }
+    .article-content {
+      flex: 1;
+    }
+    .article-title {
+      margin: 0 0 4px;
+      font-weight: 500;
+    }
+    .article-meta {
+      margin: 0;
+      font-size: 12px;
+      color: #999;
+      display: flex;
+      align-items: center;
+    }
+    .article-meta > span {
+      margin-right: 12px;
+      display: flex;
+      align-items: center;
+    }
+    .article-meta svg {
+      margin-right: 4px;
+    }
+    .article-actions {
+      margin-left: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="staff-layout">
+    <div class="sidebar">
+      <div class="logo">医疗知识学习平台</div>
+      <div class="menu">
+        <div class="menu-item active">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          工作台
+        </div>
+        <div class="menu-item">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          文章管理
+        </div>
+        <div class="menu-item">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+          心得审核
+        </div>
+        <div class="menu-item">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+          标签管理
+        </div>
+        <div class="menu-item">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          评论管理
+        </div>
+        <div class="menu-item">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+          素材库
+        </div>
+        <div class="menu-item">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+          个人中心
+        </div>
+      </div>
+    </div>
+    <div class="main-content">
+      <div class="header">
+        <div>
+          <h2 style="margin: 0; font-size: 18px;">工作台</h2>
+        </div>
+        <div class="user-dropdown">
+          <div class="avatar">L</div>
+          <span style="margin-right: 10px;">李医生</span>
+          <a href="login.html" style="color: #606266; text-decoration: none; font-size: 14px;">退出登录</a>
+        </div>
+      </div>
+      <div class="page-content">
+        <div class="info-cards">
+          <div class="info-card">
+            <div class="info-data">
+              <div class="info-value">8</div>
+              <div class="info-label">待审核心得</div>
+            </div>
+            <div class="info-icon" style="background-color: #1890ff;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-data">
+              <div class="info-value">15</div>
+              <div class="info-label">我的文章</div>
+            </div>
+            <div class="info-icon" style="background-color: #52c41a;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-data">
+              <div class="info-value">4</div>
+              <div class="info-label">待处理举报</div>
+            </div>
+            <div class="info-icon" style="background-color: #f5222d;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div class="card">
+            <div class="card-header">
+              <span>我的任务</span>
+              <a href="#" style="color: #409EFF; text-decoration: none; font-size: 14px;">查看全部</a>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <ul class="task-list">
+                <li class="task-item">
+                  <div class="task-checkbox"></div>
+                  <div class="task-content">
+                    <h4 class="task-title">审核《糖尿病饮食指南》心得</h4>
+                    <p class="task-subtitle">截止日期：2023-08-15</p>
+                  </div>
+                  <div class="task-actions">
+                    <button class="task-action-btn">立即处理</button>
+                  </div>
+                </li>
+                <li class="task-item">
+                  <div class="task-checkbox checked">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </div>
+                  <div class="task-content">
+                    <h4 class="task-title">创建《心脏病预防指南》文章</h4>
+                    <p class="task-subtitle">已完成 | 2023-08-14</p>
+                  </div>
+                  <div class="task-actions">
+                    <button class="task-action-btn">查看</button>
+                  </div>
+                </li>
+                <li class="task-item">
+                  <div class="task-checkbox"></div>
+                  <div class="task-content">
+                    <h4 class="task-title">处理用户对《高血压管理》文章的编辑建议</h4>
+                    <p class="task-subtitle">截止日期：2023-08-16</p>
+                  </div>
+                  <div class="task-actions">
+                    <button class="task-action-btn">立即处理</button>
+                  </div>
+                </li>
+                <li class="task-item">
+                  <div class="task-checkbox"></div>
+                  <div class="task-content">
+                    <h4 class="task-title">添加"心理健康"分类的标签</h4>
+                    <p class="task-subtitle">截止日期：2023-08-18</p>
+                  </div>
+                  <div class="task-actions">
+                    <button class="task-action-btn">立即处理</button>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span>待审核心得</span>
+              <a href="#" style="color: #409EFF; text-decoration: none; font-size: 14px;">查看全部</a>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>标题</th>
+                    <th>作者</th>
+                    <th>提交时间</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>我与焦虑症的对抗</td>
+                    <td>王女士</td>
+                    <td>2023-08-14</td>
+                    <td><span class="badge badge-warning">待审核</span></td>
+                    <td><a href="#" style="color: #409EFF;">审核</a></td>
+                  </tr>
+                  <tr>
+                    <td>中医治疗带给我的改变</td>
+                    <td>张先生</td>
+                    <td>2023-08-14</td>
+                    <td><span class="badge badge-warning">待审核</span></td>
+                    <td><a href="#" style="color: #409EFF;">审核</a></td>
+                  </tr>
+                  <tr>
+                    <td>术后康复经验分享</td>
+                    <td>李小姐</td>
+                    <td>2023-08-13</td>
+                    <td><span class="badge badge-danger">需修改</span></td>
+                    <td><a href="#" style="color: #409EFF;">查看</a></td>
+                  </tr>
+                  <tr>
+                    <td>如何帮助孩子远离过敏</td>
+                    <td>赵女士</td>
+                    <td>2023-08-13</td>
+                    <td><span class="badge badge-info">审核中</span></td>
+                    <td><a href="#" style="color: #409EFF;">继续</a></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span>内容管理</span>
+            <a href="#" style="color: #409EFF; text-decoration: none; font-size: 14px;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              创建文章
+            </a>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="tabs">
+              <div class="tab active">我创建的</div>
+              <div class="tab">我编辑的</div>
+              <div class="tab">草稿箱</div>
+            </div>
+            <ul class="article-list">
+              <li class="article-item">
+                <div class="article-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                </div>
+                <div class="article-content">
+                  <h4 class="article-title">心脏病预防指南：生活方式的重要性</h4>
+                  <div class="article-meta">
+                    <span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                      2023-08-15
+                    </span>
+                    <span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      1,245
+                    </span>
+                    <span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                      37
+                    </span>
+                    <span><span class="badge badge-success">已发布</span></span>
+                  </div>
+                </div>
+                <div class="article-actions">
+                  <button class="task-action-btn">编辑</button>
+                  <button class="task-action-btn">更多</button>
+                </div>
+              </li>
+              <li class="article-item">
+                <div class="article-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                </div>
+                <div class="article-content">
+                  <h4 class="article-title">常见皮肤病的诊断与家庭护理</h4>
+                  <div class="article-meta">
+                    <span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                      2023-08-12
+                    </span>
+                    <span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      987
+                    </span>
+                    <span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                      21
+                    </span>
+                    <span><span class="badge badge-success">已发布</span></span>
+                  </div>
+                </div>
+                <div class="article-actions">
+                  <button class="task-action-btn">编辑</button>
+                  <button class="task-action-btn">更多</button>
+                </div>
+              </li>
+              <li class="article-item">
+                <div class="article-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                </div>
+                <div class="article-content">
+                  <h4 class="article-title">儿童疫苗接种：父母必读指南</h4>
+                  <div class="article-meta">
+                    <span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                      2023-08-10
+                    </span>
+                    <span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      1,560
+                    </span>
+                    <span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                      45
+                    </span>
+                    <span><span class="badge badge-success">已发布</span></span>
+                  </div>
+                </div>
+                <div class="article-actions">
+                  <button class="task-action-btn">编辑</button>
+                  <button class="task-action-btn">更多</button>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html> 

@@ -26,6 +26,32 @@ const swaggerOptions = {
         },
       },
       schemas: {
+        // 添加通用响应schema
+        GenericErrorMessage: {
+          type: "object",
+          properties: {
+            message: {
+              type: "string",
+              description: "错误信息",
+              example: "操作失败，请稍后重试",
+            },
+            error: {
+              type: "string",
+              description: "错误码或详细错误信息",
+              example: "INVALID_INPUT",
+            },
+          },
+        },
+        GenericSuccessMessage: {
+          type: "object",
+          properties: {
+            message: {
+              type: "string",
+              description: "成功提示信息",
+              example: "操作成功完成",
+            },
+          },
+        },
         // 在这里定义你的数据模型
         UserProfile: {
           // 根据 models/user.model.js 更新
@@ -82,8 +108,14 @@ const swaggerOptions = {
               nullable: true,
               description: "通知偏好设置",
               properties: {
-                // 你需要根据实际的 JSON 结构来定义这里的属性
-                // 例如: emailEnabled: { type: 'boolean' }, smsEnabled: { type: 'boolean' }
+                emailEnabled: {
+                  type: "boolean",
+                  description: "是否启用电子邮件通知",
+                },
+                pushEnabled: {
+                  type: "boolean",
+                  description: "是否启用推送通知",
+                },
               },
               example: { emailEnabled: true, pushEnabled: false },
             },
@@ -680,35 +712,6 @@ const swaggerOptions = {
               description: "从验证邮件中获取的令牌",
               example: "email_verification_token_string",
             },
-          },
-        },
-        GenericSuccessMessage: {
-          // 通用的成功消息响应
-          type: "object",
-          properties: {
-            message: {
-              type: "string",
-            },
-          },
-        },
-        GenericErrorMessage: {
-          // 通用的错误消息响应
-          type: "object",
-          properties: {
-            message: {
-              type: "string",
-              description: "错误信息描述",
-            },
-            error: {
-              // 可选，用于更详细的错误或开发环境下的调试信息
-              type: "string",
-              nullable: true,
-              description: "详细错误内容 (可选)",
-            },
-          },
-          example: {
-            message: "请求处理失败。",
-            error: "具体错误原因... (可选)",
           },
         },
         StaffProfile: {
@@ -1928,7 +1931,7 @@ const swaggerOptions = {
     ],
   },
   // Path to the API docs
-  apis: ["./routes/*.js"], // (You might need to change this if your route files are elsewhere or have different extensions)
+  apis: ["./routes/*.js", "./controllers/*.js"], // 同时扫描routes和controllers目录下的文件
 };
 
 // Initialize swagger-jsdoc -> returns validated swagger spec in json format

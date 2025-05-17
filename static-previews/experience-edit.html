@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>编辑学习心得 - 医疗知识学习平台</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <!-- 引入富文本编辑器样式 -->
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      color: #333;
+      background-color: #f5f7fa;
+    }
+    .header {
+      background-color: #409EFF;
+      color: white;
+      padding: 0 20px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+    .nav-link {
+      color: white;
+      text-decoration: none;
+    }
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: #fff;
+    }
+    .page-container {
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+    .panel {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 16px;
+      font-weight: bold;
+      background-color: #fafafa;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .panel-body {
+      padding: 20px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-label {
+      font-weight: 500;
+      margin-bottom: 8px;
+      display: block;
+      color: #606266;
+    }
+    .form-input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: #409EFF;
+    }
+    .form-hint {
+      margin-top: 5px;
+      font-size: 12px;
+      color: #909399;
+    }
+    .form-editor {
+      margin-bottom: 20px;
+    }
+    .editor-container {
+      min-height: 400px;
+      border-radius: 4px;
+    }
+    .form-select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 14px;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23606266' d='M6 8.825L1.175 4 2.238 2.938 6 6.7l3.762-3.762L10.825 4z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 12px;
+    }
+    .form-checkbox {
+      margin-right: 8px;
+    }
+    .tag-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 10px;
+      background-color: #ecf5ff;
+      border: 1px solid #d9ecff;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #409EFF;
+    }
+    .tag-remove {
+      margin-left: 5px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .tag-input-container {
+      display: flex;
+      margin-top: 10px;
+    }
+    .tag-input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px 0 0 4px;
+      font-size: 14px;
+    }
+    .tag-add-btn {
+      padding: 8px 16px;
+      background-color: #409EFF;
+      color: white;
+      border: none;
+      border-radius: 0 4px 4px 0;
+      cursor: pointer;
+    }
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+      margin-top: 30px;
+    }
+    .btn {
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      transition: all 0.3s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-default {
+      background-color: #f4f4f5;
+      color: #606266;
+      border: 1px solid #dcdfe6;
+    }
+    .btn-default:hover {
+      color: #409EFF;
+      border-color: #c6e2ff;
+      background-color: #ecf5ff;
+    }
+    .btn-primary {
+      background-color: #409EFF;
+      color: white;
+    }
+    .btn-primary:hover {
+      background-color: #66b1ff;
+    }
+    .image-upload {
+      margin-top: 10px;
+    }
+    .image-preview {
+      max-width: 300px;
+      max-height: 200px;
+      margin-top: 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .image-preview img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .upload-hint {
+      display: flex;
+      align-items: center;
+      color: #909399;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 400px;
+      max-width: 90%;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .modal-title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .modal-close {
+      font-size: 20px;
+      cursor: pointer;
+      color: #909399;
+    }
+    .modal-body {
+      margin-bottom: 20px;
+    }
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .footer {
+      background-color: #f0f2f5;
+      padding: 20px;
+      text-align: center;
+      color: #606266;
+      font-size: 14px;
+      border-top: 1px solid #e4e7ed;
+      margin-top: 50px;
+    }
+    .review-message {
+      padding: 15px;
+      border-radius: 4px;
+      background-color: #fff2f0;
+      border: 1px solid #ffccc7;
+      color: #f56c6c;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .review-message h3 {
+      margin-top: 0;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">医疗知识学习平台</div>
+    <div class="nav-links">
+      <a href="home.html" class="nav-link">首页</a>
+      <a href="article-list.html" class="nav-link">知识文章</a>
+      <a href="experience-list.html" class="nav-link">学习心得</a>
+      <a href="categories.html" class="nav-link">分类浏览</a>
+    </div>
+    <div class="user-menu">
+      <a href="user-profile.html" style="display: flex; align-items: center; gap: 10px; color: white; text-decoration: none;">
+        <img src="https://placeholder.pics/svg/64/DEDEDE/555555/头像" alt="用户头像" class="user-avatar">
+        <span>张先生</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="page-container">
+    <div class="panel">
+      <div class="panel-header">
+        <span>编辑学习心得</span>
+      </div>
+      
+      <div class="panel-body">
+        <!-- 审核未通过的提示 -->
+        <div class="review-message" id="reviewMessage">
+          <h3>审核未通过</h3>
+          <p>您的心得未能通过审核，原因："内容中包含未经验证的医疗建议，请修改后重新提交"。</p>
+          <p>请注意：分享个人经验时，请避免对他人做出具体的医疗建议，而应着重于描述自己的实际经历和感受。</p>
+        </div>
+        
+        <form id="experienceForm">
+          <div class="form-group">
+            <label class="form-label" for="title">标题</label>
+            <input type="text" id="title" class="form-input" value="颈椎病康复训练记录" placeholder="请输入心得标题">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="summary">简介</label>
+            <textarea id="summary" class="form-input" rows="3" placeholder="请简要介绍您的心得内容（100字以内）">记录了颈椎病康复过程中的一些训练方法和注意事项，希望能帮助到有相同问题的朋友。包含了每日训练记录和效果追踪。</textarea>
+            <div class="form-hint">此简介将显示在列表页，建议简明扼要地概括心得内容</div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="category">相关医疗类别</label>
+            <select id="category" class="form-select">
+              <option value="">请选择相关医疗类别</option>
+              <option value="internal">内科</option>
+              <option value="surgery" selected>外科</option>
+              <option value="pediatrics">儿科</option>
+              <option value="gynecology">妇产科</option>
+              <option value="orthopedics">骨科</option>
+              <option value="neurology">神经内科</option>
+              <option value="psychiatry">精神心理科</option>
+              <option value="dermatology">皮肤科</option>
+              <option value="nutrition">营养学</option>
+              <option value="rehabilitation">康复医学</option>
+              <option value="preventive">预防医学</option>
+              <option value="traditional-chinese">中医学</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">标签</label>
+            <div class="tag-container" id="tagContainer">
+              <span class="tag">颈椎病 <span class="tag-remove">&times;</span></span>
+              <span class="tag">康复训练 <span class="tag-remove">&times;</span></span>
+              <span class="tag">物理治疗 <span class="tag-remove">&times;</span></span>
+            </div>
+            <div class="tag-input-container">
+              <input type="text" class="tag-input" id="tagInput" placeholder="输入标签，按回车或点击添加">
+              <button type="button" class="tag-add-btn" id="tagAddBtn">添加</button>
+            </div>
+            <div class="form-hint">添加标签有助于其他用户更好地找到您的心得</div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">封面图片</label>
+            <div class="image-preview" id="coverPreview">
+              <img src="https://placeholder.pics/svg/300x200/DEDEDE/555555/颈椎康复图片" alt="封面预览">
+            </div>
+            <div class="image-upload">
+              <input type="file" id="coverUpload" accept="image/*">
+              <div class="upload-hint">
+                <span>推荐尺寸: 800x450 像素，最大文件大小: 5MB</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">心得内容</label>
+            <div class="editor-container" id="editor">
+              <h2>我的颈椎病康复历程</h2>
+              <p>作为一名长期伏案工作的程序员，我在去年被诊断出颈椎病。起初表现为颈部僵硬、肩背痛，后来开始出现头晕、手指麻木等症状。在医生的建议下，我开始了系统性的康复训练，这里记录下我的训练方法和感受。</p>
+              <h3>1. 颈椎牵引</h3>
+              <p>每天进行两次颈椎牵引，每次15-20分钟。初期在医生指导下进行，后来购买了家用牵引设备在家进行。牵引对缓解神经压迫症状有明显效果，我的手指麻木感在一个月后明显减轻。</p>
+              <h3>2. 颈部肌肉锻炼</h3>
+              <p>这是我的日常锻炼项目：</p>
+              <ul>
+                <li>颈部前屈后伸：每组10次，每天3组</li>
+                <li>颈部左右旋转：每组10次，每天3组</li>
+                <li>肩部上下耸动：每组15次，每天3组</li>
+              </ul>
+              <p>锻炼时动作要缓慢，不要用力过猛，如果出现疼痛要立即停止。</p>
+              <h3>3. 工作姿势调整</h3>
+              <p>我调整了工作台高度，确保屏幕与眼睛平行，椅子高度让手臂自然放在键盘上。每工作45分钟休息5分钟，起身活动颈部和肩部。</p>
+              <h3>4. 康复训练记录与效果</h3>
+              <p>第一个月：颈部僵硬感仍然明显，但疼痛有所减轻。</p>
+              <p>第二个月：手指麻木感显著减轻，颈部活动范围增加。</p>
+              <p>第三个月：头晕症状基本消失，能够长时间工作而不感到明显不适。</p>
+              <h3>我的体会</h3>
+              <p>康复是一个漫长的过程，需要持之以恒。适当的锻炼、正确的姿势和良好的工作习惯对预防和缓解颈椎病都有很大帮助。希望我的经验能给大家提供一些参考。</p>
+              <p><strong>注意：我分享的仅是个人经历，每个人的情况可能不同，治疗方案应在专业医生指导下进行。</strong></p>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="visibility">可见性</label>
+            <select id="visibility" class="form-select">
+              <option value="public" selected>公开（所有人可见）</option>
+              <option value="private">私密（仅自己可见）</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>
+              <input type="checkbox" class="form-checkbox" id="agreement" checked>
+              我保证所分享内容是个人真实经历，不包含虚假或误导性信息。
+            </label>
+          </div>
+          
+          <div class="form-actions">
+            <a href="user-experiences.html" class="btn btn-default">取消</a>
+            <button type="button" class="btn btn-default" id="saveAsDraft">保存为草稿</button>
+            <button type="button" class="btn btn-primary" id="submitBtn">提交审核</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 提交确认弹窗 -->
+  <div class="modal" id="submitModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">提交确认</div>
+        <div class="modal-close">&times;</div>
+      </div>
+      <div class="modal-body">
+        <p>您确定要提交此学习心得进行审核吗？</p>
+        <p>提交后，工作人员将在1-3个工作日内完成审核。</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default modal-cancel">取消</button>
+        <a href="user-experiences.html" class="btn btn-primary">确认提交</a>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>© 2023 医疗知识学习平台 版权所有</p>
+    <p>联系我们 | 关于我们 | 使用条款 | 隐私政策</p>
+  </footer>
+  
+  <!-- 富文本编辑器脚本 -->
+  <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 获取URL参数
+      const urlParams = new URLSearchParams(window.location.search);
+      const experienceId = urlParams.get('id');
+      
+      // 如果不是ID=3的体验（审核未通过的那篇），则隐藏审核消息
+      if (experienceId !== '3') {
+        document.getElementById('reviewMessage').style.display = 'none';
+      }
+      
+      // 初始化富文本编辑器
+      const quill = new Quill('#editor', {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'color': [] }, { 'background': [] }],
+            ['link', 'image'],
+            ['clean']
+          ]
+        },
+        placeholder: '请详细描述您的学习心得...'
+      });
+      
+      // 标签功能
+      const tagContainer = document.getElementById('tagContainer');
+      const tagInput = document.getElementById('tagInput');
+      const tagAddBtn = document.getElementById('tagAddBtn');
+      
+      // 添加标签
+      function addTag(text) {
+        if (text.trim() === '') return;
+        
+        const tag = document.createElement('span');
+        tag.className = 'tag';
+        tag.innerHTML = text + ' <span class="tag-remove">&times;</span>';
+        
+        const removeBtn = tag.querySelector('.tag-remove');
+        removeBtn.addEventListener('click', function() {
+          tagContainer.removeChild(tag);
+        });
+        
+        tagContainer.appendChild(tag);
+        tagInput.value = '';
+      }
+      
+      tagAddBtn.addEventListener('click', function() {
+        addTag(tagInput.value);
+      });
+      
+      tagInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addTag(this.value);
+        }
+      });
+      
+      // 给已有的标签添加删除功能
+      document.querySelectorAll('.tag-remove').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const tag = this.parentElement;
+          tagContainer.removeChild(tag);
+        });
+      });
+      
+      // 图片上传预览
+      const coverUpload = document.getElementById('coverUpload');
+      const coverPreview = document.getElementById('coverPreview');
+      
+      coverUpload.addEventListener('change', function(e) {
+        if (e.target.files && e.target.files[0]) {
+          const reader = new FileReader();
+          
+          reader.onload = function(e) {
+            const img = coverPreview.querySelector('img');
+            img.src = e.target.result;
+          }
+          
+          reader.readAsDataURL(e.target.files[0]);
+        }
+      });
+      
+      // 提交确认
+      const submitBtn = document.getElementById('submitBtn');
+      const submitModal = document.getElementById('submitModal');
+      const modalClose = document.querySelectorAll('.modal-close, .modal-cancel');
+      
+      submitBtn.addEventListener('click', function() {
+        // 表单验证
+        const title = document.getElementById('title').value;
+        const agreement = document.getElementById('agreement').checked;
+        
+        if (title.trim() === '') {
+          alert('请输入心得标题');
+          return;
+        }
+        
+        if (!agreement) {
+          alert('请确认您分享的内容真实可靠');
+          return;
+        }
+        
+        submitModal.style.display = 'flex';
+      });
+      
+      modalClose.forEach(btn => {
+        btn.addEventListener('click', function() {
+          submitModal.style.display = 'none';
+        });
+      });
+      
+      // 点击模态框外部关闭
+      window.addEventListener('click', function(event) {
+        if (event.target === submitModal) {
+          submitModal.style.display = 'none';
+        }
+      });
+      
+      // 保存草稿功能
+      const saveAsDraft = document.getElementById('saveAsDraft');
+      
+      saveAsDraft.addEventListener('click', function() {
+        alert('草稿已保存！');
+      });
+    });
+  </script>
+</body>
+</html> 
